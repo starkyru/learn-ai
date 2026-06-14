@@ -46,9 +46,7 @@ __all__ = [
 
 def _need(value: str | None, var_name: str) -> str:
     if not value:
-        raise RuntimeError(
-            f"Missing env var {var_name}. Copy .env.example to .env and fill it in."
-        )
+        raise RuntimeError(f"Missing env var {var_name}. Copy .env.example to .env and fill it in.")
     return value
 
 
@@ -85,11 +83,19 @@ def get_provider(name: str | None = None) -> LLMProvider:
             api_key=_need(os.getenv("NVIDIA_API_KEY"), "NVIDIA_API_KEY"),
             base_url=os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"),
             chat_model=os.getenv("NVIDIA_CHAT_MODEL", "meta/llama-3.1-8b-instruct"),
-            embed_model=os.getenv(
-                "NVIDIA_EMBED_MODEL", "nvidia/llama-3.2-nv-embedqa-1b-v2"
-            ),
+            embed_model=os.getenv("NVIDIA_EMBED_MODEL", "nvidia/llama-3.2-nv-embedqa-1b-v2"),
+        )
+
+    if provider == "lmstudio":
+        # LM Studio exposes an OpenAI-compatible server; no real key needed.
+        return OpenAICompatibleProvider(
+            name="lmstudio",
+            api_key="lm-studio",
+            base_url=os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234/v1"),
+            chat_model=os.getenv("LMSTUDIO_CHAT_MODEL", "google/gemma-4-12b-qat"),
+            embed_model=os.getenv("LMSTUDIO_EMBED_MODEL", "text-embedding-nomic-embed-text-v1.5"),
         )
 
     raise RuntimeError(
-        f'Unknown provider "{provider}". Use one of: openai, anthropic, ollama, nvidia.'
+        f'Unknown provider "{provider}". Use one of: openai, anthropic, ollama, nvidia, lmstudio.'
     )

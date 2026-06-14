@@ -21,7 +21,7 @@ export * from "./types.js";
 export { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
 export { AnthropicProvider } from "./providers/anthropic.js";
 
-export type ProviderName = "openai" | "anthropic" | "ollama" | "nvidia";
+export type ProviderName = "openai" | "anthropic" | "ollama" | "nvidia" | "lmstudio";
 
 function need(value: string | undefined, varName: string): string {
   if (!value) {
@@ -70,9 +70,20 @@ export function getProvider(name?: ProviderName): LLMProvider {
           process.env.NVIDIA_EMBED_MODEL ?? "nvidia/llama-3.2-nv-embedqa-1b-v2",
       });
 
+    case "lmstudio":
+      // LM Studio exposes an OpenAI-compatible server; no real key needed.
+      return new OpenAICompatibleProvider({
+        name: "lmstudio",
+        apiKey: "lm-studio",
+        baseURL: process.env.LMSTUDIO_BASE_URL ?? "http://localhost:1234/v1",
+        chatModel: process.env.LMSTUDIO_CHAT_MODEL ?? "google/gemma-4-12b-qat",
+        embedModel:
+          process.env.LMSTUDIO_EMBED_MODEL ?? "text-embedding-nomic-embed-text-v1.5",
+      });
+
     default:
       throw new Error(
-        `Unknown provider "${provider}". Use one of: openai, anthropic, ollama, nvidia.`,
+        `Unknown provider "${provider}". Use one of: openai, anthropic, ollama, nvidia, lmstudio.`,
       );
   }
 }
