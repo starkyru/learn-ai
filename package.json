@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Personal hands-on course: AI, LLMs, embeddings, RAG, and agents — TypeScript + Python.",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=20"

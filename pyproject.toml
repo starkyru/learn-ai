@@ -2,6 +2,7 @@
 name = "learn-ai"
 version = "0.1.0"
 description = "Personal hands-on course: AI, LLMs, embeddings, RAG, and agents — Python side."
+license = "MIT"
 requires-python = ">=3.10"
 # Base install stays light so `uv sync` is fast. Heavier, module-specific
 # libraries live in optional extras below — install them when you reach the
