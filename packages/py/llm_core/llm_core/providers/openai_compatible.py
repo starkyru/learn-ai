@@ -9,7 +9,7 @@ four providers. Only Anthropic ships its own distinct API.
 
 from __future__ import annotations
 
-from typing import Iterable, Iterator
+from collections.abc import Iterable, Iterator
 
 from openai import OpenAI
 
@@ -75,6 +75,10 @@ class OpenAICompatibleProvider:
         kwargs = self._payload(messages, options)
         kwargs["stream"] = True
         for chunk in self._client.chat.completions.create(**kwargs):
+            # Some OpenAI-compatible servers (LM Studio, vLLM, …) emit chunks with
+            # an empty `choices` list — e.g. a final usage-only chunk. Skip them.
+            if not chunk.choices:
+                continue
             delta = chunk.choices[0].delta.content
             if delta:
                 yield delta
