@@ -1,0 +1,5 @@
+# Run the TS and Python test suites before pushing.
+echo "→ jest (TypeScript)"
+npx jest --passWithNoTests
+echo "→ pytest (Python)"
+uv run pytest -q || { code=$?; [ "$code" -eq 5 ] && echo "  (no tests collected — ok)" || exit $code; }

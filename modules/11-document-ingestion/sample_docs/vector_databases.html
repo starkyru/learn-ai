@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vector Databases — learn-ai sample</title>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a> | <a href="/modules">Modules</a> | <a href="/about">About</a>
+  </nav>
+
+  <header>
+    <h1>Vector Databases</h1>
+    <p class="byline">learn-ai sample document · module 11</p>
+  </header>
+
+  <main>
+    <section id="what-is">
+      <h2>What is a vector database?</h2>
+      <p>
+        A vector database stores high-dimensional numerical vectors alongside
+        metadata and supports fast <em>approximate nearest-neighbour</em> (ANN)
+        search. Instead of filtering rows by exact value, you query by
+        <em>semantic similarity</em>: "give me the 10 vectors most similar to
+        this query vector."
+      </p>
+      <p>
+        The core data structure is usually an HNSW (Hierarchical Navigable Small
+        World) graph, which reduces search from O(n) to O(log n) at the cost of
+        a small probability of missing the true nearest neighbour.
+      </p>
+    </section>
+
+    <section id="popular-options">
+      <h2>Popular options</h2>
+      <ul>
+        <li><strong>Chroma</strong> — lightweight, in-process, great for
+            prototyping; used in this course.</li>
+        <li><strong>Qdrant</strong> — production-grade, Rust-based, supports
+            filtering and payload storage.</li>
+        <li><strong>Pinecone</strong> — managed cloud service; no infrastructure
+            to run.</li>
+        <li><strong>pgvector</strong> — a PostgreSQL extension; keeps vectors
+            inside your existing relational DB.</li>
+        <li><strong>Weaviate</strong> — GraphQL API, built-in modules for
+            cross-encoders and summarisation.</li>
+      </ul>
+    </section>
+
+    <section id="when-to-use">
+      <h2>When to use a vector DB</h2>
+      <p>
+        Use a vector database when your retrieval question is semantic rather
+        than exact. Good fits:
+      </p>
+      <ul>
+        <li>RAG pipelines — retrieving relevant document chunks for LLM context.</li>
+        <li>Semantic search — "find products similar to this description."</li>
+        <li>Recommendations — "find items similar to what this user liked."</li>
+        <li>Anomaly detection — "find log entries far from all known clusters."</li>
+        <li>Deduplication — "find near-duplicate records."</li>
+      </ul>
+      <p>
+        For exact-match lookups (by ID, date range, category), a regular
+        relational or key-value database is still the right tool.
+      </p>
+    </section>
+
+    <section id="metadata-filtering">
+      <h2>Metadata filtering</h2>
+      <p>
+        Most vector databases support combining ANN search with metadata
+        filters. Example: "find the 5 chunks most similar to this query, but
+        only from documents published after 2024 and tagged 'security'."
+      </p>
+      <p>
+        This pre-filter (or post-filter) approach keeps retrieval focused and
+        reduces the chance of serving stale or irrelevant context to the LLM.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>learn-ai course · sample document for module 11 · not real documentation</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "@learn-ai/m04-embeddings-vectors",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@learn-ai/llm-core": "workspace:*",
+    "chromadb": "^1.9.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,33 @@
+# Secrets
+.env
+.env.local
+*.key
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+.pnpm-store/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Data / model artifacts (keep small sample data, ignore big stuff)
+data/*.bin
+data/*.gguf
+data/*.sqlite
+data/chroma/
+data/qdrant/
+*.faiss
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/

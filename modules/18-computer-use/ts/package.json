@@ -1,0 +1,16 @@
+{
+  "name": "@learn-ai/m18-computer-use",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@learn-ai/llm-core": "workspace:*",
+    "playwright": "^1.48.0",
+    "openai": "^4.0.0",
+    "@anthropic-ai/sdk": "^0.30.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

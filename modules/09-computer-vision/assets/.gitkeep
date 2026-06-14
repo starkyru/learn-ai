@@ -1,0 +1,3 @@
+# This directory holds sample images used by the module-09 exercises.
+# cat.jpg is downloaded automatically on first run if not present.
+# See task1_classify.py / task1_classify.ts for the download URL.

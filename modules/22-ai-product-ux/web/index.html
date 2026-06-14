@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!--
+  Module 22 — AI Product UX: single-page demo
+
+  What this teaches (open source in DevTools as you click around):
+    Task 1: SSE streaming — watch tokens arrive in real time in the Network tab.
+    Task 2: Citations — click a source chip to expand the source panel.
+    Task 3: Confidence & failure states — low-confidence answers show a warning;
+            network errors show an error state with a retry button.
+    Task 4: Feedback — 👍/👎 and "this looks wrong" post to /feedback.
+    Task 5: Approval flow — "Perform risky action" opens a modal that POSTs to
+            /actions/request; confirming POSTs to /actions/approve.
+
+  No build step — plain ES modules + Tailwind via CDN.
+  Set BACKEND_URL at the top of app.js to point at your server.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 22 — AI Product UX</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Typing cursor animation while streaming */
+    @keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
+    .cursor::after { content: '▍'; animation: blink 1s step-end infinite; }
+
+    /* Citation chip */
+    .citation-chip {
+      @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+             bg-blue-100 text-blue-700 cursor-pointer hover:bg-blue-200 transition-colors;
+    }
+
+    /* Source panel slide-in */
+    #source-panel { transition: transform 0.2s ease; }
+    #source-panel.hidden { transform: translateX(100%); }
+
+    /* Confidence badge colours */
+    .badge-high   { @apply bg-green-100 text-green-700; }
+    .badge-medium { @apply bg-yellow-100 text-yellow-700; }
+    .badge-low    { @apply bg-red-100    text-red-700; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+<!-- ========================================================
+     Header
+     ======================================================== -->
+<header class="bg-white border-b px-6 py-4 flex items-center justify-between">
+  <div>
+    <h1 class="text-lg font-semibold text-gray-900">learn-ai — Module 22</h1>
+    <p class="text-sm text-gray-500">AI Product UX demo: streaming · citations · feedback · approval</p>
+  </div>
+  <span id="status-indicator"
+    class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500">
+    Ready
+  </span>
+</header>
+
+<!-- ========================================================
+     Main layout
+     ======================================================== -->
+<main class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+
+  <!-- Question input -->
+  <form id="ask-form" class="flex gap-2">
+    <input id="question-input" type="text"
+      placeholder="Ask something about the learn-ai course…"
+      class="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      autocomplete="off" />
+    <button type="submit"
+      class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg
+             hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+      Ask
+    </button>
+  </form>
+
+  <!-- ============================================================
+       Task 3 — States container
+       ============================================================ -->
+
+  <!-- Loading state -->
+  <div id="state-loading" class="hidden items-center gap-3 text-sm text-gray-500">
+    <svg class="animate-spin h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"/>
+    </svg>
+    <span>Thinking…</span>
+  </div>
+
+  <!-- Error state -->
+  <div id="state-error" class="hidden bg-red-50 border border-red-200 rounded-lg p-4">
+    <p class="text-sm font-medium text-red-700">Something went wrong</p>
+    <p id="error-message" class="text-sm text-red-600 mt-1"></p>
+    <button id="retry-btn"
+      class="mt-3 text-sm text-red-600 underline hover:text-red-800">
+      Try again
+    </button>
+  </div>
+
+  <!-- Empty state (shown before first question) -->
+  <div id="state-empty" class="text-center text-gray-400 py-16">
+    <p class="text-4xl mb-2">💬</p>
+    <p class="text-sm">Ask a question to get started.</p>
+    <p class="text-xs mt-1">Try: "What is RAG?" or "How do I run a TypeScript exercise?"</p>
+  </div>
+
+  <!-- Answer card -->
+  <div id="answer-card" class="hidden bg-white rounded-xl shadow-sm border p-6 space-y-4">
+
+    <!-- Confidence badge + model -->
+    <div class="flex items-center justify-between">
+      <div id="confidence-badge"
+        class="text-xs font-medium px-2 py-0.5 rounded-full">
+      </div>
+      <span id="model-label" class="text-xs text-gray-400"></span>
+    </div>
+
+    <!-- Answer text -->
+    <div id="answer-text"
+      class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+    </div>
+
+    <!-- Task 2 — Citation chips -->
+    <div id="citations-row" class="hidden flex-wrap gap-2 pt-1">
+      <span class="text-xs text-gray-400 self-center">Sources:</span>
+      <div id="citation-chips" class="flex flex-wrap gap-1.5"></div>
+    </div>
+
+    <!-- Task 4 — Feedback row -->
+    <div class="border-t pt-3 flex items-center gap-3">
+      <span class="text-xs text-gray-400">Was this helpful?</span>
+      <button data-rating="up"   class="feedback-btn text-lg hover:scale-110 transition-transform" title="Thumbs up">👍</button>
+      <button data-rating="down" class="feedback-btn text-lg hover:scale-110 transition-transform" title="Thumbs down">👎</button>
+      <button id="wrong-btn"
+        class="ml-auto text-xs text-gray-400 underline hover:text-gray-600">
+        This looks wrong
+      </button>
+    </div>
+
+    <!-- Feedback confirmation (hidden until submitted) -->
+    <div id="feedback-thanks" class="hidden text-xs text-green-600">
+      Thanks for your feedback!
+    </div>
+
+    <!-- "This looks wrong" form (hidden by default) -->
+    <div id="wrong-form" class="hidden space-y-2">
+      <textarea id="wrong-note"
+        class="w-full border rounded px-3 py-2 text-sm resize-none"
+        rows="2"
+        placeholder="What's wrong with this answer? (optional)"></textarea>
+      <button id="submit-wrong-btn"
+        class="text-sm px-3 py-1.5 bg-orange-500 text-white rounded hover:bg-orange-600">
+        Submit report
+      </button>
+    </div>
+
+    <!-- Task 5 — Risky action demo -->
+    <div class="border-t pt-3">
+      <button id="risky-action-btn"
+        class="text-xs text-red-500 underline hover:text-red-700">
+        ⚠ Simulate a risky action (requires approval)
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ========================================================
+     Task 2 — Source drill-down panel (slides in from right)
+     ======================================================== -->
+<aside id="source-panel"
+  class="fixed top-0 right-0 h-full w-80 bg-white shadow-xl border-l p-6 overflow-y-auto hidden z-50">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="font-semibold text-sm text-gray-700">Source</h2>
+    <button id="close-panel" class="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+  </div>
+  <div id="panel-content" class="text-sm text-gray-700 space-y-3"></div>
+</aside>
+<div id="panel-overlay" class="hidden fixed inset-0 bg-black/20 z-40"></div>
+
+<!-- ========================================================
+     Task 5 — Approval modal
+     ======================================================== -->
+<div id="approval-modal"
+  class="hidden fixed inset-0 flex items-center justify-center z-50 bg-black/40">
+  <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 space-y-4">
+    <div class="text-center">
+      <p class="text-3xl mb-2">⚠️</p>
+      <h2 class="text-base font-semibold text-gray-900">Confirm action</h2>
+      <p class="text-sm text-gray-500 mt-1" id="modal-action-desc"></p>
+    </div>
+    <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600" id="modal-payload"></div>
+    <div class="flex gap-3">
+      <button id="modal-reject"
+        class="flex-1 py-2 rounded-lg border text-sm font-medium text-gray-700 hover:bg-gray-50">
+        Cancel
+      </button>
+      <button id="modal-approve"
+        class="flex-1 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700">
+        Approve
+      </button>
+    </div>
+    <p id="modal-result" class="text-center text-sm font-medium hidden"></p>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

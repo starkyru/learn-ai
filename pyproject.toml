@@ -1,0 +1,123 @@
+[project]
+name = "learn-ai"
+version = "0.1.0"
+description = "Personal hands-on course: AI, LLMs, embeddings, RAG, and agents — Python side."
+requires-python = ">=3.10"
+# Base install stays light so `uv sync` is fast. Heavier, module-specific
+# libraries live in optional extras below — install them when you reach the
+# module that needs them, e.g. `uv sync --extra vectors`.
+dependencies = [
+    "llm-core",
+    "numpy>=1.26",      # module 01/08/09/10 — the "from scratch" math
+    "tiktoken>=0.7",    # module 01/02 — real tokenizer for comparison
+    "pydantic>=2.7",    # module 02 — structured output
+    "httpx>=0.27",      # hosted-API calls (vision/image-gen, misc)
+]
+
+[project.optional-dependencies]
+# `uv sync --extra vectors`  (modules 04, 05)
+vectors = [
+    "chromadb>=0.5",
+    "qdrant-client>=1.11",
+    "rank-bm25>=0.2.2",
+]
+# `uv sync --extra agents`  (module 06)
+agents = [
+    "langgraph>=0.2",
+    "langchain-core>=0.3",
+]
+# `uv sync --extra production`  (module 07)
+production = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+]
+# `uv sync --extra telegram`  (projects/news-agent — the Telegram news bot)
+telegram = [
+    "python-telegram-bot>=21.0",
+    "feedparser>=6.0",
+    "httpx>=0.27",
+    "apscheduler>=3.10",
+]
+# `uv sync --extra ml`  (module 08 — classic ML classification)
+ml = [
+    "scikit-learn>=1.5",
+]
+# `uv sync --extra vision`  (module 09 — LOCAL computer vision; big download, slow on Mac.
+#  The exercises default to hosted APIs, so this is optional.)
+vision = [
+    "torch>=2.2",
+    "torchvision>=0.17",
+    "transformers>=4.44",
+    "pillow>=10.0",
+    "huggingface-hub>=0.24",
+]
+# `uv sync --extra imagegen`  (module 10 — LOCAL Stable Diffusion; big download, slow on Mac.
+#  The exercises default to hosted APIs, so this is optional.)
+imagegen = [
+    "diffusers>=0.30",
+    "transformers>=4.44",
+    "accelerate>=0.33",
+    "torch>=2.2",
+    "pillow>=10.0",
+]
+# `uv sync --extra ingest`  (module 11 — real document parsing)
+ingest = [
+    "pypdf>=4.0",
+    "beautifulsoup4>=4.12",
+    "lxml>=5.0",
+]
+# `uv sync --extra finetune`  (module 13 — LOCAL LoRA/QLoRA; big download. Hosted SFT
+#  uses the OpenAI API and needs no extra. Optional.)
+finetune = [
+    "transformers>=4.44",
+    "peft>=0.12",
+    "datasets>=2.20",
+    "accelerate>=0.33",
+    "torch>=2.2",
+]
+# `uv sync --extra audio`  (module 19 — LOCAL speech-to-text. Hosted STT/TTS use the
+#  OpenAI API and need no extra. Optional.)
+audio = [
+    "faster-whisper>=1.0",
+    "soundfile>=0.12",
+]
+# `uv sync --extra mcp`  (module 17 — Model Context Protocol)
+mcp = [
+    "mcp>=1.0",
+]
+# `uv sync --extra browser`  (module 18 — computer use; then run `playwright install chromium`)
+browser = [
+    "playwright>=1.47",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.uv.sources]
+llm-core = { workspace = true }
+
+[tool.uv.workspace]
+members = ["packages/py/llm_core"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I import-sorting, UP pyupgrade, B bugbear.
+select = ["E", "W", "F", "I", "UP", "B"]
+ignore = ["E501"]  # line length handled by the formatter
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+# Default run needs only base deps. Project tests (news-agent, tutor) pull
+# optional extras, so run them explicitly, e.g.:
+#   uv sync --extra telegram && uv run pytest projects/news-agent
+testpaths = ["modules", "packages"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-q"

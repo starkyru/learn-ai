@@ -1,0 +1,16 @@
+{
+  "name": "@learn-ai/m11-document-ingestion",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@learn-ai/llm-core": "workspace:*",
+    "pdf-parse": "^1.1.1",
+    "cheerio": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/pdf-parse": "^1.1.4",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

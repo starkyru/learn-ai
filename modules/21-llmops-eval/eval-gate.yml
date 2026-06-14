@@ -1,0 +1,73 @@
+# GitHub Actions workflow — LLMOps eval regression gate
+#
+# Runs on every push to main and on pull requests.
+# Fails the build if faithfulness drops below 0.70.
+#
+# Prerequisites:
+#   - OPENAI_API_KEY (or the provider you use) stored as a GitHub Actions secret.
+#   - uv installed on the runner (the setup-python action + pip install uv works).
+#
+# Alternative (local pre-push hook via Husky):
+#   Add to .husky/pre-push:
+#     uv run python modules/21-llmops-eval/py/03_regression_gate.py \
+#         --run-fresh --metric avg_score --threshold 0.6
+#   This runs the same gate locally before any push reaches CI.
+#   See docs/TOOLING.md for Husky setup.
+
+name: eval-regression-gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "modules/21-llmops-eval/**"
+      - "packages/py/llm_core/**"
+  pull_request:
+    paths:
+      - "modules/21-llmops-eval/**"
+      - "packages/py/llm_core/**"
+
+jobs:
+  eval-gate:
+    name: "LLMOps Eval Gate"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run eval gate (avg_score >= 0.60)
+        env:
+          # Set LLM_PROVIDER to the provider whose key you have in secrets.
+          LLM_PROVIDER: openai
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_CHAT_MODEL: gpt-4o-mini
+        run: |
+          uv run python modules/21-llmops-eval/py/03_regression_gate.py \
+            --run-fresh \
+            --metric avg_score \
+            --threshold 0.60
+
+      # Optional second gate: faithfulness from LLM-judge
+      - name: Run faithfulness gate (>= 0.70)
+        env:
+          LLM_PROVIDER: openai
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_CHAT_MODEL: gpt-4o-mini
+        run: |
+          uv run python modules/21-llmops-eval/py/03_regression_gate.py \
+            --run-fresh \
+            --metric faithfulness \
+            --threshold 0.70

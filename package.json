@@ -1,0 +1,42 @@
+{
+  "name": "learn-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal hands-on course: AI, LLMs, embeddings, RAG, and agents — TypeScript + Python.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "build:core": "pnpm --filter @learn-ai/llm-core build",
+    "typecheck": "tsc -b",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "test": "jest --passWithNoTests",
+    "smoke": "tsx scripts/smoke.ts"
+  },
+  "dependencies": {
+    "@learn-ai/llm-core": "workspace:*"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md,yaml,yml}": "prettier --write",
+    "*.py": [
+      "uv run ruff format",
+      "uv run ruff check --fix"
+    ]
+  },
+  "devDependencies": {
+    "@swc/core": "^1.7.0",
+    "@swc/jest": "^0.2.36",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^22.0.0",
+    "husky": "^9.1.0",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "packageManager": "pnpm@10.30.3"
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "sent-001",
+    "input": "The product arrived on time and works perfectly. Very happy with this purchase!",
+    "label": "positive"
+  },
+  {
+    "id": "sent-002",
+    "input": "Completely broken out of the box. Waste of money. Never buying from this seller again.",
+    "label": "negative"
+  },
+  {
+    "id": "sent-003",
+    "input": "It's okay. Does what it says, but nothing special. Shipping was slow.",
+    "label": "neutral"
+  },
+  {
+    "id": "sent-004",
+    "input": "Absolutely love it! Best purchase I've made all year. Highly recommend.",
+    "label": "positive"
+  },
+  {
+    "id": "sent-005",
+    "input": "Disappointed. The description was misleading and quality is poor.",
+    "label": "negative"
+  },
+  {
+    "id": "sent-006",
+    "input": "Decent product. Not perfect but gets the job done. Average price for average quality.",
+    "label": "neutral"
+  },
+  {
+    "id": "sent-007",
+    "input": "Five stars! Exceeded my expectations in every way. Fast delivery too.",
+    "label": "positive"
+  },
+  {
+    "id": "sent-008",
+    "input": "Stopped working after two days. Customer service was unhelpful.",
+    "label": "negative"
+  },
+  {
+    "id": "sent-009",
+    "input": "It does what it's supposed to do. Nothing more, nothing less.",
+    "label": "neutral"
+  },
+  {
+    "id": "sent-010",
+    "input": "Fantastic build quality and great value. Would buy again without hesitation.",
+    "label": "positive"
+  }
+]

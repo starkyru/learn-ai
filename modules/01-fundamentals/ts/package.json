@@ -1,0 +1,8 @@
+{
+  "name": "@learn-ai/m01-fundamentals",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": { "@learn-ai/llm-core": "workspace:*" },
+  "devDependencies": { "tsx": "^4.19.0", "typescript": "^5.6.0" }
+}

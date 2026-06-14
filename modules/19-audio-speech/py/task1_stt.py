@@ -1,0 +1,151 @@
+"""
+Task 1 — Speech-to-text (STT / ASR)  🟢
+
+What this teaches:
+  - How to call the OpenAI Whisper API to transcribe audio.
+  - How multimodal APIs differ from text-only chat APIs: you send binary audio
+    data, not a string, and receive a transcript string back.
+  - Optional: how to run whisper locally via faster-whisper for offline use.
+
+How to run:
+  uv run python modules/19-audio-speech/py/task1_stt.py
+
+  The file uses the sample clip at modules/19-audio-speech/assets/sample.wav.
+  If the file is absent the script generates a short sine-wave WAV so you
+  always have something to transcribe.
+
+Requirements:
+  OPENAI_API_KEY must be set in .env (LLM_PROVIDER=openai not required —
+  the OpenAI SDK is used directly for the audio endpoints).
+
+Optional local path:
+  uv sync --extra audio        # installs faster-whisper
+  Then uncomment and call transcribe_local() at the bottom.
+"""
+
+from __future__ import annotations
+
+import os
+import struct
+import wave
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Audio helper — generate a sample .wav if none exists
+# ---------------------------------------------------------------------------
+
+ASSETS_DIR = Path(__file__).parent.parent / "assets"
+SAMPLE_WAV = ASSETS_DIR / "sample.wav"
+
+
+def _ensure_sample_wav() -> Path:
+    """Return path to a sample WAV, generating a short sine tone if needed."""
+    ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+    if not SAMPLE_WAV.exists():
+        import math
+
+        sample_rate = 16_000
+        duration_s = 2
+        frequency = 440  # A4 note
+
+        n_samples = sample_rate * duration_s
+        samples = [
+            int(32767 * math.sin(2 * math.pi * frequency * i / sample_rate))
+            for i in range(n_samples)
+        ]
+        with wave.open(str(SAMPLE_WAV), "w") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)  # 16-bit
+            wf.setframerate(sample_rate)
+            wf.writeframes(struct.pack(f"<{n_samples}h", *samples))
+        print(f"[info] Generated synthetic sample: {SAMPLE_WAV}")
+    return SAMPLE_WAV
+
+
+# ---------------------------------------------------------------------------
+# Hosted path — OpenAI Whisper API
+# ---------------------------------------------------------------------------
+
+
+def transcribe_hosted(audio_path: Path) -> str:
+    """Transcribe audio using the OpenAI Whisper API.
+
+    The API accepts .mp3, .mp4, .mpeg, .mpga, .m4a, .wav, .webm.
+
+    Args:
+        audio_path: Path to the audio file to transcribe.
+
+    Returns:
+        The transcript string.
+    """
+    import openai
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not set. Add it to .env.")
+
+    client = openai.OpenAI(api_key=api_key)
+
+    # TODO 1: Open audio_path in binary mode and call:
+    #   client.audio.transcriptions.create(
+    #       model="whisper-1",
+    #       file=<file object>,
+    #       response_format="text",   # returns a plain string
+    #   )
+    #   Return the transcript text.
+    #   HINT: use `with open(audio_path, "rb") as f:` then pass the tuple
+    #         (audio_path.name, f, "audio/wav") as `file=`.
+    raise NotImplementedError("TODO 1: call client.audio.transcriptions.create()")
+
+
+# ---------------------------------------------------------------------------
+# Optional local path — faster-whisper
+# ---------------------------------------------------------------------------
+
+
+def transcribe_local(audio_path: Path, model_size: str = "base") -> str:
+    """Transcribe audio locally using faster-whisper (no API key needed).
+
+    Requires: uv sync --extra audio
+    Download: the model weights are fetched automatically on first use
+              (~74 MB for 'base', ~1.4 GB for 'large-v3').
+
+    Args:
+        audio_path: Path to the audio file.
+        model_size: One of 'tiny', 'base', 'small', 'medium', 'large-v3'.
+
+    Returns:
+        The full transcript as a single string.
+    """
+    try:
+        from faster_whisper import WhisperModel  # type: ignore[import]
+    except ImportError as exc:
+        raise ImportError(
+            "faster-whisper not installed. Run: uv sync --extra audio"
+        ) from exc
+
+    # TODO 2 (optional): Instantiate WhisperModel(model_size, device="cpu",
+    #         compute_type="int8"), then call model.transcribe(str(audio_path)).
+    #         Concatenate segment.text for each segment returned by the generator.
+    raise NotImplementedError("TODO 2 (optional): implement local transcription")
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+
+def main() -> None:
+    wav_path = _ensure_sample_wav()
+    print(f"Transcribing: {wav_path}")
+
+    transcript = transcribe_hosted(wav_path)
+    print(f"\nTranscript (hosted Whisper):\n  {transcript!r}")
+
+    # Uncomment to try the local path:
+    # transcript_local = transcribe_local(wav_path)
+    # print(f"\nTranscript (local faster-whisper):\n  {transcript_local!r}")
+
+
+if __name__ == "__main__":
+    main()

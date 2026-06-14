@@ -1,0 +1,7 @@
+node_modules
+dist
+.venv
+data
+**/*.py
+pnpm-lock.yaml
+uv.lock

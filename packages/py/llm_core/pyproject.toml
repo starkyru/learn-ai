@@ -1,0 +1,17 @@
+[project]
+name = "llm-core"
+version = "0.1.0"
+description = "Provider-agnostic LLM client used across the learn-ai course (OpenAI, Anthropic, Ollama, NVIDIA NIM)."
+requires-python = ">=3.10"
+dependencies = [
+    "openai>=1.40.0",
+    "anthropic>=0.40.0",
+    "python-dotenv>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["llm_core"]

@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "created": "2026-06-14",
+  "description": "RAG/QA eval set — questions about the learn-ai course itself (self-referential so no external corpus is needed).",
+  "cases": [
+    {
+      "id": "q001",
+      "question": "What command installs the Python dependencies for the course?",
+      "context": "The course uses uv for Python dependency management. Run `uv sync` to install base dependencies. For modules that need extras, add flags such as `uv sync --extra vectors`, `--extra agents`, or `--extra production`.",
+      "reference_answer": "uv sync",
+      "graders": ["exact", "contains", "llm_judge"],
+      "rubric": "The answer should mention 'uv sync' as the install command. Extra flags like --extra are a bonus but not required."
+    },
+    {
+      "id": "q002",
+      "question": "Which module covers embeddings and vector search?",
+      "context": "Module 04 is titled 'Embeddings & Vectors'. It covers building an in-memory vector index from scratch, then using Chroma and Qdrant. Topics: embeddings, ANN search, chunking, hybrid (BM25 + dense) search.",
+      "reference_answer": "Module 04",
+      "graders": ["contains", "llm_judge"],
+      "rubric": "The answer should identify module 04 as covering embeddings and vector search."
+    },
+    {
+      "id": "q003",
+      "question": "What does RAG stand for and why does it reduce hallucination?",
+      "context": "RAG stands for Retrieval-Augmented Generation. It reduces hallucination because it constrains the model to answer only from retrieved context chunks rather than relying on training-data interpolation. The system prompt instructs the model to answer ONLY from provided context.",
+      "reference_answer": "Retrieval-Augmented Generation. It reduces hallucination by constraining the model to answer only from retrieved context.",
+      "graders": ["contains", "llm_judge"],
+      "rubric": "The answer must define RAG as Retrieval-Augmented Generation AND explain that it constrains answers to retrieved context, limiting hallucination."
+    },
+    {
+      "id": "q004",
+      "question": "What env var selects which LLM provider to use?",
+      "context": "The llm_core package reads LLM_PROVIDER from the environment. Valid values are: openai, anthropic, ollama, nvidia. The default is ollama.",
+      "reference_answer": "LLM_PROVIDER",
+      "graders": ["exact", "contains", "llm_judge"],
+      "rubric": "The answer must name the env var LLM_PROVIDER."
+    },
+    {
+      "id": "q005",
+      "question": "How do you run a TypeScript exercise in this repo?",
+      "context": "TypeScript exercises use tsx. Run: `pnpm tsx modules/<module>/ts/<file>.ts`. You can also use `pnpm --filter ./modules/<module>/ts dev` for watch mode.",
+      "reference_answer": "pnpm tsx modules/<module>/ts/<file>.ts",
+      "graders": ["contains", "llm_judge"],
+      "rubric": "The answer should mention pnpm tsx (or tsx) and a path like modules/...ts. Exact path format can vary."
+    }
+  ]
+}
