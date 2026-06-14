@@ -5,7 +5,7 @@ a real model and seen the answer, the model id, and the token count — from
 **both** Python and TypeScript, against **two different providers**.
 
 This module is deliberately small. Its job is to make the rest of the course
-*just work*: one tiny interface (`get_provider()` / `getProvider()`) that you'll
+_just work_: one tiny interface (`get_provider()` / `getProvider()`) that you'll
 reuse in every later module, and a clear mental model of what's actually
 happening when you "call an LLM".
 
@@ -20,7 +20,7 @@ predicts what text should come next. You almost never run that network
 yourself — it's tens of gigabytes and wants a GPU. Instead a **provider** hosts
 it behind an HTTP API: you POST some messages, they stream back tokens.
 
-In this course a *provider* is any service that can answer the same three
+In this course a _provider_ is any service that can answer the same three
 questions:
 
 1. **chat** — given a conversation, produce a reply.
@@ -29,39 +29,41 @@ questions:
 
 `llm-core` (in `packages/`) wraps four of them — OpenAI, Anthropic (Claude),
 Ollama, and NVIDIA NIM — behind one interface so your exercise code never hard-codes
-a vendor. You'll see *why* that abstraction is possible below, and *where it
-leaks* in module 02.
+a vendor. You'll see _why_ that abstraction is possible below, and _where it
+leaks_ in module 02.
 
 ### Why the OpenAI HTTP shape is a de-facto standard
 
 When OpenAI shipped `/v1/chat/completions`, the request/response JSON shape was
 simple and good enough that everyone copied it. Today **Ollama, NVIDIA NIM,
-vLLM, LM Studio, Together, Groq** and many more expose the *exact same* endpoint
+vLLM, LM Studio, Together, Groq** and many more expose the _exact same_ endpoint
 shape. That's huge: a single client class — change only the `base_url`, the API
 key, and the model id — talks to all of them.
 
 That's exactly what `OpenAICompatibleProvider` does in `llm-core`. One class
-covers **three of our four providers** (OpenAI, Ollama, NVIDIA). You point it at
-`http://localhost:11434/v1` for Ollama or `https://integrate.api.nvidia.com/v1`
-for NVIDIA and the rest of the code is identical.
+covers **four of our five providers** (OpenAI, Ollama, NVIDIA, LM Studio). You
+point it at `http://localhost:11434/v1` for Ollama, `http://localhost:1234/v1`
+for LM Studio, or `https://integrate.api.nvidia.com/v1` for NVIDIA, and the rest
+of the code is identical.
 
 ```text
             same request/response shape
  your code ───────────────────────────────▶  /v1/chat/completions
                                               ├─ api.openai.com      (OpenAI)
                                               ├─ localhost:11434     (Ollama)
+                                              ├─ localhost:1234      (LM Studio)
                                               └─ integrate.api.nvidia.com (NVIDIA)
 ```
 
 ### Why Anthropic is different
 
 Anthropic (the maker of Claude) shipped its API independently, with its own
-shape: a top-level `system` field instead of a system *message*, a different
+shape: a top-level `system` field instead of a system _message_, a different
 JSON structure for the response, `input_tokens`/`output_tokens` instead of
 `prompt_tokens`/`completion_tokens`, and **no embeddings endpoint at all**. So
 `llm-core` has a separate `AnthropicProvider` that adapts Claude's API to the
 same interface. When you ask Claude for an embedding it errors — use OpenAI,
-Ollama, or NVIDIA for embeddings.
+Ollama, NVIDIA, or LM Studio for embeddings.
 
 This split (one shared OpenAI-compatible class + one bespoke Anthropic class) is
 itself a lesson: abstractions hold until a vendor does something genuinely
@@ -81,14 +83,16 @@ from scratch so you understand exactly what a token is.
 
 ### Pick a path
 
-You only need **one** working provider to start. The zero-cost path is Ollama.
+You only need **one** working provider to start. The zero-cost paths are Ollama
+and LM Studio (both run models locally, no key).
 
-| Path | Cost | How |
-| --- | --- | --- |
-| **Ollama** (recommended) | free | [Install Ollama](https://ollama.com), then `ollama pull llama3.2 && ollama pull nomic-embed-text`. Leave `LLM_PROVIDER=ollama`. |
-| **NVIDIA NIM** | free tier | Get a key at [build.nvidia.com](https://build.nvidia.com), put it in `NVIDIA_API_KEY`. |
-| **OpenAI** | paid (~$5 covers the course) | Key at [platform.openai.com](https://platform.openai.com/api-keys) → `OPENAI_API_KEY`. |
-| **Anthropic** | paid | Key at [console.anthropic.com](https://console.anthropic.com) → `ANTHROPIC_API_KEY`. Set `ANTHROPIC_MODEL=claude-haiku-4-5` for cheap iteration. |
+| Path                     | Cost                         | How                                                                                                                                                                   |
+| ------------------------ | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ollama** (recommended) | free                         | [Install Ollama](https://ollama.com), then `ollama pull llama3.2 && ollama pull nomic-embed-text`. Leave `LLM_PROVIDER=ollama`.                                       |
+| **LM Studio**            | free                         | [Install LM Studio](https://lmstudio.ai), load a model, **Start Server** (port 1234). Set `LLM_PROVIDER=lmstudio` and `LMSTUDIO_CHAT_MODEL` to the loaded model's id. |
+| **NVIDIA NIM**           | free tier                    | Get a key at [build.nvidia.com](https://build.nvidia.com), put it in `NVIDIA_API_KEY`.                                                                                |
+| **OpenAI**               | paid (~$5 covers the course) | Key at [platform.openai.com](https://platform.openai.com/api-keys) → `OPENAI_API_KEY`.                                                                                |
+| **Anthropic**            | paid                         | Key at [console.anthropic.com](https://console.anthropic.com) → `ANTHROPIC_API_KEY`. Set `ANTHROPIC_MODEL=claude-haiku-4-5` for cheap iteration.                      |
 
 Copy the env template and fill in keys for whatever path(s) you chose:
 
@@ -135,7 +139,7 @@ Read them top to bottom; they're the template every later exercise copies.
 2. Read the file: notice it calls `get_provider()` with no argument (so it uses
    `LLM_PROVIDER`), builds one `user` message, and reads `.text`, `.model`,
    `.usage` off the result.
-3. Re-run forcing a *second* provider — either change `LLM_PROVIDER` in `.env`,
+3. Re-run forcing a _second_ provider — either change `LLM_PROVIDER` in `.env`,
    or edit the file to call `get_provider("ollama")` (or `"nvidia"`, etc.).
 
 **Acceptance:** you see a 2-sentence explanation, the model id, and a token
@@ -143,14 +147,14 @@ count, against **at least two** providers.
 
 ### Task 2 — Compare providers side by side 🟢
 
-**Goal:** send the *same* prompt to all four providers and print the answers
+**Goal:** send the _same_ prompt to all five providers and print the answers
 together — skipping any provider whose key/server is missing, without crashing.
 
 **Steps**
 
 1. Run `compare_providers.py` / `compare_providers.ts`.
 2. Note how it wraps each provider call in try/except (Python) / try/catch (TS):
-   a missing key or an unreachable Ollama server prints a friendly *skipped*
+   a missing key or an unreachable Ollama server prints a friendly _skipped_
    message instead of blowing up the whole script.
 3. Compare the answers. Same prompt, different models — do they differ in
    length, tone, token count?

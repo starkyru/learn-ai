@@ -1,8 +1,8 @@
 /**
- * compare_providers.ts — same prompt, all four providers, side by side.
+ * compare_providers.ts — same prompt, all five providers, side by side.
  *
  * What it teaches:
- *   The provider abstraction in action: the exact same call works against four
+ *   The provider abstraction in action: the exact same call works against five
  *   different backends. And a real-world habit — gracefully SKIP a provider
  *   whose key or server is missing (catch the error) instead of crashing.
  *
@@ -17,7 +17,13 @@ import { getProvider, type ProviderName } from "@learn-ai/llm-core";
 
 const PROMPT = "Explain what a large language model is, in 2 sentences.";
 
-const PROVIDERS: ProviderName[] = ["openai", "anthropic", "ollama", "nvidia"];
+const PROVIDERS: ProviderName[] = [
+  "openai",
+  "anthropic",
+  "ollama",
+  "nvidia",
+  "lmstudio",
+];
 
 async function tryProvider(name: ProviderName): Promise<void> {
   console.log(`\n=== ${name} ${"=".repeat(Math.max(0, 40 - name.length))}`);

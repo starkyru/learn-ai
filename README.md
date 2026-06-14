@@ -22,7 +22,7 @@ they're where the real understanding lives.
 
 | #   | Module                                                                     | You'll build                                                                                       | Core ideas                                                      |
 | --- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| 00  | [Setup & Providers](modules/00-setup/)                                     | "Hello LLM" across 4 providers                                                                     | API keys, the provider abstraction, OpenAI-compatible APIs      |
+| 00  | [Setup & Providers](modules/00-setup/)                                     | "Hello LLM" across 5 providers                                                                     | API keys, the provider abstraction, OpenAI-compatible APIs      |
 | 01  | [LLM Fundamentals](modules/01-fundamentals/)                               | A BPE tokenizer, cosine similarity, a toy attention head, samplers                                 | tokens, embeddings, attention, sampling, what a "model" even is |
 | 02  | [LLM Integration](modules/02-llm-integration/)                             | Streaming chat, JSON/structured output, tool calling, retries                                      | the request/response loop, function calling, cost & tokens      |
 | 03  | [Prompting & Patterns](modules/03-prompting/)                              | A prompt library + evaluator                                                                       | few-shot, chain-of-thought, self-consistency, prompt eval       |
@@ -89,8 +89,8 @@ learn-ai/
 ```
 
 The two `llm-core` packages are the spine of the course: you write exercises
-against one small interface and swap OpenAI ↔ Claude ↔ Ollama ↔ NVIDIA by
-changing a single env var. Understanding _why_ that abstraction is possible (and
+against one small interface and swap OpenAI ↔ Claude ↔ Ollama ↔ LM Studio ↔
+NVIDIA by changing a single env var. Understanding _why_ that abstraction is possible (and
 where it leaks) is module 00–02.
 
 ---
@@ -107,12 +107,13 @@ cp .env.example .env
 
 ### 2. Pick a free or paid path
 
-| Path                              | Cost                         | Setup                                                                                                                     |
-| --------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| **Ollama** (recommended to start) | free                         | [Install Ollama](https://ollama.com), then `ollama pull llama3.2 && ollama pull nomic-embed-text`                         |
-| **NVIDIA NIM**                    | free tier                    | get a key at [build.nvidia.com](https://build.nvidia.com) → `NVIDIA_API_KEY` in `.env`                                    |
-| **OpenAI**                        | paid (~$5 covers the course) | key at [platform.openai.com](https://platform.openai.com/api-keys)                                                        |
-| **Anthropic**                     | paid                         | key at [console.anthropic.com](https://console.anthropic.com); set `ANTHROPIC_MODEL=claude-haiku-4-5` for cheap iteration |
+| Path                              | Cost                         | Setup                                                                                                                              |
+| --------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Ollama** (recommended to start) | free                         | [Install Ollama](https://ollama.com), then `ollama pull llama3.2 && ollama pull nomic-embed-text`                                  |
+| **LM Studio**                     | free                         | [Install LM Studio](https://lmstudio.ai), load a model, Start Server (port 1234) → `LLM_PROVIDER=lmstudio` + `LMSTUDIO_CHAT_MODEL` |
+| **NVIDIA NIM**                    | free tier                    | get a key at [build.nvidia.com](https://build.nvidia.com) → `NVIDIA_API_KEY` in `.env`                                             |
+| **OpenAI**                        | paid (~$5 covers the course) | key at [platform.openai.com](https://platform.openai.com/api-keys)                                                                 |
+| **Anthropic**                     | paid                         | key at [console.anthropic.com](https://console.anthropic.com); set `ANTHROPIC_MODEL=claude-haiku-4-5` for cheap iteration          |
 
 ### 3. Python
 

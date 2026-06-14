@@ -2,12 +2,12 @@
 
 The provider-agnostic LLM client used across every TypeScript exercise in the
 course. Write your code against one small interface, then swap the underlying
-model — **OpenAI, Anthropic (Claude), Ollama, or NVIDIA NIM** — by changing a
-single environment variable.
+model — **OpenAI, Anthropic (Claude), Ollama, LM Studio, or NVIDIA NIM** — by
+changing a single environment variable.
 
 > Why this exists is itself a lesson (modules 00–02): OpenAI's HTTP API became a
-> de-facto standard, so one class covers OpenAI, Ollama, and NVIDIA; only
-> Anthropic ships a distinct API and gets its own adapter.
+> de-facto standard, so one class covers OpenAI, Ollama, NVIDIA, and LM Studio;
+> only Anthropic ships a distinct API and gets its own adapter.
 
 ## Install / build
 
@@ -23,7 +23,7 @@ pnpm build:core      # compiles src → dist (run once, or `pnpm --filter @learn
 ```ts
 import { getProvider } from "@learn-ai/llm-core";
 
-const llm = getProvider();                 // reads LLM_PROVIDER from .env (default: ollama)
+const llm = getProvider(); // reads LLM_PROVIDER from .env (default: ollama)
 const { text, model, usage } = await llm.chat([
   { role: "system", content: "You are concise." },
   { role: "user", content: "What is a vector embedding?" },
@@ -61,12 +61,13 @@ response, for when you want to inspect the real shape).
 
 ## Providers & env vars
 
-| Provider | `LLM_PROVIDER` | Key | Notes |
-| --- | --- | --- | --- |
-| Ollama | `ollama` | none | local, free; default. `OLLAMA_CHAT_MODEL`, `OLLAMA_EMBED_MODEL` |
-| OpenAI | `openai` | `OPENAI_API_KEY` | `OPENAI_CHAT_MODEL`, `OPENAI_EMBED_MODEL` |
-| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL`; **no embeddings** |
-| NVIDIA NIM | `nvidia` | `NVIDIA_API_KEY` | OpenAI-compatible; `NVIDIA_*` model vars |
+| Provider   | `LLM_PROVIDER` | Key                 | Notes                                                                            |
+| ---------- | -------------- | ------------------- | -------------------------------------------------------------------------------- |
+| Ollama     | `ollama`       | none                | local, free; default. `OLLAMA_CHAT_MODEL`, `OLLAMA_EMBED_MODEL`                  |
+| OpenAI     | `openai`       | `OPENAI_API_KEY`    | `OPENAI_CHAT_MODEL`, `OPENAI_EMBED_MODEL`                                        |
+| Anthropic  | `anthropic`    | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL`; **no embeddings**                                             |
+| NVIDIA NIM | `nvidia`       | `NVIDIA_API_KEY`    | OpenAI-compatible; `NVIDIA_*` model vars                                         |
+| LM Studio  | `lmstudio`     | none                | local, OpenAI-compatible (default `http://localhost:1234/v1`); `LMSTUDIO_*` vars |
 
 See [`.env.example`](../../../.env.example) for the full list.
 

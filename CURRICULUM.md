@@ -7,7 +7,7 @@ source of truth for tasks and acceptance criteria; this document is the map.
 
 ## How to use this course
 
-1. Read the module README before writing any code. It explains the *why*.
+1. Read the module README before writing any code. It explains the _why_.
 2. Do the 🟢 app task first. Get something working. Then come back for 🟡/🔴.
 3. Run against two providers and notice what changes. The provider abstraction
    is a deliberate teaching tool — understand where it holds and where it leaks.
@@ -18,11 +18,11 @@ source of truth for tasks and acceptance criteria; this document is the map.
 
 ### Depth legend
 
-| Tag | What it means |
-|-----|---------------|
-| 🟢 App | Use the ecosystem to build something that works. Every module has at least one. |
-| 🟡 Balanced | Build the app AND implement one core piece by hand for intuition. |
-| 🔴 Deep | Implement the machinery from scratch — no obvious library allowed. Where the real understanding lives. |
+| Tag         | What it means                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| 🟢 App      | Use the ecosystem to build something that works. Every module has at least one.                        |
+| 🟡 Balanced | Build the app AND implement one core piece by hand for intuition.                                      |
+| 🔴 Deep     | Implement the machinery from scratch — no obvious library allowed. Where the real understanding lives. |
 
 ### Running exercises
 
@@ -53,11 +53,11 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Hello, LLM | 🟢 | Run `hello.py` / `hello.ts` against two providers; see answer, model id, and token count. |
-| 2 | Compare providers | 🟢 | Run `compare_providers` to send the same prompt to all four providers simultaneously; skips missing ones cleanly. |
-| 3 | Streaming | 🟢 | Watch `streaming.py` / `streaming.ts` emit tokens progressively via `chat_stream()`. |
+| #   | Task              | Depth | What you do                                                                                                       |
+| --- | ----------------- | ----- | ----------------------------------------------------------------------------------------------------------------- |
+| 1   | Hello, LLM        | 🟢    | Run `hello.py` / `hello.ts` against two providers; see answer, model id, and token count.                         |
+| 2   | Compare providers | 🟢    | Run `compare_providers` to send the same prompt to all five providers simultaneously; skips missing ones cleanly. |
+| 3   | Streaming         | 🟢    | Watch `streaming.py` / `streaming.ts` emit tokens progressively via `chat_stream()`.                              |
 
 **Estimated time:** 1–2 hours
 
@@ -85,13 +85,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | BPE tokenizer | 🔴 | Implement BPE train + encode + decode; `decode(encode(s)) == s` must hold. (Worked example to study.) |
-| 2 | Cosine similarity | 🟡 | Implement cosine by hand and rank real embeddings from `provider.embed()`; similar sentences score higher. |
-| 3 | Attention head | 🔴 | Fill in `softmax(QKᵀ/√dₖ)V` in `attention.py` / `attention.ts`; weight rows must sum to 1. |
-| 4 | Samplers | 🔴 | Implement greedy, temperature, top-k, top-p in `sampling.py` / `sampling.ts`. |
-| 5 | Bigram model | 🟡 | Build a count-based bigram predictor; observe that it is a (bad) language model. |
+| #   | Task              | Depth | What you do                                                                                                |
+| --- | ----------------- | ----- | ---------------------------------------------------------------------------------------------------------- |
+| 1   | BPE tokenizer     | 🔴    | Implement BPE train + encode + decode; `decode(encode(s)) == s` must hold. (Worked example to study.)      |
+| 2   | Cosine similarity | 🟡    | Implement cosine by hand and rank real embeddings from `provider.embed()`; similar sentences score higher. |
+| 3   | Attention head    | 🔴    | Fill in `softmax(QKᵀ/√dₖ)V` in `attention.py` / `attention.ts`; weight rows must sum to 1.                 |
+| 4   | Samplers          | 🔴    | Implement greedy, temperature, top-k, top-p in `sampling.py` / `sampling.ts`.                              |
+| 5   | Bigram model      | 🟡    | Build a count-based bigram predictor; observe that it is a (bad) language model.                           |
 
 **Estimated time:** 4–6 hours (budget more if 🔴 tasks are new to you)
 
@@ -121,14 +121,14 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Chat & system prompts | 🟢 | Build a multi-turn REPL; history grows per turn; model stays in character with your system prompt. |
-| 2 | Streaming | 🟢 | Implement streaming output with TTFT and words/second stats. |
-| 3 | Tokens & cost | 🟡 | Count tokens via tiktoken; build a cost estimator; compare estimate to provider's reported usage. |
-| 4 | Structured output | 🟢 | Extract a `Recipe` object from free text; validate with Pydantic / Zod; retry on parse failure. |
-| 5 | Tool / function calling | 🟢 | Implement the tool loop directly against the OpenAI and Anthropic SDKs (below llm_core). |
-| 6 | Retries & errors | 🟡 | Implement exponential backoff with jitter; never retry 401/400 errors. |
+| #   | Task                    | Depth | What you do                                                                                        |
+| --- | ----------------------- | ----- | -------------------------------------------------------------------------------------------------- |
+| 1   | Chat & system prompts   | 🟢    | Build a multi-turn REPL; history grows per turn; model stays in character with your system prompt. |
+| 2   | Streaming               | 🟢    | Implement streaming output with TTFT and words/second stats.                                       |
+| 3   | Tokens & cost           | 🟡    | Count tokens via tiktoken; build a cost estimator; compare estimate to provider's reported usage.  |
+| 4   | Structured output       | 🟢    | Extract a `Recipe` object from free text; validate with Pydantic / Zod; retry on parse failure.    |
+| 5   | Tool / function calling | 🟢    | Implement the tool loop directly against the OpenAI and Anthropic SDKs (below llm_core).           |
+| 6   | Retries & errors        | 🟡    | Implement exponential backoff with jitter; never retry 401/400 errors.                             |
 
 **Estimated time:** 4–5 hours
 
@@ -155,13 +155,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Templates & roles | 🟢 | Build a `render_template` helper; summarise and classify with system/user roles. |
-| 2 | Few-shot vs zero-shot | 🟡 | Compare 0-, 1-, 3-shot on a classification task; print accuracy table. |
-| 3 | Chain-of-thought & self-consistency | 🟡 | Add CoT to math/logic tasks; sample N paths, majority-vote; compare to single-sample accuracy. |
-| 4 | Output parsing & guardrails | 🟢 | Implement the repair loop: on parse failure append error + correction and retry. |
-| 5 | Prompt eval harness | 🟡 | Run two prompt variants on `eval_dataset.json`; print ranked comparison table. |
+| #   | Task                                | Depth | What you do                                                                                    |
+| --- | ----------------------------------- | ----- | ---------------------------------------------------------------------------------------------- |
+| 1   | Templates & roles                   | 🟢    | Build a `render_template` helper; summarise and classify with system/user roles.               |
+| 2   | Few-shot vs zero-shot               | 🟡    | Compare 0-, 1-, 3-shot on a classification task; print accuracy table.                         |
+| 3   | Chain-of-thought & self-consistency | 🟡    | Add CoT to math/logic tasks; sample N paths, majority-vote; compare to single-sample accuracy. |
+| 4   | Output parsing & guardrails         | 🟢    | Implement the repair loop: on parse failure append error + correction and retry.               |
+| 5   | Prompt eval harness                 | 🟡    | Run two prompt variants on `eval_dataset.json`; print ranked comparison table.                 |
 
 **Estimated time:** 3–4 hours
 
@@ -185,12 +185,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Vector store from scratch | 🔴 | Implement `add()`, `_cosine_similarity()`, and `query()` with brute-force top-k. |
-| 2 | Real vector DB | 🟢 | Index the corpus into Chroma; compare results and performance to Task 1. |
-| 3 | Chunking strategies | 🟡 | Implement fixed-size, sentence-based, and overlapping chunkers; compare retrieval quality per strategy. |
-| 4 | Hybrid search | 🟡 | Add BM25 alongside dense retrieval; implement RRF fusion; show hybrid beats either alone on exact-match queries. |
+| #   | Task                      | Depth | What you do                                                                                                      |
+| --- | ------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------- |
+| 1   | Vector store from scratch | 🔴    | Implement `add()`, `_cosine_similarity()`, and `query()` with brute-force top-k.                                 |
+| 2   | Real vector DB            | 🟢    | Index the corpus into Chroma; compare results and performance to Task 1.                                         |
+| 3   | Chunking strategies       | 🟡    | Implement fixed-size, sentence-based, and overlapping chunkers; compare retrieval quality per strategy.          |
+| 4   | Hybrid search             | 🟡    | Add BM25 alongside dense retrieval; implement RRF fusion; show hybrid beats either alone on exact-match queries. |
 
 **Estimated time:** 4–6 hours
 
@@ -216,12 +216,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Naive RAG end-to-end | 🟢 | retrieve → generate; answer includes `[Source N]` citations. |
-| 2 | Better retrieval | 🟡 | Add LLM reranking and HyDE; compare retrieval precision before/after. |
-| 3 | RAG eval | 🟡 | Implement faithfulness, context-relevance, and answer-relevance LLM-as-judge scores over a test set. |
-| 4 | Citations & attribution | 🟢 | Output structured JSON with per-claim citations; validate and flag invalid or missing citations. |
+| #   | Task                    | Depth | What you do                                                                                          |
+| --- | ----------------------- | ----- | ---------------------------------------------------------------------------------------------------- |
+| 1   | Naive RAG end-to-end    | 🟢    | retrieve → generate; answer includes `[Source N]` citations.                                         |
+| 2   | Better retrieval        | 🟡    | Add LLM reranking and HyDE; compare retrieval precision before/after.                                |
+| 3   | RAG eval                | 🟡    | Implement faithfulness, context-relevance, and answer-relevance LLM-as-judge scores over a test set. |
+| 4   | Citations & attribution | 🟢    | Output structured JSON with per-claim citations; validate and flag invalid or missing citations.     |
 
 **Estimated time:** 5–7 hours
 
@@ -248,13 +248,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | ReAct loop from scratch | 🔴 | Implement parser, tool dispatch, and the full Thought→Action→Observation loop; works on Ollama. |
-| 2 | Native tool calling | 🟢 | Re-implement with structured tool schemas; run on OpenAI and Anthropic; compare format differences. |
-| 3 | Memory | 🟡 | Add a `scratchpad.json` the agent writes structured notes to; history stays within `MAX_HISTORY_TURNS`. |
-| 4 | LangGraph agent | 🟢 | Re-build as a typed state machine; map each node back to your from-scratch loop. |
-| 5 | Multi-agent | 🟡 | Planner decomposes a question → workers run in parallel → synthesiser combines results. |
+| #   | Task                    | Depth | What you do                                                                                             |
+| --- | ----------------------- | ----- | ------------------------------------------------------------------------------------------------------- |
+| 1   | ReAct loop from scratch | 🔴    | Implement parser, tool dispatch, and the full Thought→Action→Observation loop; works on Ollama.         |
+| 2   | Native tool calling     | 🟢    | Re-implement with structured tool schemas; run on OpenAI and Anthropic; compare format differences.     |
+| 3   | Memory                  | 🟡    | Add a `scratchpad.json` the agent writes structured notes to; history stays within `MAX_HISTORY_TURNS`. |
+| 4   | LangGraph agent         | 🟢    | Re-build as a typed state machine; map each node back to your from-scratch loop.                        |
+| 5   | Multi-agent             | 🟡    | Planner decomposes a question → workers run in parallel → synthesiser combines results.                 |
 
 **Estimated time:** 6–8 hours
 
@@ -282,13 +282,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | LLM-as-judge eval | 🟡 | Write a judge prompt; score responses for faithfulness and relevance; calibrate against human labels. |
-| 2 | Observability / tracing | 🟢 | Wrap every LLM call to log model, tokens, latency, and cost to JSONL; display a per-request cost breakdown. |
-| 3 | Caching & cost control | 🟡 | Cache responses by SHA-256 hash; hit the cache on repeated queries; print actual vs. saved cost. |
-| 4 | Guardrails & safety | 🟢 | Add prompt-injection detection, PII scrubbing, and refusal detection; block or scrub before/after the model. |
-| 5 | Serving | 🟢 | Expose the agent via FastAPI (Python) or Node http (TypeScript); return `answer`, `citations`, `latency_ms`; add a streaming `/chat/stream` SSE endpoint. |
+| #   | Task                    | Depth | What you do                                                                                                                                               |
+| --- | ----------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | LLM-as-judge eval       | 🟡    | Write a judge prompt; score responses for faithfulness and relevance; calibrate against human labels.                                                     |
+| 2   | Observability / tracing | 🟢    | Wrap every LLM call to log model, tokens, latency, and cost to JSONL; display a per-request cost breakdown.                                               |
+| 3   | Caching & cost control  | 🟡    | Cache responses by SHA-256 hash; hit the cache on repeated queries; print actual vs. saved cost.                                                          |
+| 4   | Guardrails & safety     | 🟢    | Add prompt-injection detection, PII scrubbing, and refusal detection; block or scrub before/after the model.                                              |
+| 5   | Serving                 | 🟢    | Expose the agent via FastAPI (Python) or Node http (TypeScript); return `answer`, `citations`, `latency_ms`; add a streaming `/chat/stream` SSE endpoint. |
 
 **Estimated time:** 5–6 hours
 
@@ -314,12 +314,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | LLM zero-shot / few-shot classifier | 🟢 | Classify text with a prompt; measure accuracy and per-class F1; compare zero-shot vs few-shot. |
-| 2 | Embeddings + classic ML | 🟡 | Embed inputs; train a k-NN classifier; compare to zero-shot. |
-| 3 | Evaluation | 🟡 | Compute precision, recall, F1, and a confusion matrix; compare classifiers on the same test set. |
-| 4 | Softmax + GD from scratch | 🔴 | Implement forward pass, cross-entropy loss, and gradient descent update manually; loss must decrease. |
+| #   | Task                                | Depth | What you do                                                                                           |
+| --- | ----------------------------------- | ----- | ----------------------------------------------------------------------------------------------------- |
+| 1   | LLM zero-shot / few-shot classifier | 🟢    | Classify text with a prompt; measure accuracy and per-class F1; compare zero-shot vs few-shot.        |
+| 2   | Embeddings + classic ML             | 🟡    | Embed inputs; train a k-NN classifier; compare to zero-shot.                                          |
+| 3   | Evaluation                          | 🟡    | Compute precision, recall, F1, and a confusion matrix; compare classifiers on the same test set.      |
+| 4   | Softmax + GD from scratch           | 🔴    | Implement forward pass, cross-entropy loss, and gradient descent update manually; loss must decrease. |
 
 **Estimated time:** 4–5 hours
 
@@ -345,12 +345,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Image classification | 🟢 | Classify images with a pretrained model; see top-5 class probabilities. |
-| 2 | CLIP zero-shot | 🟢 | Classify images with CLIP using only text prompts; change the label list and watch the ranking change. |
-| 3 | Multimodal LLM vision | 🟡 | Pass images to a vision-capable LLM via raw vendor SDK; ask questions; compare to CLIP. |
-| 4 | Convolution from scratch | 🔴 | Implement 2D cross-correlation; apply Sobel and blur kernels; verify output matches reference. |
+| #   | Task                     | Depth | What you do                                                                                            |
+| --- | ------------------------ | ----- | ------------------------------------------------------------------------------------------------------ |
+| 1   | Image classification     | 🟢    | Classify images with a pretrained model; see top-5 class probabilities.                                |
+| 2   | CLIP zero-shot           | 🟢    | Classify images with CLIP using only text prompts; change the label list and watch the ranking change. |
+| 3   | Multimodal LLM vision    | 🟡    | Pass images to a vision-capable LLM via raw vendor SDK; ask questions; compare to CLIP.                |
+| 4   | Convolution from scratch | 🔴    | Implement 2D cross-correlation; apply Sobel and blur kernels; verify output matches reference.         |
 
 **Estimated time:** 4–5 hours
 
@@ -376,12 +376,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Text-to-image | 🟢 | Generate images with varied prompts and seeds; save PNGs. |
-| 2 | Prompt craft & parameter sweep | 🟡 | Sweep guidance_scale and steps; save a grid; understand negative prompts. |
-| 3 | img2img & inpainting | 🟡 | Transform an input image with img2img; edit a masked region with inpainting. |
-| 4 | Toy diffusion from scratch | 🔴 | Implement forward noising and DDPM reverse step in NumPy; generated 2D points should match training distribution. |
+| #   | Task                           | Depth | What you do                                                                                                       |
+| --- | ------------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------- |
+| 1   | Text-to-image                  | 🟢    | Generate images with varied prompts and seeds; save PNGs.                                                         |
+| 2   | Prompt craft & parameter sweep | 🟡    | Sweep guidance_scale and steps; save a grid; understand negative prompts.                                         |
+| 3   | img2img & inpainting           | 🟡    | Transform an input image with img2img; edit a masked region with inpainting.                                      |
+| 4   | Toy diffusion from scratch     | 🔴    | Implement forward noising and DDPM reverse step in NumPy; generated 2D points should match training distribution. |
 
 **Estimated time:** 4–5 hours
 
@@ -407,12 +407,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Parse documents | 🟢 | Extract text from PDF, HTML, and Markdown; normalise to a Document record; strip nav/footer noise from HTML. |
-| 2 | Clean & normalize | 🟡 | Strip Markdown syntax, collapse whitespace, remove boilerplate lines, deduplicate near-identical paragraphs. |
-| 3 | Structure-aware chunking | 🟡 | Detect ATX heading boundaries; emit one chunk per section; sub-chunk long sections; prepend heading to every sub-chunk. |
-| 4 | Incremental indexing | 🟢 | Hash each document; skip unchanged ones on re-run; maintain a manifest JSON; prune stale entries. |
+| #   | Task                     | Depth | What you do                                                                                                             |
+| --- | ------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------------- |
+| 1   | Parse documents          | 🟢    | Extract text from PDF, HTML, and Markdown; normalise to a Document record; strip nav/footer noise from HTML.            |
+| 2   | Clean & normalize        | 🟡    | Strip Markdown syntax, collapse whitespace, remove boilerplate lines, deduplicate near-identical paragraphs.            |
+| 3   | Structure-aware chunking | 🟡    | Detect ATX heading boundaries; emit one chunk per section; sub-chunk long sections; prepend heading to every sub-chunk. |
+| 4   | Incremental indexing     | 🟢    | Hash each document; skip unchanged ones on re-run; maintain a manifest JSON; prune stale entries.                       |
 
 **Estimated time:** 4–5 hours
 
@@ -438,12 +438,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | NL→SQL | 🟢 | Generate SQL from a question, execute it, print the rows. |
-| 2 | Schema-aware prompting | 🟡 | Auto-generate schema description from live DB; add sample rows and JOIN hints; handle multi-table questions. |
-| 3 | Safety & repair | 🟡 | Validate read-only; reject stacked queries; self-repair on DB errors (up to `max_retries`). |
-| 4 | Hybrid routing | 🟢 | Classify intent (sql/vector/both); dispatch to SQL or RAG accordingly; handle ambiguous questions. |
+| #   | Task                   | Depth | What you do                                                                                                  |
+| --- | ---------------------- | ----- | ------------------------------------------------------------------------------------------------------------ |
+| 1   | NL→SQL                 | 🟢    | Generate SQL from a question, execute it, print the rows.                                                    |
+| 2   | Schema-aware prompting | 🟡    | Auto-generate schema description from live DB; add sample rows and JOIN hints; handle multi-table questions. |
+| 3   | Safety & repair        | 🟡    | Validate read-only; reject stacked queries; self-repair on DB errors (up to `max_retries`).                  |
+| 4   | Hybrid routing         | 🟢    | Classify intent (sql/vector/both); dispatch to SQL or RAG accordingly; handle ambiguous questions.           |
 
 **Estimated time:** 4–5 hours
 
@@ -469,13 +469,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Decide: prompt vs fine-tune | 🟢 | Run a narrow task through a prompt baseline and a mock fine-tuned baseline; compare formality scores. |
-| 2 | Hosted SFT via OpenAI API | 🟢 | Build a 30-example JSONL dataset, upload, launch a fine-tune job, compare the fine-tuned model to the base. |
-| 3 | LoRA / QLoRA locally (Python) | 🟡 | Use PEFT + transformers to add LoRA adapters to a small model; print trainable vs total parameters. |
-| 4 | Dataset prep & overfitting eval | 🟡 | Clean examples, split train/val/test, track val score separately from train score, flag overfitting. |
-| 5 | Understand LoRA from scratch | 🔴 | Implement `B@A` low-rank update in numpy/plain arrays; verify equivalence; print param savings table. |
+| #   | Task                            | Depth | What you do                                                                                                 |
+| --- | ------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------- |
+| 1   | Decide: prompt vs fine-tune     | 🟢    | Run a narrow task through a prompt baseline and a mock fine-tuned baseline; compare formality scores.       |
+| 2   | Hosted SFT via OpenAI API       | 🟢    | Build a 30-example JSONL dataset, upload, launch a fine-tune job, compare the fine-tuned model to the base. |
+| 3   | LoRA / QLoRA locally (Python)   | 🟡    | Use PEFT + transformers to add LoRA adapters to a small model; print trainable vs total parameters.         |
+| 4   | Dataset prep & overfitting eval | 🟡    | Clean examples, split train/val/test, track val score separately from train score, flag overfitting.        |
+| 5   | Understand LoRA from scratch    | 🔴    | Implement `B@A` low-rank update in numpy/plain arrays; verify equivalence; print param savings table.       |
 
 **Estimated time:** 5–7 hours
 
@@ -502,13 +502,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Run local models and measure tokens/sec | 🟢 | Benchmark Ollama; print min/max/mean tokens/sec; print engine guide table. |
-| 2 | Quantization: size vs speed vs quality | 🟡 | Compare two quantization levels; measure speed and LLM-judge quality; print comparison table. |
-| 3 | Throughput vs latency: batching | 🟡 | Measure TTFT via streaming; fire N concurrent requests; show aggregate throughput > sequential. |
-| 4 | Serving engines: pick by use case | 🟢 | Implement `recommend_engine()`; print four-engine comparison table; run same prompt against available engines. |
-| 5 | KV cache intuition | 🔴 | Implement cached vs uncached toy autoregressive loop; measure speedup; verify O(n) vs O(n²) key computations. |
+| #   | Task                                    | Depth | What you do                                                                                                    |
+| --- | --------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------- |
+| 1   | Run local models and measure tokens/sec | 🟢    | Benchmark Ollama; print min/max/mean tokens/sec; print engine guide table.                                     |
+| 2   | Quantization: size vs speed vs quality  | 🟡    | Compare two quantization levels; measure speed and LLM-judge quality; print comparison table.                  |
+| 3   | Throughput vs latency: batching         | 🟡    | Measure TTFT via streaming; fire N concurrent requests; show aggregate throughput > sequential.                |
+| 4   | Serving engines: pick by use case       | 🟢    | Implement `recommend_engine()`; print four-engine comparison table; run same prompt against available engines. |
+| 5   | KV cache intuition                      | 🔴    | Implement cached vs uncached toy autoregressive loop; measure speedup; verify O(n) vs O(n²) key computations.  |
 
 **Estimated time:** 4–5 hours
 
@@ -517,7 +517,7 @@ provider key or a local Ollama install.
 - [ ] `01_run_local` / `01-run-local` runs against Ollama and prints tokens/sec.
 - [ ] Quantization comparison table printed with measured speed numbers (Task 2).
 - [ ] Concurrent throughput measurably higher than sequential (Task 3).
-- [ ] KV cache: cached key computations = N; uncached = N*(N+1)/2 (Task 5).
+- [ ] KV cache: cached key computations = N; uncached = N\*(N+1)/2 (Task 5).
 
 ---
 
@@ -534,12 +534,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Reasoning vs standard model | 🟢 | Side-by-side comparison table: model, answer, tokens, latency for the same hard problems. |
-| 2 | Test-time compute without a reasoning model | 🟡 | Implement self-consistency and best-of-N with a verifier; show accuracy rising with N. |
-| 3 | Self-refine / reflection | 🟡 | Implement draft → critique → revise loop; run 2 iterations; observe concrete improvement. |
-| 4 | Cost / latency of reasoning strategies | 🟢 | Measure all strategies; print table sorted by cost; annotate the sweet spot. |
+| #   | Task                                        | Depth | What you do                                                                               |
+| --- | ------------------------------------------- | ----- | ----------------------------------------------------------------------------------------- |
+| 1   | Reasoning vs standard model                 | 🟢    | Side-by-side comparison table: model, answer, tokens, latency for the same hard problems. |
+| 2   | Test-time compute without a reasoning model | 🟡    | Implement self-consistency and best-of-N with a verifier; show accuracy rising with N.    |
+| 3   | Self-refine / reflection                    | 🟡    | Implement draft → critique → revise loop; run 2 iterations; observe concrete improvement. |
+| 4   | Cost / latency of reasoning strategies      | 🟢    | Measure all strategies; print table sorted by cost; annotate the sweet spot.              |
 
 **Estimated time:** 3–5 hours
 
@@ -566,13 +566,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Token budgeting | 🟢 | Count tokens; implement head/tail/middle-out truncation; print results table. |
-| 2 | Prompt caching | 🟢 | Make repeated calls with a large prefix; observe cache hits in `usage`; measure cost saving. |
-| 3 | Conversation memory / compaction | 🟡 | Summarise oldest turns when budget exceeded; verify compaction fires and context stays in budget. |
-| 4 | Long-context strategies | 🟡 | Implement map-reduce and refine over chunked document; demonstrate lost-in-the-middle recall. |
-| 5 | Batch API | 🟢 | Submit 5 requests via Batch API; poll until complete; print results and estimated savings. |
+| #   | Task                             | Depth | What you do                                                                                       |
+| --- | -------------------------------- | ----- | ------------------------------------------------------------------------------------------------- |
+| 1   | Token budgeting                  | 🟢    | Count tokens; implement head/tail/middle-out truncation; print results table.                     |
+| 2   | Prompt caching                   | 🟢    | Make repeated calls with a large prefix; observe cache hits in `usage`; measure cost saving.      |
+| 3   | Conversation memory / compaction | 🟡    | Summarise oldest turns when budget exceeded; verify compaction fires and context stays in budget. |
+| 4   | Long-context strategies          | 🟡    | Implement map-reduce and refine over chunked document; demonstrate lost-in-the-middle recall.     |
+| 5   | Batch API                        | 🟢    | Submit 5 requests via Batch API; poll until complete; print results and estimated savings.        |
 
 **Estimated time:** 4–5 hours
 
@@ -600,13 +600,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Modern agent APIs | 🟢 | Use OpenAI Responses API and Anthropic tool use to answer a two-part question; compare to module 06 manual loop. |
-| 2 | Use an MCP server | 🟢 | Connect client to an existing server via stdio; list tools; call one tool. |
-| 3 | Build the course MCP server | 🟢 | Build stdio MCP server with `search_docs`, `read_module`, `run_exam_question`; all three tools work when tested. |
-| 4 | Wire MCP tools into an agent | 🟡 | Fetch tool schemas dynamically from the course server; run OpenAI and Anthropic agent loops using MCP tools. |
-| 5 | Remote MCP + security | 🟡 | Expose the server over HTTP/SSE; add bearer-token auth; explain five security threats. |
+| #   | Task                         | Depth | What you do                                                                                                      |
+| --- | ---------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------- |
+| 1   | Modern agent APIs            | 🟢    | Use OpenAI Responses API and Anthropic tool use to answer a two-part question; compare to module 06 manual loop. |
+| 2   | Use an MCP server            | 🟢    | Connect client to an existing server via stdio; list tools; call one tool.                                       |
+| 3   | Build the course MCP server  | 🟢    | Build stdio MCP server with `search_docs`, `read_module`, `run_exam_question`; all three tools work when tested. |
+| 4   | Wire MCP tools into an agent | 🟡    | Fetch tool schemas dynamically from the course server; run OpenAI and Anthropic agent loops using MCP tools.     |
+| 5   | Remote MCP + security        | 🟡    | Expose the server over HTTP/SSE; add bearer-token auth; explain five security threats.                           |
 
 **Estimated time:** 5–7 hours
 
@@ -633,12 +633,12 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Browser automation basics | 🟢 | Navigate to a URL; read title and text; count links; take a screenshot. |
-| 2 | Vision-grounded browser agent | 🟡 | Multi-step agent using screenshots + multimodal LLM to decide actions; step PNGs saved. |
-| 3 | DOM/accessibility agent | 🟡 | Same task without screenshots; use a11y tree (text); compare token cost to vision agent. |
-| 4 | Computer use & safety | 🟢 | Domain allowlist, risk classification, human confirmation gate, prompt-injection sanitisation. |
+| #   | Task                          | Depth | What you do                                                                                    |
+| --- | ----------------------------- | ----- | ---------------------------------------------------------------------------------------------- |
+| 1   | Browser automation basics     | 🟢    | Navigate to a URL; read title and text; count links; take a screenshot.                        |
+| 2   | Vision-grounded browser agent | 🟡    | Multi-step agent using screenshots + multimodal LLM to decide actions; step PNGs saved.        |
+| 3   | DOM/accessibility agent       | 🟡    | Same task without screenshots; use a11y tree (text); compare token cost to vision agent.       |
+| 4   | Computer use & safety         | 🟢    | Domain allowlist, risk classification, human confirmation gate, prompt-injection sanitisation. |
 
 **Estimated time:** 5–6 hours
 
@@ -665,13 +665,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Speech-to-text | 🟢 | Transcribe an audio clip with hosted Whisper; optionally run faster-whisper locally. |
-| 2 | Text-to-speech | 🟢 | Synthesise speech from text; save as MP3; try different voices, models, and speed. |
-| 3 | Voice tutor loop | 🟡 | Chain STT → RAG over module READMEs → LLM → TTS; answer a spoken question with a spoken answer. |
-| 4 | Audio preprocessing & VAD | 🟡 | Implement energy-based VAD from scratch; trim silence; optionally apply noise reduction. |
-| 5 | Realtime voice | 🟢 | Run dry-run mode; explain Realtime API latency advantage; optionally implement live WebSocket session. |
+| #   | Task                      | Depth | What you do                                                                                            |
+| --- | ------------------------- | ----- | ------------------------------------------------------------------------------------------------------ |
+| 1   | Speech-to-text            | 🟢    | Transcribe an audio clip with hosted Whisper; optionally run faster-whisper locally.                   |
+| 2   | Text-to-speech            | 🟢    | Synthesise speech from text; save as MP3; try different voices, models, and speed.                     |
+| 3   | Voice tutor loop          | 🟡    | Chain STT → RAG over module READMEs → LLM → TTS; answer a spoken question with a spoken answer.        |
+| 4   | Audio preprocessing & VAD | 🟡    | Implement energy-based VAD from scratch; trim silence; optionally apply noise reduction.               |
+| 5   | Realtime voice            | 🟢    | Run dry-run mode; explain Realtime API latency advantage; optionally implement live WebSocket session. |
 
 **Estimated time:** 4–6 hours
 
@@ -699,13 +699,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Direct prompt injection: attack then defend | 🔴 | Build a naive assistant, inject it, add layered defences; print a scorecard showing improvement. |
-| 2 | Indirect injection via RAG / tools | 🔴 | Poison a retrieved document; demonstrate `<leak>` exfiltration; harden with `[UNTRUSTED]` labelling and output filter. |
-| 3 | Excessive agency & approval gates | 🟡 | Over-privileged agent deletes sandbox files; least-privilege + approval gate prevents the same action. |
-| 4 | Red-team harness | 🟡 | Run 8 attack prompts against a simple assistant; score with LLM judge; show score improvement after hardening. |
-| 5 | Vector weaknesses + OWASP mapping | 🟢 | Demonstrate data poisoning and system-prompt leakage via cosine similarity; map all findings to OWASP LLM Top 10. |
+| #   | Task                                        | Depth | What you do                                                                                                            |
+| --- | ------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
+| 1   | Direct prompt injection: attack then defend | 🔴    | Build a naive assistant, inject it, add layered defences; print a scorecard showing improvement.                       |
+| 2   | Indirect injection via RAG / tools          | 🔴    | Poison a retrieved document; demonstrate `<leak>` exfiltration; harden with `[UNTRUSTED]` labelling and output filter. |
+| 3   | Excessive agency & approval gates           | 🟡    | Over-privileged agent deletes sandbox files; least-privilege + approval gate prevents the same action.                 |
+| 4   | Red-team harness                            | 🟡    | Run 8 attack prompts against a simple assistant; score with LLM judge; show score improvement after hardening.         |
+| 5   | Vector weaknesses + OWASP mapping           | 🟢    | Demonstrate data poisoning and system-prompt leakage via cosine similarity; map all findings to OWASP LLM Top 10.      |
 
 **Estimated time:** 5–7 hours
 
@@ -733,13 +733,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Versioned eval set + graders | 🟢 | Load versioned eval set; run three grader types; write a results JSON file. |
-| 2 | Experiments | 🟡 | Run two prompt-version variants; compare runs; declare a winner with numbers. |
-| 3 | Regression gate in CI | 🟡 | Script exits non-zero when metric < threshold; integrate into GitHub Actions or Husky pre-push. |
-| 4 | Human review + feedback loop | 🟡 | Route low-confidence outputs to a JSONL queue; label interactively; merge approved labels into eval set. |
-| 5 | Production monitoring | 🟢 | Parse JSONL logs; compute p50/p95 latency, error rate, cost; print report with alerts. |
+| #   | Task                         | Depth | What you do                                                                                              |
+| --- | ---------------------------- | ----- | -------------------------------------------------------------------------------------------------------- |
+| 1   | Versioned eval set + graders | 🟢    | Load versioned eval set; run three grader types; write a results JSON file.                              |
+| 2   | Experiments                  | 🟡    | Run two prompt-version variants; compare runs; declare a winner with numbers.                            |
+| 3   | Regression gate in CI        | 🟡    | Script exits non-zero when metric < threshold; integrate into GitHub Actions or Husky pre-push.          |
+| 4   | Human review + feedback loop | 🟡    | Route low-confidence outputs to a JSONL queue; label interactively; merge approved labels into eval set. |
+| 5   | Production monitoring        | 🟢    | Parse JSONL logs; compute p50/p95 latency, error rate, cost; print report with alerts.                   |
 
 **Estimated time:** 5–6 hours
 
@@ -767,13 +767,13 @@ provider key or a local Ollama install.
 
 **Tasks**
 
-| # | Task | Depth | What you do |
-|---|------|-------|-------------|
-| 1 | Streaming UI | 🟢 | Ask a question; watch tokens stream live; blinking cursor disappears on finish. |
-| 2 | Citations + source drill-down | 🟢 | Source chips appear after every answer; clicking one opens a panel with title, URL, content. |
-| 3 | Confidence + failure states | 🟡 | Render loading, error, and low-confidence states; integrate LLM-judge faithfulness as confidence score. |
-| 4 | Feedback capture | 🟢 | 👍/👎 and "looks wrong" feedback stored in JSONL; confirmation message appears and disappears. |
-| 5 | Approval flow for risky actions | 🟡 | Modal shows action description + payload; approve/reject both logged; expired tokens return "expired". |
+| #   | Task                            | Depth | What you do                                                                                             |
+| --- | ------------------------------- | ----- | ------------------------------------------------------------------------------------------------------- |
+| 1   | Streaming UI                    | 🟢    | Ask a question; watch tokens stream live; blinking cursor disappears on finish.                         |
+| 2   | Citations + source drill-down   | 🟢    | Source chips appear after every answer; clicking one opens a panel with title, URL, content.            |
+| 3   | Confidence + failure states     | 🟡    | Render loading, error, and low-confidence states; integrate LLM-judge faithfulness as confidence score. |
+| 4   | Feedback capture                | 🟢    | 👍/👎 and "looks wrong" feedback stored in JSONL; confirmation message appears and disappears.          |
+| 5   | Approval flow for risky actions | 🟡    | Modal shows action description + payload; approve/reject both logged; expired tokens return "expired".  |
 
 **Estimated time:** 4–5 hours
 
@@ -800,20 +800,20 @@ provider key or a local Ollama install.
 
 **Tracks**
 
-| Option | What you build |
-|--------|----------------|
+| Option          | What you build                                                                                                                                              |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A (recommended) | Documentation / Q&A assistant: document ingestion (11) + hybrid RAG (04/05) + agent + tools (06/17) + eval gate (07/21) + streaming UI (22) + security (20) |
-| B | Research / news agent: planner + workers + synthesis + eval gate + security hardening |
-| C | Multimodal assistant: vision (09) + document ingestion (11) + RAG + conversational agent + eval |
+| B               | Research / news agent: planner + workers + synthesis + eval gate + security hardening                                                                       |
+| C               | Multimodal assistant: vision (09) + document ingestion (11) + RAG + conversational agent + eval                                                             |
 
 **Milestone plan (Option A)**
 
-| Milestone | Done when |
-|-----------|-----------|
-| M1 — Ingest | Top-3 passages for 5 hand-crafted questions are all on-topic. Draws on modules 04, 11. |
-| M2 — Hybrid retrieve + rerank | Hybrid beats dense-only MRR@5. Draws on modules 04, 05. |
-| M3 — Generator with citations | 5/5 answers include a valid citation; none contradict passages. Draws on module 05. |
-| M4 — Agent + tools | Agent answers a 2-hop question requiring two retrieval steps. Draws on modules 06, 17. |
+| Milestone                           | Done when                                                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| M1 — Ingest                         | Top-3 passages for 5 hand-crafted questions are all on-topic. Draws on modules 04, 11.                                    |
+| M2 — Hybrid retrieve + rerank       | Hybrid beats dense-only MRR@5. Draws on modules 04, 05.                                                                   |
+| M3 — Generator with citations       | 5/5 answers include a valid citation; none contradict passages. Draws on module 05.                                       |
+| M4 — Agent + tools                  | Agent answers a 2-hop question requiring two retrieval steps. Draws on modules 06, 17.                                    |
 | M5 — Eval harness + served API + UX | Eval pass rate ≥ 70 %; API returns `{answer, citations, latency_ms}`; streaming UI live. Draws on modules 07, 20, 21, 22. |
 
 **Estimated time:** 10–20 hours (open-ended)
@@ -851,13 +851,13 @@ uv run python -m news_agent        # run once
 
 Study `projects/news-agent/news_agent/`:
 
-| File | What it teaches |
-|------|-----------------|
-| `pipeline.py` | Orchestration — the "outer loop" |
-| `sources.py` | Retrieval from RSS / Google News |
-| `agent.py` | Two-step LLM agent (rank + write) |
-| `telegram_bot.py` | Integration / serving layer |
-| `scheduler.py` | Production scheduling pattern |
+| File              | What it teaches                   |
+| ----------------- | --------------------------------- |
+| `pipeline.py`     | Orchestration — the "outer loop"  |
+| `sources.py`      | Retrieval from RSS / Google News  |
+| `agent.py`        | Two-step LLM agent (rank + write) |
+| `telegram_bot.py` | Integration / serving layer       |
+| `scheduler.py`    | Production scheduling pattern     |
 
 ---
 
@@ -888,28 +888,28 @@ uv run python -m tutor exam --module 04
 
 ~20 weeks part-time (4–6 hours per week). Adjust to your pace.
 
-| Week | Module(s) | Notes |
-|------|-----------|-------|
-| 1 | 00 Setup, 01 Fundamentals | Don't rush 01 — it pays dividends in every later module. |
-| 2 | 01 Fundamentals (continued) | Finish all 🔴 tasks; run the tests. |
-| 3 | 02 LLM Integration | Tool calling and structured output are the most reused patterns in the course. |
-| 4 | 03 Prompting & Patterns | Lighter module; good time to catch up. |
-| 5 | 04 Embeddings & Vectors | Budget time for Task 1 (from scratch) — it's the foundation of RAG. |
-| 6 | 05 RAG | The heart of the course. Take the full week. |
-| 7 | 06 Agents | Task 1 (ReAct from scratch) is where the most learning happens. |
-| 8 | 06 Agents (continued) + news-agent | Build the news-agent project this week. |
-| 9 | 07 Advanced & Production | Eval harness first — you'll need it for the capstone. |
-| 10 | 08 Classification | Lighter module; good recovery week. |
-| 11 | 09 Computer Vision, 10 Image Generation | Can be done in parallel if comfortable. |
-| 12 | 11 Document Ingestion, 12 Text-to-SQL | Two focused modules; no heavy prerequisites beyond 05. |
-| 13 | 13 Fine-tuning | Budget the OpenAI fine-tune cost (~$0.50); Task 5 (LoRA from scratch) takes the most time. |
-| 14 | 14 Local Inference & Optimization | Mostly Ollama-based; Task 5 (KV cache) is the 🔴 payoff. |
-| 15 | 15 Reasoning & Test-time Compute | Needs an o-series or extended-thinking key for full experience. |
-| 16 | 16 Context Engineering, 17 MCP | Context budgeting + modern agent APIs — directly useful for the capstone. |
-| 17 | 18 Computer Use, 19 Audio & Speech | More specialised; both are hosted-first and can be done quickly at 🟢 depth. |
-| 18 | 20 AI Security | Essential before building anything production-worthy. |
-| 19 | 21 LLMOps & Eval, 22 AI Product UX | The eval gate and UX patterns feed directly into the capstone. |
-| 20 | 23 Capstone | Open-ended; the full week is a minimum. Build M1–M3 first, then M4–M5. |
+| Week | Module(s)                               | Notes                                                                                      |
+| ---- | --------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1    | 00 Setup, 01 Fundamentals               | Don't rush 01 — it pays dividends in every later module.                                   |
+| 2    | 01 Fundamentals (continued)             | Finish all 🔴 tasks; run the tests.                                                        |
+| 3    | 02 LLM Integration                      | Tool calling and structured output are the most reused patterns in the course.             |
+| 4    | 03 Prompting & Patterns                 | Lighter module; good time to catch up.                                                     |
+| 5    | 04 Embeddings & Vectors                 | Budget time for Task 1 (from scratch) — it's the foundation of RAG.                        |
+| 6    | 05 RAG                                  | The heart of the course. Take the full week.                                               |
+| 7    | 06 Agents                               | Task 1 (ReAct from scratch) is where the most learning happens.                            |
+| 8    | 06 Agents (continued) + news-agent      | Build the news-agent project this week.                                                    |
+| 9    | 07 Advanced & Production                | Eval harness first — you'll need it for the capstone.                                      |
+| 10   | 08 Classification                       | Lighter module; good recovery week.                                                        |
+| 11   | 09 Computer Vision, 10 Image Generation | Can be done in parallel if comfortable.                                                    |
+| 12   | 11 Document Ingestion, 12 Text-to-SQL   | Two focused modules; no heavy prerequisites beyond 05.                                     |
+| 13   | 13 Fine-tuning                          | Budget the OpenAI fine-tune cost (~$0.50); Task 5 (LoRA from scratch) takes the most time. |
+| 14   | 14 Local Inference & Optimization       | Mostly Ollama-based; Task 5 (KV cache) is the 🔴 payoff.                                   |
+| 15   | 15 Reasoning & Test-time Compute        | Needs an o-series or extended-thinking key for full experience.                            |
+| 16   | 16 Context Engineering, 17 MCP          | Context budgeting + modern agent APIs — directly useful for the capstone.                  |
+| 17   | 18 Computer Use, 19 Audio & Speech      | More specialised; both are hosted-first and can be done quickly at 🟢 depth.               |
+| 18   | 20 AI Security                          | Essential before building anything production-worthy.                                      |
+| 19   | 21 LLMOps & Eval, 22 AI Product UX      | The eval gate and UX patterns feed directly into the capstone.                             |
+| 20   | 23 Capstone                             | Open-ended; the full week is a minimum. Build M1–M3 first, then M4–M5.                     |
 
 ---
 
@@ -919,18 +919,18 @@ uv run python -m tutor exam --module 04
 
 Focus on 🟢 tasks only. Skip or skim 🔴 tasks.
 
-| Week | Modules |
-|------|---------|
-| 1 | 00, 01 (🟢 only: BPE read-only, cosine worked) |
-| 2 | 02, 03 |
-| 3 | 04 (Task 2 Chroma; skip Task 1 scratch), 05 |
-| 4 | 06 (Tasks 2, 4; skip Task 1 scratch) |
-| 5 | 07, 08 (🟢 only) |
-| 6 | 09, 10, 11 |
-| 7 | 12, 13 (Tasks 1–2 only), 14 (Tasks 1, 4) |
-| 8 | 15–17 (🟢 tasks only), 18, 19 (🟢 tasks) |
-| 9 | 20–22 (🟢 tasks only) |
-| 10 | 23 Capstone (Option A, M1–M3 only) |
+| Week | Modules                                        |
+| ---- | ---------------------------------------------- |
+| 1    | 00, 01 (🟢 only: BPE read-only, cosine worked) |
+| 2    | 02, 03                                         |
+| 3    | 04 (Task 2 Chroma; skip Task 1 scratch), 05    |
+| 4    | 06 (Tasks 2, 4; skip Task 1 scratch)           |
+| 5    | 07, 08 (🟢 only)                               |
+| 6    | 09, 10, 11                                     |
+| 7    | 12, 13 (Tasks 1–2 only), 14 (Tasks 1, 4)       |
+| 8    | 15–17 (🟢 tasks only), 18, 19 (🟢 tasks)       |
+| 9    | 20–22 (🟢 tasks only)                          |
+| 10   | 23 Capstone (Option A, M1–M3 only)             |
 
 Skip 🔴 tasks in modules 01, 08, 10, 13, 14, 20. Treat modules 13 (local LoRA) and 19 (mic mode) as optional.
 
@@ -1077,6 +1077,7 @@ Disclosure (LLM06). The 2025 edition is the current reference; see module 20.
 repeated prefix (system prompt, large document, tool definitions) so subsequent
 calls re-use it at a fraction of the normal input token cost. Anthropic uses
 explicit `cache_control` breakpoints; OpenAI caches automatically for inputs
+
 > 1024 tokens.
 
 **Prompt injection** — an attack where malicious content in the input (e.g. a

@@ -7,7 +7,7 @@ This file is auto-loaded as context. Read it, then help the learner well.
 `learn-ai` is a **personal, hands-on AI course** — a project-based curriculum that
 takes one person from a vague sense of how AI apps work to building real ones:
 provider integration, embeddings, retrieval (RAG), and autonomous agents, in **both
-TypeScript and Python**. The reader is the *learner*; you are their tutor/pair-programmer.
+TypeScript and Python**. The reader is the _learner_; you are their tutor/pair-programmer.
 Favor teaching over just shipping code (see `/tutor` below).
 
 ## Repo layout
@@ -42,7 +42,7 @@ truth** for what the learner is studying — read it before tutoring or quizzing
 Every module weaves three depth lanes; the learner picks a lane per module:
 
 - 🟢 **App** — build something that works using the ecosystem/libraries.
-- 🟡 **Balanced** — build the app *and* implement one core piece by hand for intuition.
+- 🟡 **Balanced** — build the app _and_ implement one core piece by hand for intuition.
 - 🔴 **Deep** — implement the machinery from scratch (tokenizer, attention, vector index,
   ReAct loop). 🔴 tasks **forbid the obvious library** (no `tiktoken` for the tokenizer,
   no `chromadb` for the vector index) — that constraint is the point. Don't suggest the
@@ -60,9 +60,10 @@ provider or an SDK call in exercise code:
   `provider.chat_stream(...)`, `provider.embed(...)`.
 - TypeScript: `getProvider()` from `@learn-ai/llm-core`.
 
-The provider swaps between OpenAI / Anthropic / Ollama / NVIDIA via one env var.
-Note: **Anthropic has no embeddings endpoint** — `embed()` raises there; use
-`LLM_PROVIDER=openai` (or `ollama`/`nvidia`) for embedding/RAG exercises. The
+The provider swaps between OpenAI / Anthropic / Ollama / NVIDIA / LM Studio
+(local, OpenAI-compatible) via one env var. Note: **Anthropic has no embeddings
+endpoint** — `embed()` raises there; use `LLM_PROVIDER=openai` (or
+`ollama`/`nvidia`/`lmstudio`) for embedding/RAG exercises. The
 zero-cost path is Ollama (`ollama pull llama3.2 && ollama pull nomic-embed-text`).
 
 ## How to run things
