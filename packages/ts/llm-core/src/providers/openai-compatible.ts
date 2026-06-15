@@ -81,6 +81,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
     const resp = await this.client.embeddings.create({
       model: this.embedModel,
       input,
+      // Force plain-float output. With no encoding_format the OpenAI SDK
+      // requests base64 and decodes it client-side; some OpenAI-compatible
+      // servers (e.g. LM Studio) don't honour that, yielding all-zero vectors.
+      encoding_format: "float",
     });
     return {
       vectors: resp.data.map((d) => d.embedding),
