@@ -13,16 +13,29 @@
  *       4. Append a "tool" result message and call the model again.
  *       5. Model uses the result to produce a final text answer.
  *   - OpenAI-style tools (shown here with openai SDK) work identically
- *     for ollama and nvidia because they implement the same API surface.
+ *     for ollama, lmstudio, and nvidia because they implement the same API surface.
  *   - Anthropic uses a different wire format but the same conceptual loop.
  *
  * How to run:
  *   pnpm tsx modules/02-llm-integration/ts/05-tool-calling.ts
  *
  * Required env (pick one):
- *   LLM_PROVIDER=openai  + OPENAI_API_KEY
- *   LLM_PROVIDER=ollama  (with a model that supports tool calling, e.g. llama3.2)
+ *   LLM_PROVIDER=openai    + OPENAI_API_KEY
+ *   LLM_PROVIDER=ollama    (local; model must support tools, e.g. llama3.2)
+ *   LLM_PROVIDER=lmstudio  (local; load a tool-capable model + Start Server on :1234)
  *   LLM_PROVIDER=anthropic + ANTHROPIC_API_KEY  (see Part B)
+ *
+ * Local tool calling (Ollama / LM Studio):
+ *   Part A talks raw OpenAI wire format, and both local servers are
+ *   OpenAI-compatible — so no code change is needed, only env vars:
+ *     LM Studio:  LLM_PROVIDER=lmstudio  [LMSTUDIO_BASE_URL=http://localhost:1234/v1]
+ *                 [LMSTUDIO_CHAT_MODEL=qwen2.5-7b-instruct]
+ *     Ollama:     LLM_PROVIDER=ollama    [OLLAMA_CHAT_MODEL=llama3.2]
+ *   CAVEAT: tool calling depends on the *model*, not the server. Pick a
+ *   tool-tuned instruct model (Qwen2.5-Instruct, Llama-3.1/3.2-Instruct,
+ *   Mistral-Nemo). Small/quantized models often skip the tool call or emit
+ *   malformed argument JSON — gate on `message.tool_calls?.length` rather
+ *   than trusting finish_reason if a local model misbehaves.
  */
 
 import "dotenv/config";
@@ -74,13 +87,41 @@ const weatherToolDefinition: OpenAI.Chat.Completions.ChatCompletionTool = {
 async function runOpenAIToolLoop(question: string): Promise<void> {
   console.log("=== Part A: OpenAI-style tool calling ===\n");
 
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY ?? "ollama",
-    baseURL: process.env.LLM_PROVIDER === "ollama"
-      ? (process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1")
-      : undefined,
-  });
-  const model = process.env.OPENAI_CHAT_MODEL ?? process.env.OLLAMA_CHAT_MODEL ?? "gpt-4o-mini";
+  // LLM_PROVIDER is the single source of truth: it selects the baseURL, key,
+  // and model together (mirrors @learn-ai/llm-core's config). Part A uses the
+  // raw OpenAI SDK on purpose, so we resolve that config here by hand.
+  const provider = process.env.LLM_PROVIDER ?? "ollama";
+  const PROVIDER_CONFIG: Record<string, { apiKey: string; baseURL?: string; model: string }> = {
+    openai: {
+      apiKey: process.env.OPENAI_API_KEY ?? "",
+      model: process.env.OPENAI_CHAT_MODEL ?? "gpt-4o-mini",
+    },
+    ollama: {
+      apiKey: "ollama", // any non-empty string; local server ignores it
+      baseURL: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1",
+      model: process.env.OLLAMA_CHAT_MODEL ?? "llama3.2",
+    },
+    lmstudio: {
+      apiKey: "lm-studio",
+      baseURL: process.env.LMSTUDIO_BASE_URL ?? "http://localhost:1234/v1",
+      model: process.env.LMSTUDIO_CHAT_MODEL ?? "qwen2.5-7b-instruct",
+    },
+    nvidia: {
+      apiKey: process.env.NVIDIA_API_KEY ?? "",
+      baseURL: process.env.NVIDIA_BASE_URL ?? "https://integrate.api.nvidia.com/v1",
+      model: process.env.NVIDIA_CHAT_MODEL ?? "meta/llama-3.1-8b-instruct",
+    },
+  };
+  const config = PROVIDER_CONFIG[provider];
+  if (!config) {
+    throw new Error(
+      `Part A (OpenAI-style) supports: ${Object.keys(PROVIDER_CONFIG).join(", ")}. ` +
+        `Got LLM_PROVIDER="${provider}". For anthropic, see Part B.`,
+    );
+  }
+  const client = new OpenAI({ apiKey: config.apiKey, baseURL: config.baseURL });
+  const model = config.model;
+  console.log(`Provider: ${provider} / ${model}`);
 
   console.log(`Question: ${question}\n`);
 

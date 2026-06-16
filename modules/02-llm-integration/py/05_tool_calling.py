@@ -12,8 +12,8 @@ What this teaches:
       3. You execute the tool locally (in your Python code).
       4. Append a "tool" result message and call the model again.
       5. Model uses the result to produce a final text answer.
-  - OpenAI-style tools (shown in Part A) work identically for ollama and
-    nvidia because they implement the same API surface.
+  - OpenAI-style tools (shown in Part A) work identically for ollama,
+    lmstudio, and nvidia because they implement the same API surface.
   - Anthropic uses a different wire format but the same conceptual loop
     (shown in Part B). The concept is the same; the JSON keys differ.
 
@@ -21,9 +21,22 @@ How to run:
   uv run python modules/02-llm-integration/py/05_tool_calling.py
 
 Required env (pick one):
-  LLM_PROVIDER=openai  + OPENAI_API_KEY
-  LLM_PROVIDER=ollama  (with a model that supports tool calling, e.g. llama3.2)
+  LLM_PROVIDER=openai    + OPENAI_API_KEY
+  LLM_PROVIDER=ollama    (local; model must support tools, e.g. llama3.2)
+  LLM_PROVIDER=lmstudio  (local; load a tool-capable model + Start Server on :1234)
   ANTHROPIC_API_KEY for Part B
+
+Local tool calling (Ollama / LM Studio):
+  Part A talks the raw OpenAI wire format, and both local servers are
+  OpenAI-compatible — so no code change is needed, only env vars:
+    LM Studio:  LLM_PROVIDER=lmstudio  [LMSTUDIO_BASE_URL=http://localhost:1234/v1]
+                [LMSTUDIO_CHAT_MODEL=qwen2.5-7b-instruct]
+    Ollama:     LLM_PROVIDER=ollama    [OLLAMA_CHAT_MODEL=llama3.2]
+  CAVEAT: tool calling depends on the *model*, not the server. Pick a
+  tool-tuned instruct model (Qwen2.5-Instruct, Llama-3.1/3.2-Instruct,
+  Mistral-Nemo). Small/quantized models often skip the tool call or emit
+  malformed argument JSON — gate on `message.tool_calls` being truthy
+  rather than trusting finish_reason if a local model misbehaves.
 """
 
 from __future__ import annotations
@@ -90,16 +103,41 @@ WEATHER_TOOL: dict = {
 def run_openai_tool_loop(question: str) -> None:
     print("=== Part A: OpenAI-style tool calling ===\n")
 
+    # LLM_PROVIDER is the single source of truth: it selects the base_url, key,
+    # and model together (mirrors llm_core's config). Part A uses the raw OpenAI
+    # SDK on purpose, so we resolve that config here by hand.
     provider = os.getenv("LLM_PROVIDER", "ollama")
-    if provider == "ollama":
-        client = OpenAI(
-            api_key="ollama",
-            base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
+    provider_config: dict[str, dict[str, str | None]] = {
+        "openai": {
+            "api_key": os.getenv("OPENAI_API_KEY", ""),
+            "base_url": None,
+            "model": os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini"),
+        },
+        "ollama": {
+            "api_key": "ollama",  # any non-empty string; local server ignores it
+            "base_url": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
+            "model": os.getenv("OLLAMA_CHAT_MODEL", "llama3.2"),
+        },
+        "lmstudio": {
+            "api_key": "lm-studio",
+            "base_url": os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234/v1"),
+            "model": os.getenv("LMSTUDIO_CHAT_MODEL", "qwen2.5-7b-instruct"),
+        },
+        "nvidia": {
+            "api_key": os.getenv("NVIDIA_API_KEY", ""),
+            "base_url": os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"),
+            "model": os.getenv("NVIDIA_CHAT_MODEL", "meta/llama-3.1-8b-instruct"),
+        },
+    }
+    if provider not in provider_config:
+        raise SystemExit(
+            f"Part A (OpenAI-style) supports: {', '.join(provider_config)}. "
+            f'Got LLM_PROVIDER="{provider}". For anthropic, see Part B.'
         )
-        model = os.getenv("OLLAMA_CHAT_MODEL", "llama3.2")
-    else:
-        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        model = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
+    config = provider_config[provider]
+    client = OpenAI(api_key=config["api_key"], base_url=config["base_url"])
+    model = config["model"]
+    print(f"Provider: {provider} / {model}")
 
     print(f"Question: {question}\n")
 

@@ -169,6 +169,22 @@ teaches the pattern so you can tune it and apply it to any remote call.
 **Why not llm_core?** `llm_core.chat()` has no parameter for tool definitions or tool results —
 those shapes vary per provider. Task 5 is explicitly about dropping down to the raw SDK.
 
+**Run it free / locally (Ollama or LM Studio):** Part A speaks the raw OpenAI wire format,
+and both Ollama and LM Studio are OpenAI-compatible — so the same `openai` SDK code works
+against them with **no changes**, just env vars:
+
+| Server    | Env                                                    | Default endpoint              |
+| --------- | ------------------------------------------------------ | ----------------------------- |
+| LM Studio | `LLM_PROVIDER=lmstudio` (+ `LMSTUDIO_CHAT_MODEL`)      | `http://localhost:1234/v1`    |
+| Ollama    | `LLM_PROVIDER=ollama` (+ `OLLAMA_CHAT_MODEL`)          | `http://localhost:11434/v1`   |
+
+> **Tool calling depends on the _model_, not the server.** Use a tool-tuned instruct model
+> (Qwen2.5-Instruct, Llama-3.1/3.2-Instruct, Mistral-Nemo). Small or heavily quantized models
+> often skip the tool call or return malformed argument JSON. If `finish_reason` looks off on a
+> local model, gate on `message.tool_calls?.length` instead. (LM Studio: load the model, then
+> **Start Server** so `:1234` is live; Ollama: `ollama pull llama3.2` first.) **Part B (Anthropic)
+> uses its own SDK and wire format — it has no local equivalent here.**
+
 **Steps:**
 1. Open `py/05_tool_calling.py` and `ts/05-tool-calling.ts`.
 2. **Part A (OpenAI-style):**
