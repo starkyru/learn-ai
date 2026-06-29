@@ -20,9 +20,6 @@ How to run:
 
 from __future__ import annotations
 
-import os
-from typing import Annotated, TypedDict
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -60,9 +57,9 @@ load_dotenv()
 
 # TODO 2: Define the agent state TypedDict.
 #         LangGraph accumulates messages using Annotated + operator.add (or
-#         the built-in add_messages reducer from langchain_core.messages).
+#         the built-in add_messages reducer from langgraph.graph).
 #
-# from langchain_core.messages import add_messages
+# from langgraph.graph import add_messages
 #
 # class AgentState(TypedDict):
 #     messages: Annotated[list[BaseMessage], add_messages]
@@ -142,6 +139,7 @@ tools: list = []  # TODO: replace with [calculator, search]
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     question = (

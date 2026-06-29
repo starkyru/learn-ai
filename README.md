@@ -47,6 +47,13 @@ they're where the real understanding lives.
 | 22  | [AI Product UX](modules/22-ai-product-ux/)                                 | A real mini app: streaming UI, citations drill-down, feedback, approval flow                       | trust, failure states, "show sources", human-in-the-loop        |
 | 23  | [Capstone](modules/23-capstone/)                                           | A RAG-powered agent app, end to end                                                                | everything above, integrated                                    |
 
+> **Deep dive — [`modules/06b-langgraph/`](modules/06b-langgraph/):** extends
+> module 06 with a full **LangGraph** lesson (TS + Py): state & reducers,
+> conditional edges/`ToolNode`, persistence, human-in-the-loop `interrupt()`,
+> streaming, subgraphs, supervisor handoff, and time travel — the production
+> features interviewers ask about. [`docs/LANGGRAPH.md`](docs/LANGGRAPH.md) is the
+> reference + interview cheat-sheet.
+
 **Hosted-first** (default to APIs, optional local heavy path documented): modules **09, 10** (vision/diffusion), **13** (fine-tuning), **19** (audio). Nothing multi-GB downloads unless you opt in.
 
 **Applied projects** (in [`projects/`](projects/)):

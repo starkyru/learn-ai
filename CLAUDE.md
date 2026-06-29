@@ -37,7 +37,8 @@ The module map (24 modules): 00 Setup & Providers · 01 LLM Fundamentals ·
 14 Local Inference & Optimization · 15 Reasoning & Test-time Compute ·
 16 Context Engineering · 17 MCP & Modern Agent APIs · 18 Computer Use ·
 19 Audio & Speech · 20 AI Security · 21 LLMOps & Eval · 22 AI Product UX ·
-23 Capstone. **Each module's `README.md` is the source of
+23 Capstone. Plus a deep-dive companion **06b LangGraph** (`modules/06b-langgraph/`,
+extends module 06; reference: `docs/LANGGRAPH.md`). **Each module's `README.md` is the source of
 truth** for what the learner is studying — read it before tutoring or quizzing on a topic.
 (Some module READMEs may not be written yet; if one is missing, fall back to the root
 `README.md` / `CURRICULUM.md` and say so rather than inventing content.)

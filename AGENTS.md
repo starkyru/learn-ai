@@ -42,6 +42,7 @@ The module map:
 04 Embeddings & Vectors
 05 RAG
 06 Agents
+06b LangGraph (deep dive — extends 06; see docs/LANGGRAPH.md)
 07 Advanced & Production
 08 Classification
 09 Computer Vision

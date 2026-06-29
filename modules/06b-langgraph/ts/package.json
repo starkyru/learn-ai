@@ -1,0 +1,19 @@
+{
+  "name": "@learn-ai/m06b-langgraph",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@learn-ai/llm-core": "workspace:*",
+    "@langchain/langgraph": "^0.2.74",
+    "@langchain/core": "^0.3.80",
+    "@langchain/ollama": "^0.1.0",
+    "@langchain/openai": "^0.3.0",
+    "@langchain/anthropic": "^0.3.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

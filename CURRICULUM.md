@@ -268,6 +268,55 @@ provider key or a local Ollama install.
 
 ---
 
+## Module 06b — LangGraph deep dive
+
+**Prerequisites:** Module 06 (Tasks 1 and 4). `uv sync --extra agents` (now bundles
+langgraph + langchain-core + the ollama/openai/anthropic chat-model adapters + the
+sqlite checkpointer). Free path: `ollama pull llama3.2`. TS: `pnpm install`. Switch
+provider with `LANGGRAPH_MODEL_PROVIDER`.
+
+**Why:** Module 06 Task 4 is enough to _recognise_ LangGraph; it is not enough to
+answer "have you used it in production?" Those interviews are about persistence,
+human-in-the-loop, streaming, subgraphs, multi-agent handoff, and time travel.
+This module is that depth. Reference: [`docs/LANGGRAPH.md`](docs/LANGGRAPH.md).
+
+**Learning objectives**
+
+- Explain state as channels + reducers and predict how each merges.
+- Rebuild the ReAct loop with `ToolNode`/`tools_condition`/`create_react_agent`.
+- Add durable memory with a checkpointer + `thread_id`; survive a restart.
+- Gate a tool behind a human approval with `interrupt()` / `Command(resume=…)`.
+- Stream a graph three ways (updates / values / token-level messages).
+- Compose a compiled agent as a subgraph with an isolated private channel.
+- Route between specialist workers with `Command(goto=…)` handoff.
+- Replay, fork, and edit-then-continue over checkpoints (time travel).
+
+| #   | Task                   | Depth | What you build                                                                               |
+| --- | ---------------------- | ----- | -------------------------------------------------------------------------------------------- |
+| 1   | State & reducers       | 🟡    | A graph with append / sum / overwrite channels; predict each merge before running.           |
+| 2   | Conditional + ToolNode | 🟢    | ReAct built 3 ways: hand-wired router → `tools_condition` → `create_react_agent`, all equal. |
+| 3   | Persistence            | 🟡    | Checkpointer + `thread_id`; memory across turns and across a process restart (Sqlite saver). |
+| 4   | Human-in-the-loop      | 🔴    | `interrupt()` before a `send_email` tool; approve/deny via `Command(resume=…)`.              |
+| 5   | Streaming              | 🟢    | `updates`, `values`, and token-level `messages` streaming from a multi-node graph.           |
+| 6   | Subgraphs              | 🟡    | A compiled ReAct agent run as one node in a parent graph; private channel stays isolated.    |
+| 7   | Supervisor multi-agent | 🔴    | A supervisor routes between researcher + mathematician via `Command(goto=…)` handoff.        |
+| 8   | Time travel            | 🟡    | `get_state_history`, fork from an old checkpoint, `update_state` then continue.              |
+
+**Estimated time:** 5–7 hours
+
+**Done when**
+
+- [ ] You can name each channel's reducer and predict its merge (Task 1).
+- [ ] ReAct rebuilt hand-wired, with `tools_condition`, and `create_react_agent` — all equal (Task 2).
+- [ ] Same `thread_id` remembers; different doesn't; persistent saver survives restart (Task 3).
+- [ ] A tool cannot fire without an explicit `Command(resume="approve")` (Task 4).
+- [ ] `updates` / `values` / token-level `messages` streaming all demonstrated (Task 5).
+- [ ] A compiled agent runs as a subgraph with an isolated private channel (Task 6).
+- [ ] A supervisor routes between two workers via `Command(goto=…)` and ends (Task 7).
+- [ ] List checkpoints, fork from an old one, edit-then-continue (Task 8).
+
+---
+
 ## Module 07 — Advanced & Production
 
 **Prerequisites:** Modules 05–06. `uv sync --extra production`.

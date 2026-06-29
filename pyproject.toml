@@ -22,10 +22,16 @@ vectors = [
     "qdrant-client>=1.11",
     "rank-bm25>=0.2.2",
 ]
-# `uv sync --extra agents`  (module 06)
+# `uv sync --extra agents`  (modules 06, 06b-langgraph)
 agents = [
     "langgraph>=0.2",
     "langchain-core>=0.3",
+    # tool-calling chat-model adapters — 06b picks one via LANGGRAPH_MODEL_PROVIDER:
+    "langchain-ollama>=0.2",   # free / local default (ollama pull llama3.2)
+    "langchain-openai>=0.2",
+    "langchain-anthropic>=0.2",
+    # persistent checkpointer for the restart-survival + time-travel tasks:
+    "langgraph-checkpoint-sqlite>=2.0",
 ]
 # `uv sync --extra production`  (module 07)
 production = [
