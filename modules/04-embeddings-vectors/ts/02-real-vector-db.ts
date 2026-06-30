@@ -31,7 +31,7 @@ import { ChromaClient, Collection } from "chromadb";
 interface Document {
   id: string;
   text: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, string | number | boolean>;
 }
 
 const CORPUS: Document[] = [
