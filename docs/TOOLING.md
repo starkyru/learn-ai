@@ -71,7 +71,9 @@ uv run ruff format --check .  # check without writing
 
 ### Format on save
 
-`.vscode/settings.json` enables `editor.formatOnSave` for all supported file types. Prettier is the default formatter for JS/TS/JSON/MD/YAML; Ruff is the formatter for Python. It also runs `source.fixAll.ruff` and `source.organizeImports.ruff` on Python save, so imports are always sorted.
+The repo ships `.vscode/settings.json` (and `extensions.json`), so format-on-save works out of the box once you install the recommended extensions. `editor.formatOnSave` is on for all supported file types: Prettier is the default formatter for JS/TS/JSON/MD/YAML; Ruff is the formatter for Python.
+
+Python save runs **format only** — deliberately **not** `source.fixAll.ruff` / `source.organizeImports.ruff`. Those auto-actions delete imports Ruff thinks are unused, which would silently strip the pre-provided imports in exercise scaffolds (e.g. `ChatMessage`) the moment you save, before you've written the TODO that uses them. Run `uv run ruff check --fix .` manually when you actually want that. If you personally want fix-on-save, add the `codeActionsOnSave` block to a local override (it stays out of the shared config).
 
 ---
 

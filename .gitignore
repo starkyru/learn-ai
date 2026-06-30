@@ -30,4 +30,7 @@ data/qdrant/
 # Editor / OS
 .DS_Store
 .idea/
-.vscode/
+# Ignore local editor cruft but ship the shared workspace config.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
