@@ -75,6 +75,10 @@ The repo ships `.vscode/settings.json` (and `extensions.json`), so format-on-sav
 
 Python save runs **format only** — deliberately **not** `source.fixAll.ruff` / `source.organizeImports.ruff`. Those auto-actions delete imports Ruff thinks are unused, which would silently strip the pre-provided imports in exercise scaffolds (e.g. `ChatMessage`) the moment you save, before you've written the TODO that uses them. Run `uv run ruff check --fix .` manually when you actually want that. If you personally want fix-on-save, add the `codeActionsOnSave` block to a local override (it stays out of the shared config).
 
+### Editor-agnostic baseline (`.editorconfig`)
+
+`.editorconfig` carries the indentation, charset, line-ending, and final-newline rules to **any** editor (JetBrains, Zed, Vim, VS Code with the EditorConfig extension), so you don't need Prettier/Ruff installed to match repo style. It mirrors them: 2-space indent (4 for Python), LF line endings, UTF-8, trim trailing whitespace (except Markdown, where two trailing spaces are a hard line break). Prettier and Ruff remain the source of truth for full formatting; `.editorconfig` is the lowest-common-denominator fallback.
+
 ---
 
 ## Linting

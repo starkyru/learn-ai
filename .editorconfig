@@ -1,0 +1,25 @@
+# EditorConfig — editor-agnostic baseline (https://editorconfig.org)
+# Mirrors Prettier (.prettierrc.json) and Ruff (pyproject.toml) so editors
+# without those tools (JetBrains, Zed, Vim, etc.) still match repo style.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Python: Ruff/Black — 4-space indent, 100-col.
+[*.py]
+indent_size = 4
+max_line_length = 100
+
+# Prettier-formatted web/data files — 88-col.
+[*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,yaml,yml}]
+max_line_length = 88
+
+# Markdown: keep trailing whitespace (two trailing spaces = hard line break).
+[*.md]
+trim_trailing_whitespace = false

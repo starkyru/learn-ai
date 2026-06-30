@@ -3,6 +3,7 @@
     "esbenp.prettier-vscode",
     "charliermarsh.ruff",
     "ms-python.python",
-    "dbaeumer.vscode-eslint"
+    "dbaeumer.vscode-eslint",
+    "editorconfig.editorconfig"
   ]
 }
