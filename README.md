@@ -47,6 +47,13 @@ they're where the real understanding lives.
 | 22  | [AI Product UX](modules/22-ai-product-ux/)                                 | A real mini app: streaming UI, citations drill-down, feedback, approval flow                       | trust, failure states, "show sources", human-in-the-loop        |
 | 23  | [Capstone](modules/23-capstone/)                                           | A RAG-powered agent app, end to end                                                                | everything above, integrated                                    |
 
+> **Deep dive — [`modules/05b-advanced-rag/`](modules/05b-advanced-rag/):** extends
+> module 05 with the named **advanced RAG architectures** (TS + Py): Contextual
+> Retrieval, Corrective RAG (CRAG), Self-RAG, and GraphRAG (multi-hop, from
+> scratch) — the feedback-loop and graph patterns that fix naive RAG's blind
+> spots. [`docs/ADVANCED_RAG.md`](docs/ADVANCED_RAG.md) is the reference +
+> pick-by-failure cheat-sheet.
+
 > **Deep dive — [`modules/06b-langgraph/`](modules/06b-langgraph/):** extends
 > module 06 with a full **LangGraph** lesson (TS + Py): state & reducers,
 > conditional edges/`ToolNode`, persistence, human-in-the-loop `interrupt()`,

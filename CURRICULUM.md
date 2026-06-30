@@ -234,6 +234,45 @@ provider key or a local Ollama install.
 
 ---
 
+## Module 05b — Advanced RAG Architectures
+
+**Prerequisites:** Module 05 (Tasks 1–2). No new deps — `uv sync` is enough; the
+graph in Task 4 is hand-rolled. The embedding task (1) needs a provider with
+`embed()` (`LLM_PROVIDER=openai`/`ollama`/`nvidia`/`lmstudio`); chat-only tasks
+(2–4) run on any provider. Reference: [`docs/ADVANCED_RAG.md`](docs/ADVANCED_RAG.md).
+
+**Estimated time:** 4–6 hours.
+
+**Why:** Module 05 builds _naive_ RAG — an open loop that retrieves once, trusts
+the result, and generates. The four architectures here each add the feedback loop
+or structure it lacks: fix the chunk before embedding, grade retrieval and
+self-correct, gate retrieval adaptively and check groundedness, or swap the flat
+vector list for a graph to answer multi-hop questions.
+
+**Learning objectives**
+
+- Explain why a human-readable chunk can be unretrievable, and fix it with
+  Contextual Retrieval (embed an augmented chunk, show the original).
+- Grade retrieval into Correct/Incorrect/Ambiguous and self-correct (CRAG).
+- Gate retrieval per query and critique groundedness with reflection tokens (Self-RAG).
+- Build a knowledge graph by hand and answer a multi-hop question by traversal (GraphRAG).
+
+| #   | Task                  | Depth | What you build                                                                                           |
+| --- | --------------------- | ----- | -------------------------------------------------------------------------------------------------------- |
+| 1   | Contextual Retrieval  | 🟡    | Per-chunk context generation; compare a naive vs contextual index on context-poor queries.               |
+| 2   | Corrective RAG (CRAG) | 🟡    | A retrieval evaluator + query rewrite + web-search fallback; route in- vs out-of-corpus queries.         |
+| 3   | Self-RAG              | 🟡    | Emulated `Retrieve`/`IsRel`/`IsSup` reflection tokens; adaptive retrieval + support check.               |
+| 4   | GraphRAG (multi-hop)  | 🔴    | LLM triple extraction → adjacency-dict graph → BFS subgraph → answer a 2-hop question. No graph library. |
+
+**Done when**
+
+- [ ] Contextual index out-ranks the naive index on a context-poor query (Task 1).
+- [ ] An in-corpus query routes to Correct; an out-of-corpus query routes to Incorrect → fallback (Task 2).
+- [ ] A closed-book query skips retrieval; a corpus query filters irrelevant passages and reports `IsSup` (Task 3).
+- [ ] A 2-hop question is answered from the hand-built graph, printing the connecting path (Task 4).
+
+---
+
 ## Module 06 — Agents
 
 **Prerequisites:** Modules 02–05. `uv sync --extra agents` for LangGraph.
