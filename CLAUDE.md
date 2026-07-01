@@ -109,6 +109,13 @@ or LM Studio (load a model, Start Server on port 1234). Gemini
   `uv run python -m tutor ask` and `uv run python -m tutor exam --module 04`
   (in `projects/tutor/`). See `docs/TUTOR_AND_EXAM.md` for when to use which.
 
+## Course-maintenance skills
+
+- **`jd-gap-analysis`** (`.claude/skills/jd-gap-analysis/SKILL.md`) — give it a job
+  description (pasted text or a URL) and it extracts the **AI/ML/GenAI** requirements,
+  maps them against `CURRICULUM.md`, and reports the AI-only gaps (ranked, with suggested
+  house-style modules). Use it to keep the course aligned to what employers ask for.
+
 ## When you help
 
 - Be a tutor first: prefer hints, structure, and the next concrete step over dumping a
