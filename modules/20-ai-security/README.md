@@ -11,8 +11,9 @@ The goal is hardened production software, not exploiting others' systems.
 
 You will build a naive assistant and inject it, poison a RAG knowledge base,
 demonstrate an over-privileged agent destroying a file system, run a battery
-of jailbreaks scored by an LLM judge, and map every finding to the OWASP LLM
-Top 10 with a defence-in-depth plan.
+of jailbreaks scored by an LLM judge, lock down a retrieval pipeline so
+sensitive data is never retrievable in the first place, and map every finding
+to the OWASP LLM Top 10 with a defence-in-depth plan.
 
 ---
 
@@ -149,6 +150,58 @@ similarity.
 - Access control at retrieval time: each chunk has an ACL; only return chunks
   the querying user is permitted to see.
 
+### Sensitive-data protection: a defence-in-depth stack (OWASP LLM06)
+
+Output filtering (covered above) is the *last* line of defence — by the time you
+are scanning a response for a leaked credit-card number, the secret has already
+travelled through embedding, retrieval, and the model. A robust system pushes
+the controls **earlier**, so the sensitive data is never reachable. Four layers,
+outer to inner:
+
+```
+                 ┌─────────────────────────────────────────────┐
+ user query ───► │ 1. INPUT: exfiltration-intent classifier     │ ─► DENY
+                 ├─────────────────────────────────────────────┤
+                 │ 2. RETRIEVAL: per-user ACL filter, then rank │
+                 ├─────────────────────────────────────────────┤
+      corpus ───►│ 0. INDEX (ingest): redact/tokenise secrets   │
+                 ├─────────────────────────────────────────────┤
+                 │ 3. GENERATION: ground strictly in context    │
+                 ├─────────────────────────────────────────────┤
+                 │ 4. OUTPUT: DLP filter (last resort)          │ ─► answer
+                 └─────────────────────────────────────────────┘
+```
+
+1. **Redaction / tokenisation at index time.** Scrub secrets and PII from
+   documents *before* they are embedded. Replace a card number with
+   `[REDACTED_CARD]`, an API key with `[REDACTED_API_KEY]`. This is the
+   strongest control because it removes the data: **what is not in the index
+   cannot be retrieved, and what cannot be retrieved cannot leak.** Contrast with
+   output filtering, which only hopes to catch the leak on the way out.
+
+2. **Least-privilege retrieval (document-level ACLs).** The retriever must filter
+   the corpus to the chunks the *requesting user* is allowed to see **before**
+   ranking — not after. Filtering after ranking still embeds and scores forbidden
+   chunks, and an off-by-one in the top-k cut then leaks them. A high cosine score
+   never overrides an ACL. This is the retrieval analogue of the tool-level
+   least-privilege principle from LLM08.
+
+3. **Data-exfiltration intent classifier (input side).** Distinct from the
+   prompt-injection classifier: injection detection asks "is the user trying to
+   override my instructions?"; this asks "is the user trying to *extract* secrets,
+   credentials, or a bulk dump of others' PII?" A cheap pre-flight LLM call
+   classifies the query and denies the request *before* retrieval runs, so the
+   sensitive corpus is never even searched for a malicious query.
+
+4. **Grounding.** The generation prompt says "answer ONLY from the provided
+   context; if it is not there, say 'I don't know'" — so the model cannot invent
+   or infer a secret that redaction and ACLs kept out of context. (Grounding and
+   faithfulness are developed in modules 05 and 05b; here they are the innermost
+   safety layer.)
+
+No single layer is trusted: each assumes the others failed. That redundancy is
+the whole point of defence-in-depth.
+
 ### OWASP LLM Top 10 (2025)
 
 | ID | Risk | Key mitigation |
@@ -199,6 +252,7 @@ uv run python modules/20-ai-security/py/task2_indirect_injection.py
 uv run python modules/20-ai-security/py/task3_excessive_agency.py
 uv run python modules/20-ai-security/py/task4_red_team_harness.py
 uv run python modules/20-ai-security/py/task5_vector_weaknesses.py
+uv run python modules/20-ai-security/py/task6_least_privilege_retrieval.py
 ```
 
 **TypeScript** (from the repo root):
@@ -209,6 +263,7 @@ pnpm tsx modules/20-ai-security/ts/task2_indirect_injection.ts
 pnpm tsx modules/20-ai-security/ts/task3_excessive_agency.ts
 pnpm tsx modules/20-ai-security/ts/task4_red_team_harness.ts
 pnpm tsx modules/20-ai-security/ts/task5_vector_weaknesses.ts
+pnpm tsx modules/20-ai-security/ts/task6_least_privilege_retrieval.ts
 ```
 
 ---
@@ -345,6 +400,45 @@ similarity search, then study the full OWASP LLM Top 10 mapping.
 
 ---
 
+### Task 6 — Least-privilege retrieval & data-loss prevention  🟡
+
+**Goal:** build the three RAG-defence layers that Tasks 2 and 5 left as concepts:
+redact secrets at index time, enforce per-user document ACLs at retrieval time,
+and classify data-exfiltration intent at the input — with grounding and an output
+DLP filter closing the stack. The lesson: the strongest control removes the data,
+so output filtering is the *last* resort, not the first.
+
+**Steps**
+
+1. Read `task6_least_privilege_retrieval.py` / `.ts`. Study `RAW_DOCS` (each has
+   an `owner` and `classification`), `SECRET_PATTERNS`, and the four layered
+   functions.
+2. **TODO 1**: implement `redact_secrets()` — apply every `SECRET_PATTERNS` rule
+   so secrets are replaced with typed placeholders *before* embedding.
+3. **TODO 2**: implement `classify_exfil_intent()` — a pre-flight LLM call that
+   returns `True` (DENY) for queries trying to extract secrets / bulk PII.
+4. **TODO 3 & 4**: implement `user_can_access()` and `retrieve_with_acl()` —
+   filter the corpus by ACL **first**, then embed the query and rank the
+   permitted docs only.
+5. **TODO 5**: implement `answer_grounded()` — answer strictly from context
+   ("I don't know" otherwise), then pass the reply through `redact_secrets()` as
+   a last-resort DLP backstop.
+6. Run the script and walk the three scenarios: (A) an exfiltration query is
+   denied before retrieval, (B) `alice` cannot retrieve `bob`'s private billing
+   doc, (C) the staging API key was redacted at index time and is absent from
+   every retrievable chunk.
+
+**Acceptance**
+- Scenario A returns `[DENIED]` without ever calling the retriever.
+- Scenario B's retrieval result never contains `doc-bob-billing` for `alice`
+  (the built-in `assert` must hold).
+- Scenario C's assert holds: the raw `sk-live-...` key is not present in any
+  retrieved chunk.
+- You can explain why index-time redaction is a stronger control than output
+  filtering, and why the ACL filter must run before ranking, not after.
+
+---
+
 ## Done when
 
 - [ ] Task 1: successfully injected a naive assistant AND blocked the same attacks
@@ -357,6 +451,9 @@ similarity search, then study the full OWASP LLM Top 10 mapping.
        improves after applying task-1 defences.
 - [ ] Task 5: vector poisoning and prompt leakage demonstrated; OWASP Top 10
        fully mapped to defences.
+- [ ] Task 6: secrets redacted at index time, per-user ACL enforced before
+       ranking, and an exfiltration-intent query denied before retrieval — all
+       three scenario asserts hold.
 
 ---
 
@@ -389,5 +486,10 @@ similarity search, then study the full OWASP LLM Top 10 mapping.
 - [ ] All tool calls are logged with caller identity and arguments (no secrets in arguments).
 - [ ] Model outputs are scanned for PII, credential patterns, and `<leak>` / injection artefacts before returning to the user.
 - [ ] A red-team harness runs on every code change to the system prompt or RAG pipeline (CI gate).
-- [ ] The vector store uses per-document ACLs and content signing.
+- [ ] The vector store uses per-document ACLs and content signing; retrieval
+      filters by the requesting user's ACL *before* ranking, not after.
+- [ ] Secrets and PII are redacted / tokenised at ingest time so raw sensitive
+      data never enters the index.
+- [ ] A data-exfiltration intent classifier denies secret/bulk-PII queries before
+      retrieval runs (separate from the prompt-injection classifier).
 - [ ] API keys are stored in a secrets manager, not environment files committed to source control.
