@@ -50,18 +50,17 @@ def sinusoidal_encoding(max_len: int, d_model: int) -> np.ndarray:
 
     Returns: float64 array of shape (max_len, d_model).
 
-    TODO: implement.
-      1. positions = np.arange(max_len)[:, None]            shape (max_len, 1)
-      2. For the paired index i in 0..d_model/2-1, the divisor is
-           div = 10000 ** (2i / d_model)
-         Build these for all even columns at once:
-           even_i = np.arange(0, d_model, 2)                # 0,2,4,... length d_model/2
-           div_term = 10000.0 ** (even_i / d_model)         # note: even_i = 2i
-      3. angles = positions / div_term                      shape (max_len, d_model/2)
-      4. pe = np.zeros((max_len, d_model))
-         pe[:, 0::2] = np.sin(angles)     # even columns
-         pe[:, 1::2] = np.cos(angles)     # odd columns
-      5. return pe
+    TODO: implement. Steps:
+      - Make a column vector of positions 0..max_len-1 (shape (max_len, 1)) so it
+        broadcasts against the per-dimension divisors.
+      - Build the divisor term for each of the d_model/2 pairs: for even column index
+        (0, 2, 4, ...), the divisor is 10000 ** (that index / d_model). Vectorise this
+        over np.arange(0, d_model, 2) rather than looping.
+      - Divide positions by the divisor term to get an angles array of shape
+        (max_len, d_model/2).
+      - Allocate the (max_len, d_model) table and fill the EVEN columns (slice 0::2)
+        with sin(angles) and the ODD columns (slice 1::2) with cos(angles).
+      - Return the table.
     """
     # TODO: implement sinusoidal positional encoding
     raise NotImplementedError("TODO: implement sinusoidal_encoding()")

@@ -49,10 +49,9 @@ answering, enterprise search, and chatbots that need factual grounding.
 //         Remember to call `.free()` on the encoder when done to avoid WASM leaks.
 // ---------------------------------------------------------------------------
 function countTokens(text: string): number {
-  // const enc = get_encoding("cl100k_base");
-  // const tokens = enc.encode(text);
-  // enc.free();
-  // return tokens.length;
+  // Replace the fallback below: get a "cl100k_base" encoder via get_encoding(),
+  // encode the text, take the `.length` of the returned ids as the count, and
+  // `.free()` the encoder before returning (WASM memory won't GC on its own).
 
   // Rough fallback until you implement the above:
   return Math.ceil(text.split(/\s+/).length * 1.3);
@@ -95,10 +94,10 @@ async function main() {
   // ---------------------------------------------------------------------------
   console.log("\n--- real API call ---");
   const prompt = "Summarise this in one sentence: " + SAMPLE_TEXT;
-  // const result = await llm.chat([{ role: "user", content: prompt }]);
-  // console.log(`Response: ${result.text}`);
-  // console.log(`Provider says — input: ${result.usage?.inputTokens}, output: ${result.usage?.outputTokens}`);
-  // console.log(`Tiktoken estimate — input: ${countTokens(prompt)}`);
+  //         Send `prompt` as one user message via llm.chat(). Read the exact
+  //         counts off `result.usage` (inputTokens / outputTokens — note it may
+  //         be undefined for some providers) and print them next to your own
+  //         countTokens(prompt) estimate to see how close the approximation is.
   console.log("TODO: make the real API call above.");
 
   // ---------------------------------------------------------------------------

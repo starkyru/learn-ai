@@ -50,13 +50,15 @@ def measure_throughput(prompt: str, provider) -> dict:
       "model"       : provider.chat_model
 
     TODO:
-      1. Record start time with time.perf_counter().
-      2. Call provider.chat([ChatMessage("user", prompt)], ChatOptions(max_tokens=256)).
-      3. Record end time.
-      4. Compute elapsed_s = end - start.
-      5. Get tokens_out from result.usage.output_tokens (may be None → use 0).
-      6. Compute tokens_per_s = tokens_out / elapsed_s if elapsed_s > 0 else 0.
-      7. Return the dict.
+      1. Snapshot a monotonic clock with time.perf_counter() before the call.
+      2. Send one message through provider.chat(). Build a list with a single
+         "user" ChatMessage carrying the prompt, and pass ChatOptions with a
+         bounded max_tokens (a couple hundred).
+      3. Snapshot the clock again; elapsed_s is the difference.
+      4. Read the output token count off result.usage.output_tokens — it can be
+         None, so fall back to 0.
+      5. tokens_per_s is tokens_out / elapsed_s, guarding against a zero elapsed.
+      6. Return the dict with the keys documented above.
     """
     # TODO: implement measure_throughput
     raise NotImplementedError("TODO: implement measure_throughput()")

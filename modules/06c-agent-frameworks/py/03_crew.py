@@ -77,19 +77,16 @@ class Agent:
         Then call self.chat_fn(messages) and return the reply.
 
         TODO: implement.
-          1. system = (
-                 f"You are {self.role}. "
-                 f"Your goal is {self.goal}. "
-                 f"Backstory: {self.backstory}"
-             )
-          2. Build the user message. Start with task.description. If `context`
-             is non-empty, append a line:
-                 f"\\n\\nContext from previous work:\\n{context}"
-             Then append:
-                 f"\\n\\nExpected output: {task.expected_output}"
-          3. messages = [{"role": "system", "content": system},
-                         {"role": "user",   "content": user}]
-          4. return self.chat_fn(messages)
+          - Build the system message from this agent's persona — its role, goal,
+            and backstory — so the model knows WHO it is.
+          - Build the user message: start from task.description; only when
+            `context` is non-empty, append a labelled "Context from previous
+            work" section carrying it; then append the expected-output hint.
+            (The stub keys off the exact phrase "Context from previous work" to
+            detect threading, so keep that label.)
+          - Assemble a `list[dict[str, str]]`: a "system" message then a "user"
+            message, each a {"role", "content"} dict.
+          - Call self.chat_fn(messages) and return its reply.
         """
         # TODO: implement Agent.execute (assemble a role-grounded prompt)
         raise NotImplementedError("TODO: implement Agent.execute()")
@@ -126,18 +123,15 @@ class Crew:
         Only `process == "sequential"` is supported here (that's the common one).
 
         TODO: implement.
-          1. context = ""  (no prior work before the first task)
-          2. For each task in self.tasks, in order:
-               a. output = task.agent.execute(task, context)
-               b. record it: self.transcript.append(
-                      {"agent": task.agent.role,
-                       "task": task.description,
-                       "context_in": context,
-                       "output": output}
-                  )
-               c. context = output   # thread this output into the NEXT task
-          3. Return the LAST task's output (the final result).
-             (If there are no tasks, return "".)
+          - Start with an empty context (nothing done before the first task).
+          - Walk self.tasks in order. For each task: run its agent with the
+            current context (task.agent.execute(task, context)), then thread that
+            output into the NEXT task by making it the new context.
+          - Record one transcript entry per task with keys "agent"
+            (task.agent.role), "task" (task.description), "context_in" (the
+            context that went IN, before this task ran), and "output" — the tests
+            read these to prove threading and ordering.
+          - Return the last task's output (return "" if there are no tasks).
         """
         # TODO: implement Crew.kickoff (sequential threading of outputs)
         raise NotImplementedError("TODO: implement Crew.kickoff()")

@@ -37,8 +37,8 @@
 
 /**
  * He initialisation scale (std of the Normal), tuned for ReLU.
- *   scale = sqrt(2 / fan_in)
- * TODO: return the He scale factor.
+ * TODO: return the He scale factor (see the He-init formula in the file header) —
+ *       it depends only on `fanIn`.
  */
 function heInit(fanIn: number, _fanOut: number): number {
   throw new Error("TODO: implement heInit()");
@@ -46,8 +46,8 @@ function heInit(fanIn: number, _fanOut: number): number {
 
 /**
  * Xavier/Glorot initialisation scale (std of the Normal), tuned for tanh/sigmoid.
- *   scale = sqrt(2 / (fan_in + fan_out))
- * TODO: return the Xavier scale factor.
+ * TODO: return the Xavier scale factor (see the Xavier-init formula in the file
+ *       header) — it uses both `fanIn` and `fanOut`.
  */
 function xavierInit(fanIn: number, fanOut: number): number {
   throw new Error("TODO: implement xavierInit()");
@@ -68,8 +68,8 @@ interface OptState {
 
 /**
  * Plain SGD, IN PLACE:  param[i] -= lr * grad[i]
- * TODO: implement.
- *   for each i: param[i] -= lr * grad[i]
+ * TODO: step every element of `param` down its gradient by `lr`, mutating the
+ *       array in place (assign into `param[i]`, don't reassign `param`).
  */
 function sgdUpdate(
   param: number[],
@@ -84,10 +84,9 @@ function sgdUpdate(
  * SGD with momentum, IN PLACE. state.v holds the running velocity (init 0).
  *   v[i] ← β·v[i] + (1-β)·g[i]
  *   param[i] ← param[i] - lr·v[i]
- * TODO: implement (use beta = 0.9).
- *   for each i:
- *     state.v[i] = beta * state.v[i] + (1 - beta) * grad[i];
- *     param[i]  -= lr * state.v[i];
+ * TODO: implement the two-line rule above (β = 0.9, already declared below). For
+ *       each element: update the persistent velocity `state.v[i]` to the moving
+ *       average of the gradient, then step `param[i]` down that velocity by `lr`.
  */
 function momentumUpdate(
   param: number[],
@@ -107,14 +106,15 @@ function momentumUpdate(
  *   m̂ = m / (1 - β1^t)
  *   v̂ = v / (1 - β2^t)
  *   param ← param - lr·m̂ / (sqrt(v̂) + ε)
- * TODO: implement (β1=0.9, β2=0.999, ε=1e-8).
- *   state.t += 1; const t = state.t;
- *   for each i:
- *     state.m[i]     = beta1 * state.m[i]     + (1 - beta1) * grad[i];
- *     state.vAdam[i] = beta2 * state.vAdam[i] + (1 - beta2) * grad[i] * grad[i];
- *     const mHat = state.m[i]     / (1 - Math.pow(beta1, t));
- *     const vHat = state.vAdam[i] / (1 - Math.pow(beta2, t));
- *     param[i] -= lr * mHat / (Math.sqrt(vHat) + eps);
+ * TODO: implement the six-line rule above (β1/β2/ε already declared below).
+ *   - Bump the step counter `state.t` and read it as `t` (needed for bias
+ *     correction — this is why t must persist in state).
+ *   - For each element: update the persistent 1st moment `state.m[i]` (moving avg
+ *     of the gradient) and 2nd moment `state.vAdam[i]` (moving avg of the gradient
+ *     SQUARED), each mixed with beta1/beta2.
+ *   - Bias-correct each moment by dividing by (1 - beta^t) (use Math.pow).
+ *   - Step `param[i]` in place: corrected 1st moment over sqrt(corrected 2nd
+ *     moment) + eps, scaled by `lr`.
  */
 function adamUpdate(
   param: number[],

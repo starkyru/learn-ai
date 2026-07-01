@@ -54,10 +54,9 @@ answering, enterprise search, and chatbots that need factual grounding.
 #         for other models. For Claude, token counts differ slightly.
 # ---------------------------------------------------------------------------
 def count_tokens(text: str, encoding_name: str = "cl100k_base") -> int:
-    # TODO: implement
+    # Replace the placeholder below: get the encoder via tiktoken.get_encoding(),
+    # encode the text into token ids, and return how many ids there are.
     enc = tiktoken.get_encoding(encoding_name)
-    # tokens = enc.encode(text)
-    # return len(tokens)
     _ = enc  # remove this line once you use enc above
     return len(text.split())  # rough placeholder
 
@@ -100,10 +99,10 @@ def main() -> None:
     # -------------------------------------------------------------------------
     print("\n--- real API call ---")
     prompt = "Summarise this in one sentence: " + SAMPLE_TEXT
-    # result = llm.chat([{"role": "user", "content": prompt}])
-    # print(f"Response: {result.text}")
-    # print(f"Provider says — input: {result.usage.input_tokens}, output: {result.usage.output_tokens}")
-    # print(f"Tiktoken estimate — input: {count_tokens(prompt)}")
+    #         Send `prompt` as one user message via llm.chat(). Read the exact
+    #         counts off result.usage (input_tokens / output_tokens) and print
+    #         them next to your own count_tokens(prompt) estimate to see how
+    #         close the approximation is.
     print("TODO: make the real API call above.")
 
     # -------------------------------------------------------------------------

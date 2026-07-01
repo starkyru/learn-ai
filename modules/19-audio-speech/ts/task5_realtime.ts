@@ -65,30 +65,21 @@ async function runRealtimeSession(audioPath: string): Promise<void> {
 
   const client = new OpenAI({ apiKey });
 
-  // TODO 1: Open a Realtime session using the openai SDK's WebSocket helper.
+  // TODO 1: Drive one realtime turn over the WebSocket. Each event has a `type`
+  //   field (see the docstring and dryRun() for the exact event names/shapes).
   //
-  //   The SDK exposes:
-  //     const session = await client.beta.realtime.connect({
-  //       model: REALTIME_MODEL,
-  //     });
-  //
-  //   Then send events in order:
-  //     session.send({ type: "session.update", session: {
-  //       modalities: ["audio", "text"],
-  //       voice: "nova",
-  //       input_audio_format: "pcm16",
-  //       output_audio_format: "pcm16",
-  //     }});
-  //
-  //   Read the WAV PCM bytes (skip the 44-byte header), base64-encode them,
-  //   and send:
-  //     session.send({ type: "input_audio_buffer.append", audio: base64Str });
-  //     session.send({ type: "input_audio_buffer.commit" });
-  //     session.send({ type: "response.create" });
-  //
-  //   Listen for incoming events with session.on("message", handler).
-  //   Accumulate audio delta chunks and print transcript deltas.
-  //   On "response.done", write collected audio to ASSETS_DIR/realtime_reply.raw.
+  //   - Open a session with the openai SDK's realtime WebSocket helper, passing
+  //     REALTIME_MODEL.
+  //   - Send a `session.update` event whose session config enables both audio and
+  //     text modalities, picks a voice, and sets pcm16 for input and output audio.
+  //   - Read the WAV's PCM bytes (skip the 44-byte header), base64-encode them,
+  //     and send them in an `input_audio_buffer.append`; then `commit` the buffer
+  //     and request a `response.create`.
+  //   - Subscribe to incoming messages (e.g. `session.on("message", ...)`):
+  //       * accumulate the base64 audio from each `response.audio.delta`,
+  //       * print the text from each `response.audio_transcript.delta`.
+  //   - When `response.done` arrives, decode the collected audio and write it to
+  //     ASSETS_DIR/realtime_reply.raw.
   throw new Error("TODO 1: implement realtime WebSocket session");
 }
 

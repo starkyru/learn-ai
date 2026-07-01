@@ -61,12 +61,9 @@ REVISE_PROMPT = (
 #         Return the text of the draft.
 # ---------------------------------------------------------------------------
 def draft(task_prompt: str) -> str:
-    # llm = get_provider()
-    # result = llm.chat(
-    #     [ChatMessage("user", task_prompt)],
-    #     ChatOptions(temperature=0.7),
-    # )
-    # return result.text
+    # Get the default provider, make one chat call with a list[ChatMessage]
+    # holding just the task_prompt as a "user" message, using
+    # ChatOptions(temperature=0.7), and return the reply text.
     raise NotImplementedError("TODO: implement draft()")
 
 
@@ -77,16 +74,10 @@ def draft(task_prompt: str) -> str:
 #         Temperature=0 keeps the critique factual and repeatable.
 # ---------------------------------------------------------------------------
 def critique(task_prompt: str, draft_text: str) -> str:
-    # llm = get_provider()
-    # messages = [
-    #     ChatMessage("system", CRITIQUE_PROMPT),
-    #     ChatMessage(
-    #         "user",
-    #         f"Task: {task_prompt}\n\nDraft answer:\n{draft_text}",
-    #     ),
-    # ]
-    # result = llm.chat(messages, ChatOptions(temperature=0))
-    # return result.text
+    # Build a list[ChatMessage]: the CRITIQUE_PROMPT constant as the "system"
+    # message, and a "user" message that presents both the task and the draft
+    # answer (label each so the model can tell them apart). Call llm.chat with
+    # ChatOptions(temperature=0) and return the reply text.
     raise NotImplementedError("TODO: implement critique()")
 
 
@@ -96,20 +87,11 @@ def critique(task_prompt: str, draft_text: str) -> str:
 #         Return the revised text.
 # ---------------------------------------------------------------------------
 def revise(task_prompt: str, draft_text: str, critique_text: str) -> str:
-    # llm = get_provider()
-    # messages = [
-    #     ChatMessage("system", REVISE_PROMPT),
-    #     ChatMessage(
-    #         "user",
-    #         (
-    #             f"Task: {task_prompt}\n\n"
-    #             f"Draft answer:\n{draft_text}\n\n"
-    #             f"Critique:\n{critique_text}"
-    #         ),
-    #     ),
-    # ]
-    # result = llm.chat(messages, ChatOptions(temperature=0.3))
-    # return result.text
+    # Build a list[ChatMessage]: the REVISE_PROMPT constant as the "system"
+    # message, and a "user" message that supplies all three pieces the reviser
+    # needs — the task, the draft answer, and the critique (label each). Call
+    # llm.chat with a low-but-nonzero temperature (e.g. ChatOptions(
+    # temperature=0.3)) and return the reply text.
     raise NotImplementedError("TODO: implement revise()")
 
 

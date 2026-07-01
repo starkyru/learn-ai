@@ -268,17 +268,22 @@ def train_denoiser(
 
     TODO A — implement the body of this function:
 
-        For each mini-batch:
-        1. Sample a random mini-batch of x0 from `data`.
-        2. Sample random integer timesteps t uniformly from [1, T-1].
-        3. Compute x_t, eps = q_sample(x0, t, schedule, rng).
-        4. Build the model input: concatenate x_t with sinusoidal_embedding(t).
-        5. Forward pass: eps_pred = model.forward(inp).
-        6. Compute MSE loss: loss = np.mean((eps_pred - eps) ** 2).
-        7. Backward: d_out = 2 * (eps_pred - eps) / eps.size.
-                     model.backward(d_out).
-        8. model.step(lr).
-        9. Record and print the loss every 50 epochs.
+        Loop for `n_epochs`. Each iteration is one mini-batch step:
+        1. Draw a random mini-batch of `batch_size` rows from `data` (index
+           with `rng.integers`).
+        2. Sample integer timesteps `t` of shape (batch,), uniform over the
+           valid range [1, T-1] (t=0 is the clean sample — skip it).
+        3. Get the noised batch and its target noise from `q_sample(x0, t,
+           schedule, rng)` — it returns `(x_t, eps)`.
+        4. Build the MLP input by concatenating `x_t` with
+           `sinusoidal_embedding(t)` along the feature axis → shape
+           (batch, 2 + embed_dim).
+        5. Run `model.forward(inp)` to get the predicted noise `eps_pred`.
+        6. Compute the scalar MSE between `eps_pred` and the target `eps`.
+        7. Backprop: the gradient of MSE w.r.t. the output is
+           2·(eps_pred − eps) / (number of elements). Pass that to
+           `model.backward(...)`, then apply `model.step(lr)`.
+        8. Append the loss and print progress every ~50 epochs.
 
     Returns:
         losses: list of per-epoch mean losses.
@@ -322,9 +327,13 @@ def ddpm_reverse_step(
         x_{t-1}:  (batch, 2)
 
     TODO B — implement this function:
-        1. Read betas[t], alphas[t], alpha_bars[t] from schedule.
-        2. Compute x_{t-1} per the formula above.
-        3. If t > 1, add σₜ·z; if t == 1, skip the noise term (deterministic final step).
+        1. Pull the scalars βₜ, αₜ, and ᾱₜ for this `t` out of `schedule`.
+        2. Apply the reverse formula in the docstring above to turn `x_t` and
+           `eps_pred` into the mean of x_{t-1} (a deterministic combination of
+           the two, scaled by 1/√αₜ).
+        3. Add the stochastic term σₜ·z (with σₜ = √βₜ and z drawn from
+           `rng.standard_normal`) only when t > 1; on the final step (t == 1)
+           return the mean with no added noise.
     """
     raise NotImplementedError(
         "TODO B: implement the DDPM reverse step — see the docstring above.\n"

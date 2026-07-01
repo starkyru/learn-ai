@@ -32,8 +32,8 @@ async function buildApp(checkpointer: any) {
     .addNode("chat", chatNode)
     .addEdge(START, "chat");
 
-  // TODO 1: compile WITH the checkpointer so state is saved per thread.
-  //   return graph.compile({ checkpointer });
+  // TODO 1: compile the graph, but pass the `checkpointer` in the compile options
+  //         so every super-step is saved per thread.
   return graph.compile();
 }
 
@@ -46,19 +46,18 @@ async function ask(app: any, text: string, threadId: string): Promise<string> {
 async function main() {
   const app = await buildApp(new MemorySaver());
 
-  // TODO 2: same thread remembers.
-  //   console.log(await ask(app, "My name is Ada. Remember it.", "thread-A"));
-  //   console.log(await ask(app, "What's my name?", "thread-A"));   // -> "Ada"
+  // TODO 2: same thread remembers. Call `ask(app, ..., threadId)` twice on ONE
+  //         thread id — first tell it a fact to remember, then ask it back — and log
+  //         each reply. The second reply should recall the fact.
 
-  // TODO 3: a different thread does NOT remember.
-  //   console.log(await ask(app, "What's my name?", "thread-B"));   // -> doesn't know
+  // TODO 3: a different thread does NOT remember. Ask the same recall question on a
+  //         DIFFERENT thread id and log it — the model should not know.
 
   // TODO 4 (restart-survival): swap in a file-backed saver and re-run the script.
-  //   import { SqliteSaver } from "@langchain/langgraph-checkpoint-sqlite";
-  //   const saver = SqliteSaver.fromConnString("checkpoints.sqlite");
-  //   const persistent = await buildApp(saver);
-  //   console.log(await ask(persistent, "Codename is Borealis.", "persist-1"));
-  //   console.log(await ask(persistent, "What's the codename?", "persist-1"));
+  //         Import `SqliteSaver` (from @langchain/langgraph-checkpoint-sqlite),
+  //         create one via its `fromConnString(...)` pointing at a `.sqlite` file,
+  //         buildApp(saver), then run a fact-then-recall pair on one thread id.
+  //         Re-run the script: the same thread still knows the fact.
   console.log("TODO: compile with the checkpointer, then run the thread demos.");
 }
 

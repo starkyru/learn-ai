@@ -39,14 +39,10 @@ type Matrix = number[][];
  *
  * dModel is assumed even. Every value lies in [-1, 1] (sin/cos range).
  *
- * TODO: implement.
- *   Build a maxLen × dModel array. For each pos and each paired index i
- *   (0 .. dModel/2 - 1):
- *     const div = Math.pow(10000, (2 * i) / dModel);
- *     const angle = pos / div;
- *     pe[pos][2*i]     = Math.sin(angle);   // even column
- *     pe[pos][2*i + 1] = Math.cos(angle);   // odd column
- *   return pe.
+ * TODO: implement. Build a maxLen × dModel array. For each position pos and each
+ * paired index i (0 .. dModel/2 - 1), compute the divisor 10000 raised to
+ * (2*i / dModel) and the angle pos / divisor. Write Math.sin(angle) into the EVEN
+ * column (2*i) and Math.cos(angle) into the ODD column (2*i + 1). Return the table.
  */
 function sinusoidalEncoding(maxLen: number, dModel: number): Matrix {
   // TODO: implement sinusoidal positional encoding

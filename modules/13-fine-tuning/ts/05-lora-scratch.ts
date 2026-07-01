@@ -123,9 +123,10 @@ interface LoraAdapter {
  * A is non-zero so gradients flow immediately.
  *
  * TODO:
- *   1. A = randnMatrix(r, dIn, 0.01, seed)
- *   2. B = zerosMatrix(dOut, r)
- *   3. Return { A, B }
+ *   1. Build A as an [r × dIn] matrix of small normal samples (std ~0.01) —
+ *      the randnMatrix(rows, cols, std, seed) helper does this.
+ *   2. Build B as an [dOut × r] all-zeros matrix (the zerosMatrix helper).
+ *   3. Return the adapter { A, B }.
  */
 function loraInit(dOut: number, dIn: number, r: number, seed = 42): LoraAdapter {
   // TODO: implement loraInit
@@ -143,11 +144,9 @@ function loraInit(dOut: number, dIn: number, r: number, seed = 42): LoraAdapter 
  *        = (W + B @ A) @ x    ← same result, different order
  *
  * TODO:
- *   Use matvec() for matrix-vector products.
- *   Return W_x + B_Ax where:
- *     W_x  = matvec(W, x)
- *     Ax   = matvec(A, x)
- *     B_Ax = matvec(B, Ax)
+ *   Build the result from matrix-vector products (the matvec helper) and
+ *   vecadd. Compute the base projection W @ x, then the correction in the
+ *   efficient order — A @ x first (length-r), then B @ that — and add them.
  */
 function loraForward(
   x: number[],
@@ -183,10 +182,11 @@ function countParams(dOut: number, dIn: number, r: number): { full: number; lora
  * Check that (W + B@A) @ x  equals  W@x + B@(A@x) to within `tol`.
  *
  * TODO:
- *   1. out1 = matvec(matadd(W, matmul(B, A)), x)
- *   2. out2 = loraForward(x, W, A, B)
- *   3. Compute max absolute difference.
- *   4. Return maxDiff < tol.
+ *   1. Compute the merged-way output: form (W + B@A) with matadd/matmul, then
+ *      apply it to x with matvec.
+ *   2. Compute the factored-way output — that's exactly what loraForward does.
+ *   3. Find the largest absolute element-wise difference between the two.
+ *   4. Return whether that max difference is below tol.
  */
 function verifyEquivalence(
   W: number[][],
@@ -205,8 +205,8 @@ function verifyEquivalence(
  * Because B = 0, B @ (A @ x) must be the zero vector.
  *
  * TODO:
- *   1. correction = matvec(B, matvec(A, x))
- *   2. Return correction.every(v => v === 0)
+ *   1. Compute just the LoRA correction term, B @ (A @ x), via nested matvec.
+ *   2. Return whether every element of that correction is exactly zero.
  */
 function verifyZeroAtInit(A: number[][], B: number[][], x: number[]): boolean {
   // TODO: implement verifyZeroAtInit

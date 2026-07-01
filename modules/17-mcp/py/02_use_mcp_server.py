@@ -60,35 +60,34 @@ DEFAULT_SERVER_CMD = "npx -y @modelcontextprotocol/server-filesystem /tmp"
 
 async def list_server_capabilities(server_cmd: str) -> None:
     """Connect to an MCP server via stdio and list its tools and resources."""
-    # TODO 1: Import the MCP client classes.
-    #   from mcp import ClientSession, StdioServerParameters
-    #   from mcp.client.stdio import stdio_client
+    # TODO 1: Import the MCP client classes: ClientSession and
+    #   StdioServerParameters from `mcp`, and stdio_client from
+    #   `mcp.client.stdio`.
     #
-    # TODO 2: Parse server_cmd into a list with shlex.split().
-    #         StdioServerParameters expects command (str) and args (list[str]).
+    # TODO 2: Parse server_cmd into a command + args list. Use shlex.split() so
+    #   quoting is handled; StdioServerParameters wants command (str) and args
+    #   (list[str]) — the first token is the command, the rest are args.
     #
-    # TODO 3: Open a stdio_client context and create a ClientSession:
-    #   async with stdio_client(server_params) as (read, write):
-    #       async with ClientSession(read, write) as session:
-    #           await session.initialize()   # MCP handshake
-    #           ...
+    # TODO 3: Open a stdio_client(server_params) async context; it yields a
+    #   (read, write) pair. Wrap those in a ClientSession async context, then
+    #   await session.initialize() to complete the MCP handshake before any
+    #   list/call.
     #
-    # TODO 4: Call session.list_tools() and print each tool's name + description.
-    #         Tool shape: result.tools[i].name, result.tools[i].description
+    # TODO 4: Await session.list_tools(). Iterate the returned .tools list and
+    #   print each tool's .name and .description.
     #
-    # TODO 5: Call session.list_resources() and print each resource's URI + name.
-    #         (Some servers expose no resources — that's fine.)
+    # TODO 5: Await session.list_resources() and print each resource's .uri and
+    #   .name. (Some servers expose no resources — handle the empty case.)
     raise NotImplementedError("TODO 1-5: implement list_server_capabilities")
 
 
 async def call_tool_demo(server_cmd: str, tool_name: str, args: dict) -> str:
     """Connect to an MCP server, call one tool, and return the text result."""
-    # TODO 6: Reuse the connection pattern from list_server_capabilities.
-    #   After initialize(), call:
-    #     result = await session.call_tool(tool_name, arguments=args)
-    #   MCP tool results contain a list of content blocks.
-    #   Extract and join the text from blocks where block.type == "text":
-    #     return " ".join(b.text for b in result.content if b.type == "text")
+    # TODO 6: Reuse the same connect-and-initialize pattern from
+    #   list_server_capabilities. Then await session.call_tool(tool_name,
+    #   arguments=args). The result carries a .content list of blocks; keep only
+    #   the blocks whose type == "text", and return their .text joined into one
+    #   string.
     raise NotImplementedError("TODO 6: implement call_tool_demo")
 
 

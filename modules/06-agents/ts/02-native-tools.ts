@@ -28,25 +28,13 @@ import Anthropic from "@anthropic-ai/sdk";
 // Tool definitions — same logical tools as Task 1, different declaration format
 // ---------------------------------------------------------------------------
 
-// TODO 1: Define the tools in OpenAI's function-calling format.
-//         Each tool needs: name, description, parameters (JSON Schema).
-//         Use the same three tools from Task 1: calculator, search, retrieve.
-//
-// const openAITools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
-//   {
-//     type: "function",
-//     function: {
-//       name: "calculator",
-//       description: "...",
-//       parameters: {
-//         type: "object",
-//         properties: { expression: { type: "string", description: "..." } },
-//         required: ["expression"],
-//       },
-//     },
-//   },
-//   // ... search, retrieve
-// ];
+// TODO 1: Declare the tools in OpenAI's function-calling format as an
+//         `OpenAI.Chat.Completions.ChatCompletionTool[]`. Use the same three
+//         tools from Task 1: calculator, search, retrieve.
+//         Each entry has `type: "function"` and a `function` object holding
+//         `name`, `description`, and `parameters` (a JSON Schema: `type`
+//         "object", a `properties` map per argument, and a `required` list).
+//         Name each argument to match what runTool() reads from the args object.
 
 // TODO 2: Implement the same tools as in Task 1.
 //         The execute() function signature is the same — only the calling

@@ -51,18 +51,12 @@ interface ClassificationResult {
 // ---------------------------------------------------------------------------
 
 async function classifyLocal(imagePath: string): Promise<ClassificationResult[]> {
-  // TODO (exercise): import the pipeline from @huggingface/transformers and
-  // create an image-classification pipeline, then run it on the image.
-  //
-  // import { pipeline } from "@huggingface/transformers";
-  //
-  // const classifier = await pipeline("image-classification", HF_MODEL);
-  //
-  // The pipeline accepts a file path (as a string) or a URL.
-  // const results = await classifier(imagePath);
-  //
-  // results is an array of { label: string; score: number }[].
-  // Return them sorted by score descending.
+  // TODO (exercise): run the model locally with transformers.js.
+  //   - Import `pipeline` from "@huggingface/transformers" and `await` it to
+  //     build an "image-classification" pipeline for HF_MODEL.
+  //   - Call the classifier with `imagePath` (the pipeline accepts a file path
+  //     or URL string). It resolves to a { label; score }[] array.
+  //   - Return that array sorted by score, highest first.
 
   throw new Error(
     "Complete the TODO: import pipeline from @huggingface/transformers, " +
@@ -112,13 +106,13 @@ async function classifyHosted(imagePath: string): Promise<ClassificationResult[]
     throw new Error(`HF API error ${response.status}: ${body}`);
   }
 
-  // TODO (exercise): parse the JSON response and return it as ClassificationResult[].
+  // TODO (exercise): the JSON response is already parsed into `data` (a
+  // ClassificationResult[]). Return it sorted by score descending, then remove
+  // the throw below.
   const data = (await response.json()) as ClassificationResult[];
 
-  // Replace the throw below with: return data.sort((a, b) => b.score - a.score);
   throw new Error(
-    "Parse the response JSON and return sorted results. " +
-    "Remove this throw and add: return data.sort((a, b) => b.score - a.score);"
+    "Parse the response JSON and return the results sorted by score descending."
   );
 }
 

@@ -101,11 +101,11 @@ def kfold_indices(n: int, k: int, seed: int = SEED) -> list[np.ndarray]:
     contiguous chunks. Return a list of k index arrays (the folds).
 
     TODO: implement.
-      1. rng = np.random.default_rng(seed)
-      2. perm = rng.permutation(n)
-      3. return [perm[i::k] for i in range(k)]   # OR np.array_split(perm, k)
-         (either strategy gives k roughly-equal folds; array_split keeps chunks
-          contiguous, the stride form interleaves — both are valid k-fold splits)
+      - Build a seeded RNG with np.random.default_rng(seed) and get a random
+        permutation of 0..n-1 from it.
+      - Split that permutation into k roughly-equal folds and return them as a
+        list of arrays. Either np.array_split (contiguous chunks) or a strided
+        slice like perm[i::k] works — both are valid k-fold splits.
     """
     # TODO: implement the k-fold index split
     raise NotImplementedError("TODO: implement kfold_indices()")
@@ -124,11 +124,10 @@ def ridge_fit(Phi: np.ndarray, y: np.ndarray, lam: float) -> np.ndarray:
     Solve the linear system with np.linalg.solve — never form the inverse.
 
     TODO: implement.
-      1. d = Phi.shape[1]
-      2. R = np.eye(d);  R[0, 0] = 0.0     # don't regularise the intercept
-      3. A = Phi.T @ Phi + lam * R
-      4. b = Phi.T @ y
-      5. return np.linalg.solve(A, b)
+      - Build the penalty matrix R = np.eye(d) but with R[0, 0] = 0.0 so the
+        intercept column is not penalised.
+      - Assemble the coefficient matrix ΦᵀΦ + λ·R and the right-hand side Φᵀy.
+      - Solve that system with np.linalg.solve and return the weights.
     """
     # TODO: implement ridge regression via np.linalg.solve
     raise NotImplementedError("TODO: implement ridge_fit()")
@@ -145,16 +144,12 @@ def cv_score(x: np.ndarray, y: np.ndarray, degree: int, lam: float, k: int = K_F
     Return the mean of the k validation MSEs.
 
     TODO: implement.
-      1. folds = kfold_indices(len(x), k)
-      2. scores = []
-      3. for f in range(k):
-             val_idx = folds[f]
-             train_idx = concatenation of every fold except f
-             Phi_tr = poly_features(x[train_idx], degree)
-             w = ridge_fit(Phi_tr, y[train_idx], lam)
-             Phi_val = poly_features(x[val_idx], degree)
-             scores.append( mse(y[val_idx], predict(Phi_val, w)) )
-      4. return float(np.mean(scores))
+      - Get the folds from kfold_indices(len(x), k).
+      - For each fold f: treat it as the validation indices, and concatenate
+        every OTHER fold into the training indices.
+      - Build poly_features(degree) on the training x, ridge_fit with lam, then
+        score mse() on the validation x/y using predict().
+      - Return the mean of the per-fold validation MSEs as a float.
     """
     # TODO: implement k-fold CV scoring
     raise NotImplementedError("TODO: implement cv_score()")

@@ -87,13 +87,13 @@ function majorityVote(answers: string[]): string {
 //         One CoT call at temperature=0. Return [answer, inputTokens, outputTokens].
 // ---------------------------------------------------------------------------
 async function singleShot(question: string): Promise<[string, number, number]> {
-  // const llm = getProvider();
-  // const result = await llm.chat(
-  //   [{ role: "system", content: COT_SYSTEM }, { role: "user", content: question }],
-  //   { temperature: 0 },
-  // );
-  // const answer = extractFinalAnswer(result.text);
-  // return [answer, result.usage?.inputTokens ?? 0, result.usage?.outputTokens ?? 0];
+  // Steps:
+  //   - Get the default provider via getProvider().
+  //   - Make one chat call with a ChatMessage[] of the COT_SYSTEM prompt (system)
+  //     plus the question (user), passing { temperature: 0 } as options.
+  //   - Run the reply through extractFinalAnswer() to pull out the answer.
+  //   - Return the tuple [answer, inputTokens, outputTokens] from result.usage
+  //     (defaulting each token count to 0 when undefined).
   throw new Error("TODO: implement singleShot");
 }
 
@@ -107,35 +107,24 @@ async function selfConsistency(
   question: string,
   n: number = N_SAMPLES,
 ): Promise<[string, number, number]> {
-  // const llm = getProvider();
-  // const answers: string[] = [];
-  // let inTok = 0, outTok = 0;
-  // for (let i = 0; i < n; i++) {
-  //   const result = await llm.chat(
-  //     [{ role: "system", content: COT_SYSTEM }, { role: "user", content: question }],
-  //     { temperature: 0.8 },
-  //   );
-  //   answers.push(extractFinalAnswer(result.text));
-  //   inTok += result.usage?.inputTokens ?? 0;
-  //   outTok += result.usage?.outputTokens ?? 0;
-  // }
-  // return [majorityVote(answers), inTok, outTok];
+  // Steps:
+  //   - Loop n times, each iteration making the same CoT chat call as singleShot
+  //     but with a non-zero temperature (e.g. { temperature: 0.8 }) so the samples
+  //     diverge.
+  //   - Collect each extractFinalAnswer(...) into an array and accumulate the
+  //     input/output token counts across all n calls.
+  //   - Return [majorityVote(answers), totalInputTokens, totalOutputTokens].
   throw new Error("TODO: implement selfConsistency");
 }
 
 // ---------------------------------------------------------------------------
-// TODO 5: Implement verify.
-//         Ask the model: "Is '<answer>' the correct answer to '<question>'?
-//         Reply with only YES or NO."
-//         Return true if the model responds with YES.
+// TODO 5: Implement verify (an LLM-as-judge yes/no check).
+//         Make one chat call whose user message states the question and the
+//         proposed answer, then instructs the model to reply with only YES or NO.
+//         Use { temperature: 0 } for a deterministic verdict, and return true when
+//         the (trimmed, upper-cased) reply begins with YES.
 // ---------------------------------------------------------------------------
 async function verify(question: string, answer: string): Promise<boolean> {
-  // const llm = getProvider();
-  // const prompt =
-  //   `Question: ${question}\nProposed answer: ${answer}\n` +
-  //   "Is this answer correct? Reply with only YES or NO.";
-  // const result = await llm.chat([{ role: "user", content: prompt }], { temperature: 0 });
-  // return result.text.trim().toUpperCase().startsWith("YES");
   throw new Error("TODO: implement verify");
 }
 

@@ -81,11 +81,12 @@ def build_parent():
 
     parent = StateGraph(ParentState)
     parent.add_node("preprocess", preprocess)
-    # TODO 1: add the compiled subgraph DIRECTLY as a node.
-    #   parent.add_node("research", research)
+    # TODO 1: add the compiled `research` subgraph DIRECTLY as a node (a compiled graph
+    #         IS a valid node) — give it a name like "research".
     parent.add_node("summarise", summarise)
     parent.add_edge(START, "preprocess")
-    # TODO 2: preprocess -> research -> summarise -> END
+    # TODO 2: wire the linear path preprocess -> research -> summarise -> END with
+    #         add_edge calls, then compile and return the parent app.
     raise NotImplementedError("TODO 1/2")
 
 
@@ -93,12 +94,13 @@ def main() -> None:
     app = build_parent()  # noqa: F841
     inputs = {"messages": [HumanMessage(content="How tall is the tallest mountain?")]}  # noqa: F841
 
-    # TODO 3: stream with subgraphs=True so the inner steps are visible.
-    #   for namespace, chunk in app.stream(inputs, subgraphs=True, stream_mode="updates"):
-    #       # namespace == () for the parent, ("research:<id>",) for the subgraph
-    #       print(namespace, list(chunk.keys()))
+    # TODO 3: stream the parent with `subgraphs=True` (and stream_mode="updates"). Each
+    #         event is a (namespace, chunk) pair: the namespace is () for the parent and
+    #         a ("research:<id>",) tuple for steps inside the subgraph. Print the
+    #         namespace and the chunk's node keys to watch the inner steps surface.
     #
-    # TODO 4: confirm isolation — the FINAL parent state has no `sources_seen` key.
+    # TODO 4: confirm isolation — inspect the FINAL parent state and verify it has no
+    #         `sources_seen` key (that PRIVATE channel never leaked out of the subgraph).
     print("TODO: add the subgraph as a node, stream with subgraphs=True.")
 
 

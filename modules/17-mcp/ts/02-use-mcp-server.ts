@@ -49,20 +49,14 @@ const DEFAULT_SERVER_CMD =
  * Connect to the server, discover its tools and resources, and print them.
  *
  * Steps:
- *   a) Parse serverCmd into [command, ...args] by splitting on whitespace.
- *      (You can use: const parts = serverCmd.split(/\s+/); )
- *   b) Create a StdioClientTransport:
- *        const transport = new StdioClientTransport({ command: parts[0], args: parts.slice(1) });
- *   c) Create a Client:
- *        const client = new Client({ name: "learn-ai-client", version: "1.0" });
- *   d) Connect: await client.connect(transport);
- *   e) List tools:
- *        const { tools } = await client.listTools();
- *        tools.forEach(t => console.log(`  tool: ${t.name} — ${t.description}`));
- *   f) List resources (may be empty):
- *        const { resources } = await client.listResources();
- *        resources.forEach(r => console.log(`  resource: ${r.uri} — ${r.name}`));
- *   g) Close: await client.close();
+ *   a) Split serverCmd on whitespace into [command, ...args].
+ *   b) Create a StdioClientTransport pointing at that command and args.
+ *   c) Create a Client (give it a name and version).
+ *   d) await client.connect(transport).
+ *   e) await client.listTools() and print each tool's name and description.
+ *   f) await client.listResources() (the list may be empty) and print each
+ *      resource's uri and name.
+ *   g) await client.close() when done.
  */
 async function listServerCapabilities(serverCmd: string): Promise<void> {
   throw new Error("TODO 1: implement listServerCapabilities");
@@ -74,10 +68,9 @@ async function listServerCapabilities(serverCmd: string): Promise<void> {
  * Connect to the server, call one tool, and return the text content.
  *
  * Steps (same connection pattern as TODO 1):
- *   const result = await client.callTool({ name: toolName, arguments: args });
- *   // result.content is an array of content blocks
- *   // Extract text blocks: (result.content as any[]).filter(b => b.type === "text").map(b => b.text)
- *   // Join and return.
+ *   Connect a client, then await client.callTool({ name: toolName, arguments:
+ *   args }). result.content is an array of content blocks — keep the ones whose
+ *   type is "text", pull their .text, join into one string and return it.
  */
 async function callToolDemo(
   serverCmd: string,

@@ -54,18 +54,14 @@ def parse_markdown(path: str | Path) -> Document:
     """
     Parse a Markdown file.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Read the file with UTF-8 encoding.
-      2. Extract the title from the first H1 heading (line starting with "# ").
-      3. Return a Document with:
-           text     = full file contents (raw Markdown — cleaning happens in task 2)
-           source   = str(path)
-           format   = "markdown"
-           metadata = {"title": <extracted title or filename stem>}
-
-    Tip: `Path(path).read_text(encoding="utf-8")` is all you need for the read.
+    Hints:
+      - Read the whole file as UTF-8 text (`Path(path).read_text(...)`).
+      - Find a title: scan for the first H1 heading (a line beginning with "# ")
+        and take the text after the marker; fall back to the file's stem if there
+        is no H1.
+      - Return a `Document`: the raw Markdown as `text` (cleaning is task 2),
+        `source` as the path string, `format` "markdown", and a `metadata` dict
+        carrying the title.
     """
     raise NotImplementedError("TODO: implement parse_markdown()")
 
@@ -74,24 +70,19 @@ def parse_html_bs4(path_or_url: str) -> Document:
     """
     Parse an HTML file or URL using BeautifulSoup (preferred).
 
-    TODO: implement this function.
-
-    Steps:
-      1. If `path_or_url` starts with "http", fetch with httpx or urllib.
-         Otherwise read the file from disk.
-      2. Parse with BeautifulSoup(html, "html.parser").
-      3. Remove <nav>, <header>, <footer>, <script>, <style> tags entirely
-         (soup.find_all(tag) → tag.decompose()).
-      4. Extract the page title from <title> (fallback: first <h1>).
-      5. Extract body text: soup.get_text(separator="\\n", strip=True).
-      6. Return a Document with:
-           text     = extracted body text
-           source   = path_or_url
-           format   = "html"
-           metadata = {"title": <page title>}
-
-    Import guard: wrap the `from bs4 import BeautifulSoup` inside a try/except
-    ImportError and call parse_html_fallback() if BS4 is not installed.
+    Hints:
+      - Get the HTML string: fetch it (httpx or urllib) when `path_or_url` looks
+        like an "http..." URL, otherwise read it from disk.
+      - Parse it with `BeautifulSoup(html, "html.parser")`.
+      - Strip boilerplate: for the navigation/header/footer/script/style tags,
+        remove each matching element from the tree entirely (decompose them) so
+        their text never reaches the body.
+      - Pick a title from the <title> element, falling back to the first <h1>.
+      - Get the visible body text via `soup.get_text(...)` (choose a newline
+        separator and strip whitespace).
+      - Return a `Document` with `format` "html" and the title in `metadata`.
+      - Import guard: put `from bs4 import BeautifulSoup` inside a try/except so
+        an ImportError falls through to `parse_html_fallback()`.
     """
     raise NotImplementedError("TODO: implement parse_html_bs4()")
 
@@ -100,15 +91,13 @@ def parse_html_fallback(path_or_url: str) -> Document:
     """
     Parse HTML using only stdlib (urllib + re) — less accurate, always available.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Fetch/read the HTML as a string (same as parse_html_bs4 step 1).
-      2. Strip <script>...</script> and <style>...</style> blocks with re.sub.
-      3. Strip all remaining HTML tags with re.sub(r"<[^>]+>", " ", html).
-      4. Collapse whitespace: re.sub(r"[ \\t]+", " ", text).
-      5. Extract the title from <title>...</title> with re.search.
-      6. Return a Document with format="html".
+    Hints:
+      - Fetch/read the HTML as a string (same source logic as parse_html_bs4).
+      - Use `re.sub` to drop entire <script>...</script> and <style>...</style>
+        blocks first, then to strip every remaining tag (replace tags with a
+        space so words don't run together), then to collapse whitespace runs.
+      - Pull the title out of the <title>...</title> element with `re.search`.
+      - Return a `Document` with `format` "html".
     """
     raise NotImplementedError("TODO: implement parse_html_fallback()")
 
@@ -125,25 +114,16 @@ def parse_pdf(path: str | Path) -> Document:
     """
     Parse a PDF file using pypdf (or pdfplumber as an alternative).
 
-    TODO: implement this function.
-
-    Steps (using pypdf):
-      1. `from pypdf import PdfReader` (inside the function so the import error
-         is descriptive).
-      2. Open the PDF: `reader = PdfReader(path)`.
-      3. Extract text page by page:
-           pages_text = [page.extract_text() or "" for page in reader.pages]
-      4. Join pages with "\\n\\n--- page break ---\\n\\n" so downstream chunking
-         can split on page boundaries if desired.
-      5. Return a Document with:
-           text     = joined text
-           source   = str(path)
-           format   = "pdf"
-           metadata = {"num_pages": len(reader.pages),
-                       "title": reader.metadata.title or Path(path).stem}
-
-    If pypdf is not installed, raise ImportError with a helpful message:
-    "PDF parsing requires pypdf: uv add pypdf"
+    Hints:
+      - Import `PdfReader` from pypdf *inside* the function; if the import fails,
+        raise an ImportError whose message tells the user to `uv add pypdf`.
+      - Open the file with `PdfReader(path)` and extract text one page at a time
+        (each page has an `.extract_text()` that may return None — coalesce to "").
+      - Join the pages with a visible page-break separator so downstream chunking
+        can split on page boundaries.
+      - Return a `Document` with `format` "pdf" and `metadata` carrying the page
+        count (`len(reader.pages)`) and a title (the PDF's own metadata title, or
+        the file stem as fallback).
     """
     raise NotImplementedError("TODO: implement parse_pdf()")
 

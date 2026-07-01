@@ -42,8 +42,8 @@ def build_app(checkpointer):
     graph = StateGraph(ChatState)
     graph.add_node("chat", chat_node)
     graph.add_edge(START, "chat")
-    # TODO 1: compile WITH the checkpointer so state is saved per thread.
-    #   return graph.compile(checkpointer=checkpointer)
+    # TODO 1: compile the graph, but pass the `checkpointer` argument so every
+    #         super-step is saved per thread. Return the compiled app.
     raise NotImplementedError("TODO 1")
 
 
@@ -56,23 +56,21 @@ def ask(app, text: str, thread_id: str) -> str:
 def demo_in_memory() -> None:
     app = build_app(InMemorySaver())  # noqa: F841
 
-    # TODO 2: same thread remembers.
-    #   print(ask(app, "My name is Ada. Remember it.", "thread-A"))
-    #   print(ask(app, "What's my name?", "thread-A"))        # -> "Ada"
+    # TODO 2: same thread remembers. Call `ask(app, ..., thread_id)` twice on ONE
+    #         thread id — first tell it a fact (e.g. a name to remember), then ask
+    #         it back — and print each reply. The second reply should recall the fact.
     #
-    # TODO 3: a different thread does NOT remember.
-    #   print(ask(app, "What's my name?", "thread-B"))        # -> doesn't know
+    # TODO 3: a different thread does NOT remember. Ask the same recall question on a
+    #         DIFFERENT thread id and print it — the model should not know the answer.
     print("TODO 2/3: ask on thread-A twice, then thread-B once.")
 
 
 def demo_sqlite() -> None:
-    # TODO 4: use a file-backed checkpointer so memory survives a restart.
-    #   from langgraph.checkpoint.sqlite import SqliteSaver
-    #   with SqliteSaver.from_conn_string("checkpoints.sqlite") as saver:
-    #       app = build_app(saver)
-    #       print(ask(app, "Remember: the project codename is Borealis.", "persist-1"))
-    #       print(ask(app, "What's the project codename?", "persist-1"))
-    #   # Re-run this script: the SAME thread still knows "Borealis".
+    # TODO 4: use a file-backed checkpointer so memory survives a restart. Import
+    #         `SqliteSaver` (from langgraph.checkpoint.sqlite) and open one with its
+    #         `from_conn_string(...)` context manager pointing at a `.sqlite` file.
+    #         Inside the `with`, build_app(saver), then ask a fact-then-recall pair on
+    #         ONE thread id. Re-run the whole script: the same thread still knows it.
     print("TODO 4: wire SqliteSaver and re-run to prove restart-survival.")
 
 

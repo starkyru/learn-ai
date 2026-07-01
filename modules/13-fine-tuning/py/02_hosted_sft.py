@@ -92,17 +92,16 @@ def build_dataset() -> pathlib.Path:
     """
     Convert TRAINING_PAIRS into OpenAI fine-tuning JSONL format and write to disk.
 
-    Each line must be a JSON object with a "messages" key:
-      {"messages": [
-        {"role": "system", "content": "<system_prompt>"},
-        {"role": "user",   "content": "<informal_email>"},
-        {"role": "assistant", "content": "<formal_rewrite>"}
-      ]}
+    Each line must be a JSON object with a single "messages" key whose value is
+    a list of three chat messages: a system message (use SYSTEM_PROMPT), a user
+    message (the informal email), and an assistant message (the formal rewrite).
 
     TODO:
-      1. Create DATA_DIR if it doesn't exist.
-      2. For each (informal, formal) pair in TRAINING_PAIRS, build the messages list.
-      3. Write each example as a JSON line to TRAIN_FILE.
+      1. Ensure DATA_DIR exists (create it, parents included, ok if already there).
+      2. For each (informal, formal) pair in TRAINING_PAIRS, assemble the
+         three-message list described above.
+      3. Write TRAIN_FILE with one JSON object per line (JSONL) — use json.dumps
+         per example, newline-separated.
       4. Print how many examples were written and the file path.
       5. Return TRAIN_FILE.
     """
@@ -123,19 +122,12 @@ def upload_and_finetune(train_path: pathlib.Path) -> str:
 
     TODO:
       1. Create an openai.OpenAI() client (reads OPENAI_API_KEY from env).
-      2. Upload the file:
-           response = client.files.create(
-               file=open(train_path, "rb"),
-               purpose="fine-tune",
-           )
-         Store response.id as file_id.
-      3. Start the job:
-           job = client.fine_tuning.jobs.create(
-               training_file=file_id,
-               model=BASE_MODEL,
-           )
-         Print the job id and status.
-      4. Return job.id.
+      2. Upload the training file with client.files.create(...), passing the
+         opened file handle and purpose="fine-tune". Keep the returned file id.
+      3. Start a fine-tune job with client.fine_tuning.jobs.create(...), passing
+         that file id as training_file and BASE_MODEL as model. Print its id and
+         status.
+      4. Return the job's id.
 
     Tip: you can cancel the job from https://platform.openai.com/finetune
     to avoid charges while still seeing the submission work.
@@ -152,13 +144,13 @@ def wait_for_job(job_id: str, poll_interval: int = 30) -> str | None:
 
     TODO:
       1. Create an openai.OpenAI() client.
-      2. Loop: retrieve the job, print its status and any new events.
-         Use: client.fine_tuning.jobs.retrieve(job_id)
-         And: client.fine_tuning.jobs.list_events(job_id, limit=5)
-      3. Break when job.status in ("succeeded", "failed", "cancelled").
-      4. On success, return job.fine_tuned_model.
+      2. Loop until the job reaches a terminal state. Each iteration, retrieve the
+         job (client.fine_tuning.jobs.retrieve) and print its status; optionally
+         print the latest few events (client.fine_tuning.jobs.list_events, limit=5).
+      3. Treat "succeeded", "failed", and "cancelled" as terminal — stop looping.
+      4. On success, return the job's fine_tuned_model attribute.
       5. On failure/cancellation, print the reason and return None.
-      6. Sleep poll_interval seconds between checks.
+      6. Sleep poll_interval seconds between checks so you don't hammer the API.
     """
     # TODO: implement wait_for_job
     raise NotImplementedError("TODO: implement wait_for_job()")
@@ -177,9 +169,10 @@ def compare_models(fine_tuned_model_id: str) -> None:
 
     TODO:
       1. Create an openai.OpenAI() client.
-      2. For each test_input in TEST_INPUTS below, call chat.completions.create()
-         twice: once with BASE_MODEL, once with fine_tuned_model_id.
-         Use the same SYSTEM_PROMPT.
+      2. For each test_input in TEST_INPUTS below, call
+         client.chat.completions.create() twice — once with BASE_MODEL and once
+         with fine_tuned_model_id — using the same SYSTEM_PROMPT and the input as
+         the user message. Pull the reply text off the response's first choice.
       3. Print a table: input | base response | fine-tuned response.
     """
     TEST_INPUTS = [

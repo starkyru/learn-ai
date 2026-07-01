@@ -64,8 +64,9 @@ const LOG_PATH = path.join(
 );
 
 function appendLog(entry: LLMCallLog): void {
-  // TODO 1: Serialize entry to JSON and append it + "\n" to LOG_PATH.
-  //         Use fs.appendFileSync(LOG_PATH, JSON.stringify(entry) + "\n").
+  // TODO 1: Serialize `entry` to a JSON string and append it (plus a trailing
+  //         newline) to LOG_PATH. A synchronous append from node:fs keeps this
+  //         simple; one JSON object per line is what makes the file JSONL.
   throw new Error("TODO: implement appendLog");
 }
 

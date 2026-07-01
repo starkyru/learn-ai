@@ -133,14 +133,11 @@ async function approvalGate(
 ): Promise<boolean> {
   if (!tool.isDestructive) return true;
 
-  // TODO 1: Print a clear description of the destructive action and its args.
-  //   Use readline.createInterface to prompt the operator for "yes" / anything else.
-  //   Return true iff the operator typed "yes" (case-insensitive).
-  //   HINT:
-  //   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  //   const answer = await rl.question(`[APPROVAL REQUIRED] Execute ${action}(${JSON.stringify(args)})? (yes/no): `);
-  //   rl.close();
-  //   return answer.trim().toLowerCase() === "yes";
+  // TODO 1: This runs only for destructive actions (the guard above already
+  //   auto-approved the rest). Print a clear description of the action and its
+  //   args, then prompt the operator via readline.createInterface(...) /
+  //   rl.question(...) (remember to close the interface). Return true only when
+  //   they explicitly typed "yes" (case-insensitive, trimmed); anything else denies.
   throw new Error("TODO 1: implement approvalGate");
 }
 

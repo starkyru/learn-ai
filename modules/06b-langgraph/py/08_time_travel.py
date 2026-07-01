@@ -54,24 +54,21 @@ def main() -> None:
     app.invoke({"messages": [HumanMessage(content="Pick a number 1-10 and remember it.")]}, config)
     app.invoke({"messages": [HumanMessage(content="Now double it.")]}, config)
 
-    # TODO 1: list the checkpoints (newest first) with their id and `next` nodes.
-    #   history = list(app.get_state_history(config))
-    #   for snap in history:
-    #       print(snap.config["configurable"]["checkpoint_id"], "next=", snap.next,
-    #             "msgs=", len(snap.values["messages"]))
+    # TODO 1: materialise `app.get_state_history(config)` into a list (it yields
+    #         snapshots newest-first). For each snapshot, print its checkpoint id (under
+    #         snap.config["configurable"]), its `.next` nodes, and its message count
+    #         (len of snap.values["messages"]).
 
-    # TODO 2: fork from an EARLIER checkpoint by passing its config back in.
-    #   earlier = history[-2]                       # an older snapshot
-    #   forked = app.invoke(
-    #       {"messages": [HumanMessage(content="Actually, triple it instead.")]},
-    #       earlier.config,                         # <-- resume from this checkpoint
-    #   )
-    #   print("forked branch:", forked["messages"][-1].content)
+    # TODO 2: fork from an EARLIER checkpoint. Pick an older snapshot from the history
+    #         list (e.g. the second-to-last) and invoke the app with a new HumanMessage
+    #         BUT pass that snapshot's `.config` instead of the live config — resuming
+    #         from an old checkpoint FORKS a new branch. Print the forked reply.
 
-    # TODO 3: edit state with update_state, then continue from the correction.
-    #   new_config = app.update_state(config, {"messages": [HumanMessage(content="Correction: the number was 7.")]})
-    #   cont = app.invoke(None, new_config)         # continue from the edited checkpoint
-    #   print("after edit:", cont["messages"][-1].content)
+    # TODO 3: edit-then-continue. Call `app.update_state(config, {...})` with a message
+    #         that corrects the state; it applies through the channel reducers and
+    #         returns a new config pointing at the edited checkpoint. Then invoke the app
+    #         with `None` as input and that new config to continue from the edit, and
+    #         print the result.
     print("TODO: list history, fork from an old checkpoint, edit-then-continue.")
 
 

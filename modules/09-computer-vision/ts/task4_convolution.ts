@@ -122,28 +122,21 @@ function conv2d(image: GrayImage, kernel: Kernel): GrayImage {
   const kHalf = (K - 1) / 2;
   const output = new Float32Array(width * height);
 
-  // TODO (exercise): implement the convolution loop.
-  //
-  // for (let row = 0; row < height; row++) {
-  //   for (let col = 0; col < width; col++) {
-  //     let sum = 0;
-  //     for (let kr = 0; kr < K; kr++) {
-  //       for (let kc = 0; kc < K; kc++) {
-  //         const ir = row - kHalf + kr;
-  //         const ic = col - kHalf + kc;
-  //         // Boundary check — treat out-of-bounds as 0 (zero-padding).
-  //         if (ir >= 0 && ir < height && ic >= 0 && ic < width) {
-  //           sum += image.data[ir * width + ic] * kernel.data[kr * K + kc];
-  //         }
-  //       }
-  //     }
-  //     output[row * width + col] = sum;
-  //   }
-  // }
+  // TODO (exercise): implement the convolution loop (4 nested loops).
+  //   - Outer two loops walk every output pixel (row, col).
+  //   - Inner two loops walk the K×K kernel (kr, kc). Map each kernel cell to an
+  //     input coordinate: `ir = row - kHalf + kr`, `ic = col - kHalf + kc` (this
+  //     centres the kernel on the current pixel).
+  //   - Guard the input read with a bounds check — if (ir, ic) falls outside the
+  //     image, skip it, which treats it as 0 (zero-padding).
+  //   - Accumulate `image.data[ir * width + ic] * kernel.data[kr * K + kc]` into a
+  //     running `sum`, then store it at `output[row * width + col]`.
+  //   - Remember both `image.data` and `output` are flat row-major arrays: index
+  //     row r, col c as `r * width + c`.
 
   throw new Error(
     "Implement the convolution loop. " +
-    "Uncomment the TODO block above and remove this throw."
+    "See the TODO hints above, then remove this throw."
   );
 
   return { data: output, width, height };

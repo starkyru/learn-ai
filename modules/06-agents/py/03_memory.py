@@ -34,13 +34,15 @@ SCRATCHPAD_PATH = Path("modules/06-agents/scratchpad.txt")
 
 def read_scratchpad() -> str:
     """Return the current scratchpad content, or "" if it doesn't exist."""
-    # TODO: return SCRATCHPAD_PATH.read_text() if SCRATCHPAD_PATH.exists() else ""
+    # TODO: read and return the file's text via `SCRATCHPAD_PATH`, but guard with
+    #       an existence check so a missing file yields "" instead of raising.
     raise NotImplementedError("TODO: implement read_scratchpad")
 
 
 def write_scratchpad(note: str) -> None:
     """Append a timestamped note to the scratchpad file."""
-    # TODO: open(SCRATCHPAD_PATH, "a").write(f"\n[{timestamp}] {note}")
+    # TODO: open `SCRATCHPAD_PATH` in append mode (not write) and add the note on
+    #       its own line, prefixed with the ISO timestamp from the hint above.
     raise NotImplementedError("TODO: implement write_scratchpad")
 
 

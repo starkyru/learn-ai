@@ -66,21 +66,15 @@ User request: {request}"""
 
 # ---------------------------------------------------------------------------
 # TODO 3: Implement parse_recipe.
-#         a) Strip markdown code fences if present (the model often wraps JSON
-#            in ```json ... ```).  Use re.sub or str.replace.
-#         b) Call json.loads() on the cleaned text — wrap in try/except json.JSONDecodeError.
-#         c) Pass the parsed dict to Recipe.model_validate() for Pydantic validation.
-#         d) Return the validated Recipe object.
-#         Raise a descriptive ValueError if either step fails.
+#         a) The model often wraps JSON in ```json ... ``` fences or adds prose —
+#            strip any code-fence markers off raw_text first (re.sub / str.replace).
+#         b) json.loads() the cleaned text, wrapped in try/except json.JSONDecodeError.
+#         c) Hand the parsed dict to Recipe.model_validate() so Pydantic validates
+#            the shape.
+#         d) Return the validated Recipe; raise a descriptive ValueError if either
+#            the JSON parse or the validation fails.
 # ---------------------------------------------------------------------------
 def parse_recipe(raw_text: str) -> Recipe:
-    # TODO: implement
-    # 1. Strip code fences:
-    #    clean = re.sub(r"```json?\n?", "", raw_text).replace("```", "").strip()
-    # 2. Parse JSON:
-    #    data = json.loads(clean)
-    # 3. Validate with Pydantic:
-    #    return Recipe.model_validate(data)
     raise NotImplementedError("parse_recipe not implemented yet")
 
 
@@ -95,17 +89,10 @@ def main() -> None:
     # TODO 4: Call llm.chat() with a single user message (build_prompt(request))
     #         and temperature=0.1 (via ChatOptions) to make output more deterministic.
     #         Then call parse_recipe(result.text) and pretty-print the result.
+    #         Import ChatOptions from llm_core and pass ChatOptions(temperature=0.1)
+    #         as the second arg to llm.chat() so the model sticks to the JSON shape.
+    #         model_dump() turns the validated Recipe back into a dict for printing.
     # -------------------------------------------------------------------------
-
-    # from llm_core import ChatOptions
-    # result = llm.chat(
-    #     [{"role": "user", "content": build_prompt(request)}],
-    #     ChatOptions(temperature=0.1),
-    # )
-    # print("Raw response:\n", result.text, "\n")
-    # recipe = parse_recipe(result.text)
-    # print("Parsed recipe:")
-    # print(json.dumps(recipe.model_dump(), indent=2))
 
     print("TODO: implement the chat call and parsing above.")
 

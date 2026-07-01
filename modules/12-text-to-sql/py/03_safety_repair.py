@@ -54,16 +54,19 @@ def validate_read_only(sql: str) -> None:
     TODO: implement this function.
 
     Steps:
-      1. Strip leading whitespace and comments (lines starting with "--").
-      2. Extract the first keyword (split on whitespace, take index 0, upper()).
-      3. If the first keyword is NOT "SELECT", raise UnsafeSQLError:
-           f"Rejected: statement starts with '{keyword}', not SELECT."
-      4. Additionally scan the full SQL for these forbidden keywords
-         (as standalone words, case-insensitive):
-           DROP, DELETE, UPDATE, INSERT, ALTER, CREATE, REPLACE, TRUNCATE
-         and raise UnsafeSQLError if any are found.
+      1. Normalise first: drop leading whitespace and any comment lines
+         (those starting with "--") so the real first token is visible.
+      2. Extract the leading keyword (split on whitespace, take the first token,
+         upper-case it).
+      3. If that keyword is not "SELECT", raise `UnsafeSQLError` with a message
+         naming the offending keyword.
+      4. As defence-in-depth, scan the whole SQL for any of the mutating
+         keywords — DROP, DELETE, UPDATE, INSERT, ALTER, CREATE, REPLACE,
+         TRUNCATE — matched as standalone words, case-insensitively, and raise
+         `UnsafeSQLError` if one appears.
 
-    Regex hint: use r"\\b(DROP|DELETE|...)\\b" with re.IGNORECASE.
+    Regex hint: word boundaries (`\\b...\\b`) with `re.IGNORECASE` match whole
+    keywords without tripping on substrings like "created_at".
     """
     raise NotImplementedError("TODO: implement validate_read_only()")
 
@@ -75,10 +78,11 @@ def validate_no_stacked_queries(sql: str) -> None:
     TODO: implement this function.
 
     Steps:
-      1. Count the number of ";" characters in the SQL.
-      2. If there is more than one ";", or if a ";" appears before the end of
-         the string (excluding trailing whitespace), raise UnsafeSQLError:
-           "Rejected: SQL contains multiple statements."
+      1. Look at where ";" characters fall. A legitimate single statement has at
+         most one ";", and it must be the very last non-whitespace character.
+      2. If there is more than one ";", or a ";" sits before the trimmed end of
+         the string, raise `UnsafeSQLError` explaining that multiple statements
+         are not allowed.
 
     This prevents classic injection like:
       SELECT 1; DROP TABLE customers; --
@@ -119,15 +123,16 @@ def repair_sql(
     TODO: implement this function.
 
     Steps:
-      1. Build messages:
-         - System: same as generate_sql's system prompt.
-         - User (first turn): original question.
-         - Assistant (first turn): bad_sql  (the LLM's previous attempt).
-         - User (second turn): a repair instruction, e.g.:
-             "That SQL produced this error: <error_message>\\n\\n
-              Please fix it and return ONLY the corrected SQL statement."
-      2. Call provider.chat(messages, ChatOptions(temperature=0)).
-      3. Clean and return the SQL (same as generate_sql).
+      1. Build a multi-turn `list[ChatMessage]` that replays the failed attempt:
+         - a system message (the same SQL-expert framing as `generate_sql`),
+         - a user turn with the original `question`,
+         - an assistant turn containing `bad_sql` (what the model produced), and
+         - a final user turn that hands back `error_message` and asks for the
+           corrected statement only.
+      2. Call `provider.chat(messages, ChatOptions(temperature=...))` with the
+         deterministic setting.
+      3. Clean the reply into a single SQL statement (same cleanup as
+         `generate_sql`).
 
     This multi-turn structure shows the LLM what went wrong and lets it
     reason about the fix in context.
@@ -146,20 +151,20 @@ def safe_query(
     TODO: implement this function.
 
     Steps:
-      1. sql = generate_sql(question, provider).
-      2. validate_read_only(sql)  — raise immediately if unsafe (no retry).
-      3. validate_no_stacked_queries(sql).
-      4. For attempt in range(max_retries + 1):
-         a. Try: conn = sqlite3.connect(DB_PATH); cursor = conn.execute(sql);
-                 columns = ...; rows = cursor.fetchall(); conn.close().
-         b. On success: return {"sql": sql, "columns": columns, "rows": rows,
-                                 "retries": attempt}.
-         c. On sqlite3.Error: if attempt < max_retries:
-                 sql = repair_sql(question, sql, str(error), provider)
-                 validate_read_only(sql)  # re-validate after repair
-                 validate_no_stacked_queries(sql)
-              else: raise.
-      5. (Unreachable — for type safety) raise RuntimeError.
+      1. Generate the SQL with `generate_sql()`.
+      2. Gate it through BOTH validators (`validate_read_only`,
+         `validate_no_stacked_queries`) before touching the database — these
+         raise on unsafe input and must NOT be retried.
+      3. Loop up to `max_retries + 1` times:
+         - Try to open the DB, execute `sql`, and collect columns + rows
+           (same sqlite3 pattern as task 1's `execute_sql`).
+         - On success, return a dict with keys "sql", "columns", "rows", and
+           "retries" (the number of the current attempt).
+         - On `sqlite3.Error`, if attempts remain: ask `repair_sql()` for a
+           corrected query using `str(error)`, then re-run BOTH validators on
+           the repaired SQL before looping. If no attempts remain, re-raise.
+      4. Add an unreachable guard (e.g. raise RuntimeError) after the loop so
+         the function is provably total for the type checker.
 
     Note: UnsafeSQLError propagates immediately (no retry).
     """

@@ -159,11 +159,10 @@ function addBiasColumn(X: number[][]): number[][] {
  * X already includes the bias column (N×(D+1)); the returned w has length D+1,
  * with w[0] the intercept.
  *
- * TODO: implement.
- *   1. const Xt = transpose(X);         // (D+1)×N
- *   2. const A  = matMul(Xt, X);        // (D+1)×(D+1)  == XᵀX
- *   3. const bb = matVec(Xt, y);        // (D+1)        == Xᵀy
- *   4. return solve(A, bb);
+ * TODO: implement using the provided transpose/matMul/matVec/solve helpers.
+ *   - Assemble the (D+1)×(D+1) coefficient matrix XᵀX and the length-(D+1)
+ *     right-hand side Xᵀy.
+ *   - Hand that system to solve(A, bb) and return the result.
  */
 function normalEquation(X: number[][], y: number[]): number[] {
   // TODO: assemble XᵀX and Xᵀy, then call solve()
@@ -173,7 +172,7 @@ function normalEquation(X: number[][], y: number[]): number[] {
 /**
  * Linear prediction: ŷ = X @ w. X includes the bias column.
  *
- * TODO: implement (return matVec(X, w)).
+ * TODO: implement — one matrix-vector product of X against w (matVec helper).
  */
 function predict(X: number[][], w: number[]): number[] {
   // TODO: implement the linear prediction
@@ -184,9 +183,8 @@ function predict(X: number[][], w: number[]): number[] {
  * Mean squared error: L = (1/N) · Σ (ŷ_i - y_i)².
  *
  * TODO: implement.
- *   1. const yhat = predict(X, w);
- *   2. sum the squared residuals (yhat[i] - y[i])²
- *   3. return the sum divided by N
+ *   - Get predictions via predict(X, w), sum the squared residuals
+ *     (prediction minus target), and return that sum divided by N.
  */
 function mseLoss(X: number[][], y: number[], w: number[]): number {
   // TODO: implement mean squared error
@@ -202,10 +200,10 @@ function mseLoss(X: number[][], y: number[], w: number[]): number {
  * Return a NEW weight array (do not mutate the input; the loop reassigns w).
  *
  * TODO: implement.
- *   1. const n = X.length;
- *   2. const resid = predict(X, w).map((p, i) => p - y[i]);   // length N
- *   3. const grad  = matVec(transpose(X), resid).map(g => (2 / n) * g); // length D+1
- *   4. return w.map((wj, j) => wj - lr * grad[j]);
+ *   - Form the residual vector predict(X, w) - y (length N).
+ *   - Build the gradient ∇L = (2/N) · Xᵀ·residual (length D+1) — matVec against
+ *     transpose(X), scaled by 2/N.
+ *   - Return a new array: each weight stepped by -lr times its gradient entry.
  */
 function gradientStep(X: number[][], y: number[], w: number[], lr: number): number[] {
   // TODO: implement one gradient-descent update

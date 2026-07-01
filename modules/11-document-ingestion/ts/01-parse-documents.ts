@@ -42,16 +42,12 @@ export interface Document {
 /**
  * Parse a Markdown file.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Read the file: `readFileSync(path, "utf-8")`.
- *   2. Extract the title from the first line matching /^# (.+)/.
- *   3. Return a Document with:
- *        text     = raw file content (cleaning happens in task 2)
- *        source   = path
- *        format   = "markdown"
- *        metadata = { title: <extracted title or basename> }
+ * Hints:
+ *   - Read the whole file as a UTF-8 string (`readFileSync`).
+ *   - Find a title: the text of the first H1 line ("# ..."); fall back to the
+ *     file's basename when there is no H1.
+ *   - Return a `Document`: the raw file content as `text` (cleaning is task 2),
+ *     the path as `source`, `format` "markdown", and the title in `metadata`.
  */
 export function parseMarkdown(path: string): Document {
   // TODO: implement parseMarkdown().
@@ -61,21 +57,19 @@ export function parseMarkdown(path: string): Document {
 /**
  * Parse an HTML file or URL using cheerio (preferred).
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Read/fetch the HTML as a string.
- *      - If path starts with "http", use `fetch()` (Node 18+): await fetch(url).text()
- *        Make the function async in that case, or use a sync HTTP call.
- *        For simplicity: read from disk for file paths, fetch for URLs.
- *   2. Load into cheerio: `const $ = cheerio.load(html)`.
- *   3. Remove boilerplate: $("nav, header, footer, script, style").remove().
- *   4. Extract title: $("title").text() || $("h1").first().text().
- *   5. Extract body text: $("body").text() — cheerio strips tags automatically.
- *   6. Return a Document with format="html".
+ * Hints:
+ *   - Get the HTML string: read it from disk for file paths, or fetch it for
+ *     "http..." URLs.
+ *   - Load it into cheerio (`cheerio.load(html)`) so you can query with CSS
+ *     selectors.
+ *   - Strip boilerplate by selecting the nav/header/footer/script/style elements
+ *     and removing them from the tree.
+ *   - Pick a title from the <title> element, falling back to the first <h1>.
+ *   - Take the visible body text (cheerio's `.text()` drops the tags for you).
+ *   - Return a `Document` with `format` "html" and the title in `metadata`.
  *
  * Import: `import * as cheerio from "cheerio"` (already in package.json).
- * Fallback if cheerio unavailable: use parseHtmlFallback().
+ * Fallback if cheerio is unavailable: delegate to parseHtmlFallback().
  */
 export function parseHtml(pathOrUrl: string): Document {
   // TODO: implement parseHtml() using cheerio.
@@ -86,15 +80,13 @@ export function parseHtml(pathOrUrl: string): Document {
 /**
  * Parse HTML using only Node stdlib (no cheerio) — less accurate, always available.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Read/fetch the HTML string.
- *   2. Strip <script>...</script> and <style>...</style> with regex.
- *   3. Strip all remaining tags: text.replace(/<[^>]+>/g, " ").
- *   4. Collapse runs of whitespace.
- *   5. Extract title via /<title>([^<]*)<\/title>/i.
- *   6. Return a Document with format="html".
+ * Hints:
+ *   - Read/fetch the HTML string (same source logic as parseHtml).
+ *   - With regex replaces: first drop whole <script>...</script> and
+ *     <style>...</style> blocks, then strip every remaining tag (replace with a
+ *     space so words don't merge), then collapse the whitespace runs.
+ *   - Extract the title from the <title>...</title> element.
+ *   - Return a `Document` with `format` "html".
  */
 export function parseHtmlFallback(pathOrUrl: string): Document {
   // TODO: implement parseHtmlFallback().
@@ -104,19 +96,15 @@ export function parseHtmlFallback(pathOrUrl: string): Document {
 /**
  * Parse a PDF file using pdf-parse.
  *
- * TODO: implement this function.
+ * Hints:
+ *   - Bring in pdf-parse with a dynamic `import(...)` so a missing dependency
+ *     surfaces as a runtime error rather than a load-time crash.
+ *   - Read the file as a Buffer and await the parser — it resolves to an object
+ *     exposing the extracted `text`, the page count, and an `info` block.
+ *   - Return a `Document` with `format` "pdf" and `metadata` carrying the page
+ *     count and a title (the PDF info's title, or the file basename as fallback).
  *
- * Steps:
- *   1. `import pdfParse from "pdf-parse"` (dynamic import to handle missing dep).
- *   2. Read file as Buffer: `readFileSync(path)`.
- *   3. Await pdfParse(buffer) → { text, numpages, info }.
- *   4. Return a Document with:
- *        text     = parsed text
- *        format   = "pdf"
- *        metadata = { numPages: numpages, title: info?.Title || basename }
- *
- * Note: pdf-parse is async. Make this an async function and call it with await
- * in the harness.
+ * Note: pdf-parse is async, hence this function is already `async`.
  */
 export async function parsePdf(path: string): Promise<Document> {
   // TODO: implement parsePdf() using pdf-parse.

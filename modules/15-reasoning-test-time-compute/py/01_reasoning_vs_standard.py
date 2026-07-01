@@ -86,19 +86,14 @@ class ModelResult:
 #         Hint: result.usage has input_tokens and output_tokens.
 # ---------------------------------------------------------------------------
 def call_standard(question: str) -> ModelResult:
-    # from llm_core import get_provider, ChatMessage
-    # provider = get_provider("openai")
-    # start = time.time()
-    # result = provider.chat([ChatMessage("user", question)])
-    # elapsed_ms = (time.time() - start) * 1000
-    # return ModelResult(
-    #     model=result.model,
-    #     strategy="standard",
-    #     answer=result.text,
-    #     input_tokens=result.usage.input_tokens or 0,
-    #     output_tokens=result.usage.output_tokens or 0,
-    #     latency_ms=elapsed_ms,
-    # )
+    # Steps:
+    #   - Get the OpenAI provider via get_provider("openai") from llm_core.
+    #   - Capture time.time() before the call; build a single-element
+    #     list[ChatMessage] with a "user" message carrying the question.
+    #   - Call provider.chat(...) and compute elapsed wall-clock in ms.
+    #   - Return a ModelResult with strategy="standard", the model/text from the
+    #     result, and token counts from result.usage (input_tokens / output_tokens,
+    #     defaulting to 0 when None).
     raise NotImplementedError("TODO: implement call_standard")
 
 
@@ -107,21 +102,19 @@ def call_standard(question: str) -> ModelResult:
 #         Use the openai SDK directly (NOT llm_core) so you can pass
 #         `reasoning_effort` and use `max_completion_tokens`.
 #
-#         Key differences from a standard call:
-#         - model: os.getenv("OPENAI_REASONING_MODEL", "o4-mini")
-#         - Use max_completion_tokens instead of max_tokens
-#         - Pass reasoning_effort="medium" (or "high" for harder problems)
-#         - usage.completion_tokens_details shows reasoning vs. visible tokens
-#
-#         Example skeleton:
-#           import openai
-#           client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-#           response = client.chat.completions.create(
-#               model="o4-mini",
-#               messages=[{"role": "user", "content": question}],
-#               max_completion_tokens=4096,
-#               reasoning_effort="medium",
-#           )
+#         Steps / key differences from a standard call:
+#         - Construct an openai.OpenAI client with the OPENAI_API_KEY env var.
+#         - Time the call; call client.chat.completions.create(...) with:
+#             * model = os.getenv("OPENAI_REASONING_MODEL", "o4-mini")
+#             * a one-message list carrying the question as a "user" role
+#             * max_completion_tokens=... (NOT max_tokens — that param is ignored
+#               by reasoning models)
+#             * reasoning_effort=... ("medium", or "high" for harder problems)
+#         - Read the visible answer from the first choice's message content, and
+#           token counts from response.usage (prompt_tokens / completion_tokens).
+#           Note usage.completion_tokens_details breaks out reasoning vs. visible
+#           tokens if you want to inspect it.
+#         - Return a ModelResult with strategy="reasoning (openai)".
 # ---------------------------------------------------------------------------
 def call_reasoning_openai(question: str) -> ModelResult:
     raise NotImplementedError("TODO: implement call_reasoning_openai")
@@ -130,24 +123,22 @@ def call_reasoning_openai(question: str) -> ModelResult:
 # ---------------------------------------------------------------------------
 # TODO 3 (alternative): Implement call_reasoning_anthropic.
 #         Use the anthropic SDK with extended thinking enabled.
-#         This is a beta feature — pass betas=["interleaved-thinking-2025-05-14"].
+#         This is a beta feature — enable it via the betas=[...] parameter with
+#         the interleaved-thinking beta flag.
 #
-#         Key parameters:
-#         - thinking={"type": "enabled", "budget_tokens": 5000}
-#         - The response content list contains ThinkingBlock and TextBlock items.
-#         - Extract .text from TextBlock items for the visible answer.
-#         - Extract .thinking from ThinkingBlock items if you want to display reasoning.
-#
-#         Example skeleton:
-#           import anthropic
-#           client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-#           response = client.beta.messages.create(
-#               model=os.getenv("ANTHROPIC_MODEL", "claude-opus-4-8"),
-#               max_tokens=8000,
-#               thinking={"type": "enabled", "budget_tokens": 5000},
-#               betas=["interleaved-thinking-2025-05-14"],
-#               messages=[{"role": "user", "content": question}],
-#           )
+#         Steps / key parameters:
+#         - Construct an anthropic.Anthropic client with the ANTHROPIC_API_KEY env var.
+#         - Time the call; call client.beta.messages.create(...) with:
+#             * model = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-8")
+#             * max_tokens=... (must exceed the thinking budget)
+#             * thinking={"type": "enabled", "budget_tokens": ...}
+#             * betas=[...] with the interleaved-thinking beta identifier
+#             * a one-message list carrying the question as a "user" role
+#         - The response.content list mixes ThinkingBlock and TextBlock items:
+#           join the .text of the TextBlock items for the visible answer (you can
+#           inspect .thinking on ThinkingBlock items to see the reasoning).
+#         - Read token counts from response.usage and return a ModelResult with
+#           strategy="reasoning (anthropic)".
 # ---------------------------------------------------------------------------
 def call_reasoning_anthropic(question: str) -> ModelResult:
     raise NotImplementedError("TODO: implement call_reasoning_anthropic")

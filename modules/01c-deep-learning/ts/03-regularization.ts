@@ -42,9 +42,10 @@
  * Test: return x unchanged.
  *
  * TODO: implement.
- *   if (!training) return x;
- *   const keep = 1 - p;
- *   return x.map(row => row.map(v => (rng() < keep ? v / keep : 0)));
+ *   - If not training, return `x` unchanged.
+ *   - Otherwise let keep = 1 - p. Map over every element: with probability `keep`
+ *     (draw `rng()` and compare) keep it but divide by `keep`; otherwise zero it.
+ *   - Return a NEW matrix (use `.map`), don't mutate the input.
  */
 function dropoutForward(
   x: number[][],
@@ -65,12 +66,11 @@ function dropoutForward(
  *
  * With gamma=1, beta=0 the OUTPUT has per-feature mean ≈ 0 and var ≈ 1.
  *
- * TODO: implement.
- *   const N = x.length, D = x[0].length;
- *   for each column j:
- *     mu_j  = (1/N) Σ_i x[i][j]
- *     var_j = (1/N) Σ_i (x[i][j] - mu_j)^2
- *   return x.map(row => row.map((v, j) => gamma[j] * (v - mu[j]) / Math.sqrt(var[j] + eps) + beta[j]));
+ * TODO: implement the four steps in the formula above.
+ *   - For each COLUMN j (a feature), compute the mean over the N rows and the
+ *     population variance (divide the summed squared deviations by N, not N-1).
+ *   - Return a new matrix: for each entry, normalise with that column's mean and
+ *     sqrt(var + eps), then apply the per-feature `gamma[j]` scale and `beta[j]` shift.
  */
 function batchnormForward(
   x: number[][],
@@ -85,7 +85,8 @@ function batchnormForward(
  * Gradient contribution of the L2 penalty (λ/2)·ΣW²  →  λ·W (element-wise).
  * Returned matrix is ADDED onto the data gradient of the same weight matrix.
  *
- * TODO: return a matrix the same shape as W with each entry lam * W[i][j].
+ * TODO: return a new matrix the same shape as W holding the elementwise derivative
+ *       of the (λ/2)·ΣW² penalty w.r.t. each weight.
  */
 function l2Grad(W: number[][], lam: number): number[][] {
   throw new Error("TODO: implement l2Grad()");

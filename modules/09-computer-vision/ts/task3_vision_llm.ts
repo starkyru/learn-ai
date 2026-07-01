@@ -88,28 +88,14 @@ async function describeWithOpenAI(imagePath: string, prompt: string): Promise<st
   const b64 = imageToBase64(imagePath);
   const mime = mimeType(imagePath);
 
-  // TODO (exercise): build a multimodal messages array and call the API.
-  //
-  // The OpenAI multimodal message format wraps content as an array of parts:
-  //
-  // const response = await client.chat.completions.create({
-  //   model,
-  //   messages: [
-  //     {
-  //       role: "user",
-  //       content: [
-  //         { type: "text", text: prompt },
-  //         {
-  //           type: "image_url",
-  //           image_url: { url: `data:${mime};base64,${b64}` },
-  //         },
-  //       ],
-  //     },
-  //   ],
-  //   max_tokens: 512,
-  // });
-  //
-  // return response.choices[0].message.content ?? "";
+  // TODO (exercise): build the multimodal request and call the API.
+  //   - Call `client.chat.completions.create({ model, messages, max_tokens: ... })`.
+  //   - `messages` is a single user message whose `content` is an ARRAY of parts
+  //     (not a plain string): a text part carrying `prompt`, and an image part of
+  //     `type: "image_url"` whose `image_url.url` is a data URI built from `mime`
+  //     and `b64` (shape: `data:<mime>;base64,<b64>`).
+  //   - Return the assistant's reply text (reach into `response.choices`), falling
+  //     back to "" if it's null.
 
   throw new Error(
     "Complete the TODO: build the multimodal messages array and call " +
@@ -132,29 +118,14 @@ async function describeWithAnthropic(imagePath: string, prompt: string): Promise
   const b64 = imageToBase64(imagePath);
   const mime = mimeType(imagePath) as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 
-  // TODO (exercise): build an Anthropic multimodal message and call the API.
-  //
-  // Anthropic's image format uses a "source" block:
-  //
-  // const message = await client.messages.create({
-  //   model,
-  //   max_tokens: 512,
-  //   messages: [
-  //     {
-  //       role: "user",
-  //       content: [
-  //         {
-  //           type: "image",
-  //           source: { type: "base64", media_type: mime, data: b64 },
-  //         },
-  //         { type: "text", text: prompt },
-  //       ],
-  //     },
-  //   ],
-  // });
-  //
-  // const block = message.content[0];
-  // return block.type === "text" ? block.text : "";
+  // TODO (exercise): build the Anthropic multimodal request and call the API.
+  //   - Call `client.messages.create({ model, max_tokens: ..., messages })`.
+  //   - `messages` is a single user message whose `content` is an ARRAY of parts:
+  //     an image part (`type: "image"` with a `source` block of `type: "base64"`,
+  //     `media_type` set to `mime`, and `data` set to `b64`) and a text part
+  //     carrying `prompt`.
+  //   - The returned message's `content[0]` is a content block; return its `.text`
+  //     when it's a text block, otherwise "".
 
   throw new Error(
     "Complete the TODO: build the Anthropic multimodal message and call " +

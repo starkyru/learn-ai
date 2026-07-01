@@ -154,12 +154,11 @@ function multiHeadAttention(
  *
  * With gamma=1, beta=0 each output row has mean ~0 and variance ~1.
  *
- * TODO: implement.
- *   For each row:
- *     1. mu  = mean(row)
- *     2. variance = mean((v - mu)^2)
- *     3. xhat[j] = (row[j] - mu) / Math.sqrt(variance + eps)
- *     4. out[j]  = gamma[j] * xhat[j] + beta[j]
+ * TODO: implement. For each row independently: compute its mean, then its population
+ * variance (the mean of the squared deviations from that mean — no n-1 correction).
+ * Normalise each entry with (value - mean) / Math.sqrt(variance + eps), then apply
+ * the affine scale-and-shift per column using gamma[j] and beta[j]. Return the
+ * resulting matrix.
  */
 function layerNorm(x: Matrix, gamma: number[], beta: number[], eps = 1e-5): Matrix {
   // TODO: implement layer norm
@@ -219,17 +218,14 @@ class TransformerBlock {
   /**
    * Run one pre-LN decoder block over x of shape (n × dModel).
    *
-   * TODO: implement.
-   *   1. const mask = causalMask(x.length)
-   *   2. Attention sublayer (pre-LN):
-   *        let a = layerNorm(x, p.gamma1, p.beta1)
-   *        a = multiHeadAttention(a, p.Wq, p.Wk, p.Wv, p.Wo, this.numHeads, mask)
-   *        x = addMat(x, a)                 // residual
-   *   3. Feed-forward sublayer (pre-LN):
-   *        let f = layerNorm(x, p.gamma2, p.beta2)
-   *        f = ffn(f, p.W1, p.b1, p.W2, p.b2)
-   *        x = addMat(x, f)                 // residual
-   *   4. return x
+   * TODO: implement the two pre-LN sublayers (build a causalMask from x.length first):
+   *   - Attention sublayer: layerNorm the input with gamma1/beta1, feed that through
+   *     multiHeadAttention (Wq/Wk/Wv/Wo, this.numHeads, the mask), then addMat the
+   *     result back onto x (the residual connection).
+   *   - Feed-forward sublayer: layerNorm the running x with gamma2/beta2, feed that
+   *     through ffn (W1/b1/W2/b2), then addMat it back onto x.
+   *   - Return the updated x. Both sublayers follow x = x + sublayer(LN(x)); the
+   *     residual path itself is never normalised.
    */
   forward(x: Matrix): Matrix {
     // TODO: implement the pre-LN decoder block

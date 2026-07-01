@@ -64,24 +64,20 @@ def main() -> None:
     app = build_app()  # noqa: F841
     inputs = {"messages": [HumanMessage(content=QUESTION)]}  # noqa: F841
 
-    # TODO 1: stream "updates" — print which node ran and what it returned.
-    #   for chunk in app.stream(inputs, stream_mode="updates"):
-    #       for node, update in chunk.items():
-    #           print(f"[{node}] +{len(update['messages'])} message(s)")
+    # TODO 1: stream with `app.stream(inputs, stream_mode="updates")`. Each chunk is a
+    #         dict keyed by node name -> the delta that node returned. Loop the items
+    #         and print which node ran and how many messages it added.
 
-    # TODO 2: stream "values" — print the running message count (full state).
-    #   for snapshot in app.stream(inputs, stream_mode="values"):
-    #       print("state messages:", len(snapshot["messages"]))
+    # TODO 2: stream with stream_mode="values". Now each event is the FULL state after
+    #         a step — print the running message count so you can watch it grow.
 
-    # TODO 3: stream "messages" — print LLM TOKENS as they arrive (typing effect).
-    #   for token, metadata in app.stream(inputs, stream_mode="messages"):
-    #       if token.content:
-    #           print(token.content, end="", flush=True)
-    #   print()
+    # TODO 3: stream with stream_mode="messages". Each event is a (token, metadata)
+    #         pair; print the token's content as it arrives (end="", flush=True) for a
+    #         typing effect, then a trailing newline.
 
-    # TODO 4 (stretch): pass both modes and tag each event.
-    #   for mode, payload in app.stream(inputs, stream_mode=["updates", "messages"]):
-    #       print(mode, "->", payload)
+    # TODO 4 (stretch): pass a LIST of modes, e.g. ["updates", "messages"]. Each event
+    #         now arrives as a (mode, payload) tuple — print both so you can see how the
+    #         modes interleave.
     print("TODO: implement the three stream modes above and compare them.")
 
 

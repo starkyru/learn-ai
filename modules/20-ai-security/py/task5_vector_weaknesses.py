@@ -57,7 +57,8 @@ def embed_docs(docs: list[dict]) -> list[list[float]]:
     """Embed a list of docs and return vectors."""
     provider = get_provider()
 
-    # TODO 1: Call provider.embed([d["text"] for d in docs]).vectors and return it.
+    # TODO 1: Embed each doc's "text" field via provider.embed(...) and return the
+    #   list of vectors from the result.
     raise NotImplementedError("TODO 1: embed docs")
 
 

@@ -1,13 +1,19 @@
-# Module 06c — Agent Frameworks: LangChain, CrewAI, AutoGen
+# Module 06c — Agent Frameworks: LangChain, CrewAI, AutoGen, LlamaIndex, Semantic Kernel
 
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand · 🔴 from-scratch
 
 Module 06 built an agent loop from scratch and 06b went deep on **LangGraph**.
-But interviews and real teams also ask about the other three names everyone drops:
+But interviews and real teams also ask about the other names everyone drops:
 **LangChain** (the `|` pipe / LCEL (LangChain Expression Language), memory, retrievers), **CrewAI** (role-based
-Agents / Tasks / Crew), and **AutoGen** (conversable agents in a group chat).
+Agents / Tasks / Crew), **AutoGen** (conversable agents in a group chat),
+**LlamaIndex** (Documents → index → query engine for RAG), and **Semantic Kernel**
+(a kernel of named functions you invoke and chain).
 
-Rather than teach three APIs by rote, this module keeps our from-scratch pedagogy:
+The framework landscape this module covers — **LangChain, CrewAI, AutoGen,
+LlamaIndex, and Semantic Kernel** — is exactly the set of names that show up in
+production GenAI / agent-orchestration job descriptions (alongside LangGraph from 06b).
+
+Rather than teach five APIs by rote, this module keeps our from-scratch pedagogy:
 you **reimplement each framework's core abstraction in ~60–100 lines** through a
 plain model function. Once you've built the machinery, the README maps each of your
 classes to the real library's API (Application Programming Interface) — so you can speak fluently to both "how it works"
@@ -33,7 +39,7 @@ shrink to the small ideas below.
 
 > **Prerequisite:** finish module 06 (Tasks 1 & 4). You should be able to say
 > "an agent is a loop over a model call." This module is about the _plumbing_
-> three popular libraries wrap around that loop.
+> these popular libraries wrap around that loop.
 
 ---
 
@@ -178,6 +184,64 @@ so each agent sees who said what.
 smarter next-speaker selection and an `is_termination_msg` callback — our
 round-robin + phrase check is the minimal version of both.
 
+### 5. A query engine is retrieve-then-synthesize (Task 5)
+
+LlamaIndex: wrap raw text as **Documents**, build a **VectorStoreIndex** from them,
+then ask a **query engine**. `VectorStoreIndex.from_documents(docs)` does two things:
+_chunk_ each Document into **Nodes** (here: split on blank lines, one Node per
+paragraph) and _index_ each Node by a vector. We reuse Task 2's **bag-of-words
+cosine** as the "embedding" so the whole pipeline is offline and deterministic —
+no network, no real embeddings.
+
+`index.as_query_engine().query(q)` is then **retrieve-then-synthesize**:
+
+```
+nodes   = top-k Nodes by cosine(query, node.vector)   # same ranking as Task 2
+context = join the retrieved nodes' text
+prompt  = SYNTHESIS_TEMPLATE(context, query)          # stuff context in
+answer  = model(prompt)                                # one synthesis call
+```
+
+The retrieval half is identical to Task 2's retriever (score every node, sort by
+cosine descending, take the first `k`); the synthesis half is one templated model
+call over the retrieved node texts. That's the entire RAG mental model.
+
+**Maps to real llama-index-core:** `Document(text=...)`,
+`VectorStoreIndex.from_documents(docs)` (a node parser splits + a real embedding
+model vectorizes each node), `index.as_query_engine().query(q)` → a `Response`
+whose `.source_nodes` are what was retrieved and `.response` is the synthesized text.
+
+### 6. A Kernel is a registry of named functions you chain (Task 6)
+
+Semantic Kernel: a **Kernel** holds **functions you invoke by name**. Two kinds
+share one interface (`invoke(**args) -> str`), which is what lets the kernel treat
+them uniformly and chain them:
+
+- a **semantic function** = a prompt template + the model. Rendering fills the
+  template's `{placeholders}` from the args, then calls the model:
+  `prompt = template.format(**args)`, `reply = model(prompt)`.
+- a **native function** = plain code (a Python/JS callable, no model).
+
+**Sequential orchestration** is a tiny pipeline — a fold that threads each output
+forward as the next function's `input` (the same threading as the Crew in Task 3,
+but over named kernel functions):
+
+```
+out_0 = x
+for f in [f_1, ..., f_n]:
+    out = kernel.invoke(f, input=out_prev)   # feed prior output forward
+return out_last
+```
+
+So chaining `clean → summarize → translate` runs the native cleaner, feeds its
+output to the summarize prompt, then feeds _that_ to the translate prompt — one
+value threaded through named functions.
+
+**Maps to real semantic-kernel:** a prompt function vs a `@kernel_function`
+(native) method; `kernel.add_function(...)` / `add_plugin(...)` to register;
+`kernel.invoke(function_name=..., ...)` to run one; sequential orchestration
+(or chaining invokes) to run a pipeline.
+
 ---
 
 ## Tasks
@@ -310,6 +374,71 @@ transcript, stopping at `max_round` or on a `"TERMINATE"` phrase.
 
 ---
 
+### Task 5 🟡 — LlamaIndex query engine (Documents → index → query engine)
+
+**Goal:** Reimplement LlamaIndex's RAG mental model so
+`VectorStoreIndex.from_documents(docs).as_query_engine().query(q)` chunks docs into
+nodes, retrieves the top-k by bag-of-words cosine (offline, no embeddings), and
+synthesizes an answer via the model.
+
+**Files:**
+
+- `py/05_llamaindex.py`
+- `ts/05-llamaindex.ts`
+
+**Steps:**
+
+1. Implement `VectorStoreIndex.retrieve(query, k)` — score every Node by cosine
+   against the query, sort descending, return the top-k Nodes. (Same top-k-by-cosine
+   ranking as Task 2, over Nodes instead of raw doc strings. `cosine`, chunking, and
+   `from_documents` are provided.)
+2. Implement `QueryEngine.query(q)` — retrieve top-k nodes, join their text into a
+   context block, fill the synthesis template (save it on `last_prompt`), and call
+   the model with a single user message.
+
+**Acceptance (`--stub`):**
+
+- The index chunks the 3 documents into **6 nodes** (one per paragraph).
+- For `"Where is the Eiffel Tower located?"` the top retrieved node is the
+  **Eiffel-Tower** node (highest lexical overlap).
+- The synthesis prompt (`last_prompt`) **contains the retrieved node text** and the
+  `Query:` line; the (stub) answer is synthesized **from** that retrieved context.
+
+---
+
+### Task 6 🟡 — Semantic Kernel (named functions + sequential chaining)
+
+**Goal:** Reimplement Semantic Kernel's `Kernel` so it registers a **semantic
+function** (prompt template + model) and a **native function** (plain code), invokes
+them **by name**, and **chains** them into a sequential pipeline.
+
+**Files:**
+
+- `py/06_semantic_kernel.py`
+- `ts/06-semantic-kernel.ts`
+
+**Steps:**
+
+1. Implement `KernelFunction.invoke(**args)` — native branch calls the plain code;
+   semantic branch renders the prompt template from the args, wraps it in one user
+   message, and calls the model.
+2. Implement `Kernel.invoke(name, **args)` — look the function up by name and
+   delegate (error clearly on an unknown name).
+3. Implement `Kernel.run_pipeline(names, initial_input)` — fold over the named
+   functions, threading each output forward as the next function's `input`.
+
+**Acceptance (`--stub`):**
+
+- The native `clean` function runs real code (collapses the extra whitespace to
+  `"RAG grounds a model in retrieved documents."`).
+- A single semantic invoke renders its template with the arg (the stub echoes the
+  exact rendered prompt).
+- The `clean → summarize → translate` pipeline threads outputs forward: the final
+  value nests the translate prompt around the summarize output around the cleaned
+  text — proving each step fed the next.
+
+---
+
 ## Done when
 
 - [ ] Task 1: `01_lcel` / `01-lcel --stub` runs and the parsed chain output +
@@ -320,6 +449,10 @@ transcript, stopping at `max_round` or on a `"TERMINATE"` phrase.
       writer's context equals the researcher's output.
 - [ ] Task 4: `04_groupchat` / `04-groupchat --stub` produces a correctly labelled,
       early-terminating transcript within `max_round`.
+- [ ] Task 5: `05_llamaindex` / `05-llamaindex --stub` chunks docs into nodes,
+      retrieves the Eiffel-Tower node, and synthesizes from the retrieved context.
+- [ ] Task 6: `06_semantic_kernel` / `06-semantic-kernel --stub` runs a native
+      function, renders a semantic function, and threads a sequential pipeline.
 - [ ] You can name, for each of your classes, the **real library API** it maps to
       (see the "Maps to real …" notes above).
 
@@ -327,18 +460,21 @@ transcript, stopping at `max_round` or on a `"TERMINATE"` phrase.
 
 ## Framework cheat-sheet (what to say in an interview)
 
-| Framework     | Core primitive you built                 | Real API to name                                                   |
-| ------------- | ---------------------------------------- | ------------------------------------------------------------------ |
-| **LangChain** | `Runnable` + `pipe` = LCEL               | `prompt \| model \| parser`, `RunnableSequence`, `StrOutputParser` |
-| **LangChain** | buffer memory + retriever RAG            | `ConversationBufferMemory`, `VectorStoreRetriever`                 |
-| **CrewAI**    | role-grounded `Agent`, sequential `Crew` | `Agent`, `Task`, `Crew`, `Process.sequential`                      |
-| **AutoGen**   | shared transcript + round-robin manager  | `ConversableAgent`, `GroupChat`, `GroupChatManager`                |
-| **LangGraph** | (module 06b) stateful graph runtime      | `StateGraph`, checkpointer, `Command(goto=…)`                      |
+| Framework           | Core primitive you built                 | Real API to name                                                   |
+| ------------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| **LangChain**       | `Runnable` + `pipe` = LCEL               | `prompt \| model \| parser`, `RunnableSequence`, `StrOutputParser` |
+| **LangChain**       | buffer memory + retriever RAG            | `ConversationBufferMemory`, `VectorStoreRetriever`                 |
+| **CrewAI**          | role-grounded `Agent`, sequential `Crew` | `Agent`, `Task`, `Crew`, `Process.sequential`                      |
+| **AutoGen**         | shared transcript + round-robin manager  | `ConversableAgent`, `GroupChat`, `GroupChatManager`                |
+| **LlamaIndex**      | index of Nodes + query engine (RAG)      | `Document`, `VectorStoreIndex.from_documents`, `as_query_engine().query` |
+| **Semantic Kernel** | kernel of named functions + chaining     | `Kernel`, `@kernel_function` / `add_function`, `kernel.invoke`     |
+| **LangGraph**       | (module 06b) stateful graph runtime      | `StateGraph`, checkpointer, `Command(goto=…)`                      |
 
 The one-liner that ties them together: **each framework is orchestration around a
 single `model(messages) -> text` call** — LCEL composes it, CrewAI folds context
-through role-grounded calls, AutoGen loops it over a shared transcript, LangGraph
-wraps it in a checkpointed state machine.
+through role-grounded calls, AutoGen loops it over a shared transcript, LlamaIndex
+retrieves-then-synthesizes with it, Semantic Kernel invokes and chains it as named
+functions, and LangGraph wraps it in a checkpointed state machine.
 
 ---
 
@@ -349,9 +485,13 @@ wraps it in a checkpointed state machine.
   <https://python.langchain.com/docs/concepts/retrievers/>
 - **CrewAI docs (Agents / Tasks / Crews / Processes):** <https://docs.crewai.com/>
 - **AutoGen (ConversableAgent, GroupChat):** <https://microsoft.github.io/autogen/>
-- **When to pick which:** LangChain/LCEL for linear pipelines and RAG; CrewAI for
-  role-based task pipelines; AutoGen for open-ended multi-agent conversation;
-  LangGraph (06b) when you need persistence, human-in-the-loop, or complex routing.
+- **LlamaIndex (Documents, VectorStoreIndex, query engines):** <https://docs.llamaindex.ai/>
+- **Semantic Kernel (Kernel, functions/plugins, orchestration):** <https://learn.microsoft.com/semantic-kernel/>
+- **When to pick which:** LangChain/LCEL for linear pipelines; LlamaIndex for
+  RAG-first apps (indexing + query engines); CrewAI for role-based task pipelines;
+  AutoGen for open-ended multi-agent conversation; Semantic Kernel for
+  function/plugin orchestration (strong in .NET / enterprise); LangGraph (06b) when
+  you need persistence, human-in-the-loop, or complex routing.
 
 ---
 

@@ -121,60 +121,39 @@ function splitIntoChunks(text: string, maxTokens = MAX_TOKENS_PER_CHUNK): string
 
 // ---------------------------------------------------------------------------
 // TODO 2: Implement mapReduce.
-//         MAP: for each chunk, call the LLM with:
-//           "Based only on this excerpt, answer: {question}\nExcerpt: {chunk}"
-//         Collect mini-answers.
-//         REDUCE: combine mini-answers into one final answer with one LLM call.
+//         - MAP: iterate the chunks. For each, build a prompt telling the model to
+//           answer `question` using ONLY that excerpt (include the chunk text), send it
+//           via `llm.chat([{ role: "user", content: ... }], { temperature: 0 })`, and
+//           collect the trimmed mini-answer.
+//         - REDUCE: join the mini-answers into one blob, then make a single final LLM
+//           call whose prompt restates the question and asks the model to synthesise
+//           those partial answers into one coherent answer.
+//         - Return the reduce call's text.
 // ---------------------------------------------------------------------------
 async function mapReduce(
   chunks: string[],
   question: string,
   llm: ReturnType<typeof getProvider>,
 ): Promise<string> {
-  // TODO: implement
-  // const miniAnswers: string[] = [];
-  // for (const chunk of chunks) {
-  //   const prompt = `Based only on this excerpt, answer the question: ${question}\nExcerpt:\n${chunk}`;
-  //   const result = await llm.chat([{ role: "user", content: prompt }], { temperature: 0 });
-  //   miniAnswers.push(result.text.trim());
-  // }
-  // const combined = miniAnswers.join("\n---\n");
-  // const reducePrompt =
-  //   `Original question: ${question}\n\n` +
-  //   `Partial answers from different sections:\n${combined}\n\n` +
-  //   "Synthesise these into one final, coherent answer.";
-  // const final = await llm.chat([{ role: "user", content: reducePrompt }], { temperature: 0 });
-  // return final.text;
   throw new Error("TODO: implement mapReduce");
 }
 
 // ---------------------------------------------------------------------------
 // TODO 3: Implement refine.
-//         Start with an empty interim answer.
-//         For each chunk, update the interim:
-//           "Refine the current answer using any new information in this excerpt.
-//            Question: {question}
-//            Current answer: {interim}
-//            New excerpt: {chunk}"
-//         Return the final interim after all chunks.
+//         - Seed an `interim` answer with a placeholder (e.g. "No answer yet.").
+//         - Walk the chunks in order. For each, build a prompt that hands the model the
+//           question, the current `interim`, and the new excerpt, and asks it to refine
+//           the answer using only genuinely new information from that excerpt. Send it
+//           via `llm.chat([...], { temperature: 0 })` and overwrite `interim` with the
+//           trimmed reply.
+//         - Return `interim` after the last chunk (this sequential threading is what
+//           makes refine differ from map-reduce — later chunks can wash out earlier ones).
 // ---------------------------------------------------------------------------
 async function refine(
   chunks: string[],
   question: string,
   llm: ReturnType<typeof getProvider>,
 ): Promise<string> {
-  // TODO: implement
-  // let interim = "No answer yet.";
-  // for (const chunk of chunks) {
-  //   const prompt =
-  //     `Refine the current answer using any new information in the excerpt.\n` +
-  //     `Question: ${question}\n` +
-  //     `Current answer: ${interim}\n` +
-  //     `New excerpt:\n${chunk}`;
-  //   const result = await llm.chat([{ role: "user", content: prompt }], { temperature: 0 });
-  //   interim = result.text.trim();
-  // }
-  // return interim;
   throw new Error("TODO: implement refine");
 }
 

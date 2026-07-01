@@ -82,17 +82,17 @@ def build_handwired():
     def agent_node(state: AgentState) -> dict:
         return {"messages": [model.invoke(state["messages"])]}
 
-    # TODO 1: write the router. Return "tools" if the last message has tool_calls,
-    #         else END.
-    #   def route(state: AgentState) -> str:
-    #       last = state["messages"][-1]
-    #       return "tools" if getattr(last, "tool_calls", None) else END
+    # TODO 1: write the router `route(state) -> str`. Look at the last message in
+    #         state["messages"] and decide: if the model asked for a tool (it has a
+    #         non-empty `tool_calls` attribute — reach for it defensively), route to
+    #         the "tools" node; otherwise route to END.
 
     graph = StateGraph(AgentState)
     graph.add_node("agent", agent_node)
     graph.add_node("tools", ToolNode(TOOLS))  # prebuilt node executes the tool_calls
     graph.add_edge(START, "agent")
-    # TODO 2: add_conditional_edges("agent", route) and add_edge("tools", "agent")
+    # TODO 2: register your router with `add_conditional_edges("agent", route)`, and
+    #         close the ReAct cycle with an edge from "tools" back to "agent".
     return graph.compile()
 
 
@@ -111,8 +111,9 @@ def build_prebuilt_router():
     graph.add_node("agent", agent_node)
     graph.add_node("tools", ToolNode(TOOLS))
     graph.add_edge(START, "agent")
-    # TODO 3: graph.add_conditional_edges("agent", tools_condition)
-    #         (tools_condition routes to "tools" or END for you)
+    # TODO 3: same wiring as TODO 2, but instead of your own router pass the prebuilt
+    #         `tools_condition` to `add_conditional_edges` on the "agent" node — it
+    #         routes to "tools" or END for you. (import it from langgraph.prebuilt)
     graph.add_edge("tools", "agent")
     return graph.compile()
 
@@ -123,7 +124,8 @@ def build_prebuilt_router():
 
 
 def build_fully_prebuilt():
-    # TODO 4: return create_react_agent(get_chat_model(), TOOLS)
+    # TODO 4: collapse the whole graph into one call — `create_react_agent(...)` takes
+    #         the chat model and TOOLS and returns the compiled agent. Return it.
     raise NotImplementedError("TODO 4")
 
 

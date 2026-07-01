@@ -108,9 +108,8 @@ def run_fresh_eval(provider: Any) -> dict[str, Any]:
 def check_gate(metric_value: float, threshold: float, metric: str) -> bool:
     """Return True if metric_value >= threshold, else print failure and return False.
 
-    TODO 4: Print a clear pass/fail line, e.g.:
-            "[PASS] avg_score=0.82 >= threshold=0.60"
-            "[FAIL] faithfulness=0.55 < threshold=0.70"
+    TODO 4: Print one clear line tagged PASS or FAIL that names the metric, its
+            value, the comparison, and the threshold, so CI logs are scannable.
     Return True on pass, False on fail.
     """
     raise NotImplementedError("TODO: implement check_gate")

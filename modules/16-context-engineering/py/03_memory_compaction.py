@@ -59,24 +59,18 @@ CONVERSATION_SCRIPT = [
 
 # ---------------------------------------------------------------------------
 # TODO 1: Implement summarise_turns.
-#         Given a list of ChatMessage objects, ask the LLM to produce a 2–3 sentence
-#         summary of that exchange. Return a single ChatMessage with role="system"
-#         and content starting with "Summary of earlier conversation: ...".
-#
-#         Suggested prompt:
-#           "Summarise the following conversation exchange in 2-3 sentences.
-#            Focus on key facts, decisions, and topics discussed.
-#            Do not include conversational filler.\n\n<turns>"
+#         Given a list of ChatMessage objects, ask the LLM to compress them.
+#         - Flatten `turns` into a single transcript string ("<role>: <content>" per line).
+#         - Build a prompt asking the model to summarise the exchange in 2–3 sentences,
+#           keeping key facts / decisions / topics and dropping conversational filler,
+#           followed by the transcript.
+#         - Send it as one ChatMessage("user", ...) via `llm.chat(...)` with
+#           ChatOptions(temperature=0) so the summary is deterministic.
+#         - Return a single ChatMessage with role "system" whose content begins with
+#           "Summary of earlier conversation: " and then the model's text (this prefix
+#           is what maybe_compact and the model rely on to recognise the summary).
 # ---------------------------------------------------------------------------
 def summarise_turns(turns: list[ChatMessage], llm) -> ChatMessage:
-    # transcript = "\n".join(f"{m.role}: {m.content}" for m in turns)
-    # prompt = (
-    #     "Summarise the following conversation exchange in 2-3 sentences. "
-    #     "Focus on key facts, decisions, and topics discussed. "
-    #     "Do not include conversational filler.\n\n" + transcript
-    # )
-    # result = llm.chat([ChatMessage("user", prompt)], ChatOptions(temperature=0))
-    # return ChatMessage("system", "Summary of earlier conversation: " + result.text)
     raise NotImplementedError("TODO: implement summarise_turns")
 
 
@@ -97,25 +91,15 @@ def maybe_compact(
     budget: int,
     llm,
 ) -> list[ChatMessage]:
-    # current = count_history_tokens(messages)
-    # if current <= budget:
-    #     return messages
-    #
-    # print(f"\n  [COMPACTION] tokens={current} > budget={budget}; compacting...")
-    # system_msgs = [m for m in messages if m.role == "system"]
-    # convo_msgs  = [m for m in messages if m.role != "system"]
-    #
-    # # Find the split point: how many old turns to summarise?
-    # # Summarise the first half of the conversation turns.
-    # split = max(1, len(convo_msgs) // 2)
-    # to_summarise = convo_msgs[:split]
-    # to_keep      = convo_msgs[split:]
-    #
-    # summary = summarise_turns(to_summarise, llm)
-    # new_messages = system_msgs + [summary] + to_keep
-    # new_count = count_history_tokens(new_messages)
-    # print(f"  [COMPACTION] done — new token count={new_count}")
-    # return new_messages
+    # - Use count_history_tokens(messages); if it is within `budget`, return messages
+    #   unchanged (fast path — no LLM call).
+    # - Otherwise print a line noting compaction fired (so you can watch it in the demo),
+    #   then partition messages into system messages and conversation (non-system) turns.
+    # - Pick how many of the OLDEST conversation turns to compress — summarising roughly
+    #   the first half (at least one) is a reasonable split. Call summarise_turns on that
+    #   oldest slice and keep the rest verbatim.
+    # - Reassemble in order: system messages, then the single summary message, then the
+    #   kept recent turns — and return that new list.
     raise NotImplementedError("TODO: implement maybe_compact")
 
 

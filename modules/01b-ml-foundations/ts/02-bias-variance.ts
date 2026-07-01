@@ -170,15 +170,9 @@ function permutation(n: number, seed: number): number[] {
  * chunks. Return an array of k index arrays.
  *
  * TODO: implement.
- *   1. const perm = permutation(n, SEED);
- *   2. const folds: number[][] = [];
- *   3. Split perm into k near-equal contiguous chunks. A simple way:
- *        for (let f = 0; f < k; f++) {
- *          const start = Math.floor((f * n) / k);
- *          const end   = Math.floor(((f + 1) * n) / k);
- *          folds.push(perm.slice(start, end));
- *        }
- *   4. return folds;
+ *   - Shuffle 0..n-1 with the provided permutation(n, SEED).
+ *   - Split that permutation into k near-equal contiguous chunks (fold f spans
+ *     roughly indices f·n/k .. (f+1)·n/k) and return the array of folds.
  */
 function kfoldIndices(n: number, k: number): number[][] {
   // TODO: implement the k-fold index split
@@ -194,13 +188,10 @@ function kfoldIndices(n: number, k: number): number[][] {
  * of Φ) is NOT penalised. lam === 0 recovers ordinary least squares. Assemble
  * the system and call the provided solve() — never invert a matrix.
  *
- * TODO: implement.
- *   1. const Phit = transpose(Phi);              // (d)×N
- *   2. const A = matMul(Phit, Phi);              // d×d  == ΦᵀΦ
- *   3. add λ to the diagonal EXCEPT A[0][0]:
- *        for (let i = 1; i < A.length; i++) A[i][i] += lam;
- *   4. const b = matVec(Phit, y);                // d    == Φᵀy
- *   5. return solve(A, b);
+ * TODO: implement using transpose/matMul/matVec/solve.
+ *   - Build the coefficient matrix ΦᵀΦ, then add λ to each diagonal entry
+ *     EXCEPT [0][0] (the intercept column is not penalised).
+ *   - Assemble the right-hand side Φᵀy, solve the system, and return the weights.
  */
 function ridgeFit(Phi: number[][], y: number[], lam: number): number[] {
   // TODO: implement ridge regression via solve()
@@ -217,19 +208,12 @@ function ridgeFit(Phi: number[][], y: number[], lam: number): number[] {
  * Return the mean of the k validation MSEs.
  *
  * TODO: implement.
- *   1. const folds = kfoldIndices(x.length, k);
- *   2. const scores: number[] = [];
- *   3. for (let f = 0; f < k; f++) {
- *        const valIdx = folds[f];
- *        const trainIdx = folds.filter((_, j) => j !== f).flat();
- *        const xTr = trainIdx.map(i => x[i]);
- *        const yTr = trainIdx.map(i => y[i]);
- *        const w = ridgeFit(polyFeatures(xTr, degree), yTr, lam);
- *        const xVal = valIdx.map(i => x[i]);
- *        const yVal = valIdx.map(i => y[i]);
- *        scores.push(mse(yVal, predict(polyFeatures(xVal, degree), w)));
- *      }
- *   4. return mean of scores
+ *   - Get the folds from kfoldIndices(x.length, k).
+ *   - For each fold f: it is the validation set; the training indices are every
+ *     OTHER fold flattened together.
+ *   - Gather the train x/y, ridgeFit on polyFeatures(degree) with lam, then
+ *     score mse() on the validation x/y via predict().
+ *   - Return the mean of the per-fold validation MSEs.
  */
 function cvScore(
   x: number[],

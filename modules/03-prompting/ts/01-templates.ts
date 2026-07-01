@@ -30,7 +30,9 @@ export function renderTemplate(
   variables: Record<string, string>,
 ): string {
   // TODO: implement
-  // Hint: use template.replace(/\{\{(\w+)\}\}/g, (_, key) => { ... })
+  // Hint: scan for {{name}} tokens with a regex and substitute each one with the
+  //       matching value from `variables`. If a referenced placeholder isn't in
+  //       `variables`, throw an Error rather than leaving the token in place.
   return template; // placeholder — remove and implement
 }
 
@@ -70,7 +72,7 @@ async function callWithSystem(systemPrompt: string, userMessage: string): Promis
     { role: "system", content: systemPrompt },
     { role: "user", content: userMessage },
   ];
-  // TODO: call llm.chat(messages) and return result.text
+  // TODO: send `messages` with `llm.chat(...)` and return the reply's text.
   return "TODO: implement callWithSystem";
 }
 

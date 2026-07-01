@@ -18,11 +18,13 @@ import numpy as np
 def softmax(x: np.ndarray) -> np.ndarray:
     """Row-wise softmax: softmax(x)ᵢ = exp(xᵢ) / Σ exp(xⱼ), per row.
 
-    TODO:
-      1. Subtract the per-row max (keepdims=True) BEFORE exp, for numerical
-         stability. This doesn't change the result but prevents overflow.
+    TODO (operate per row — reduce along ``axis=1`` with ``keepdims=True`` so the
+    result broadcasts back over each row):
+      1. For stability, shift each row so its max is 0 BEFORE exponentiating
+         (subtract the per-row max). This leaves the result unchanged but avoids
+         overflow.
       2. Exponentiate.
-      3. Divide each row by its row-sum (keepdims=True) so each row sums to 1.
+      3. Normalise: divide each row by its own row-sum so every row sums to 1.
 
     Input shape: (n, n). Output shape: (n, n), each ROW summing to 1.
     """
@@ -41,13 +43,16 @@ def attention(Q: np.ndarray, K: np.ndarray, V: np.ndarray) -> tuple[np.ndarray, 
             weights: (n, n), the attention weights (each row sums to 1)
             output:  (n, dᵥ), the attention-weighted mix of value vectors
 
-    TODO:
-      1. dₖ = K.shape[-1].
-      2. scores = Q @ K.T          # (n, n) raw dot-product affinities
-      3. scores = scores / sqrt(dₖ)   # the "scaled" in scaled dot-product
-      4. weights = softmax(scores)    # row-wise; uses the function above
-      5. output = weights @ V         # (n, dᵥ)
-      6. return output, weights
+    TODO (follow the formula in the module header):
+      1. Read dₖ off the last axis of K.
+      2. Form the raw affinity scores by matrix-multiplying Q against Kᵀ — a
+         query dotted with every key gives an (n, n) matrix.
+      3. Apply the "scaled" part: divide the scores by √dₖ (this keeps the dot
+         products from growing with dimension and saturating the softmax).
+      4. Turn each row of scores into weights with the row-wise `softmax` above.
+      5. Mix the value vectors by matrix-multiplying the weights against V,
+         giving the (n, dᵥ) output.
+      6. Return (output, weights) in that order.
     """
     raise NotImplementedError("Implement scaled dot-product attention — see the TODOs.")
 

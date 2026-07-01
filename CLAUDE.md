@@ -115,3 +115,21 @@ or LM Studio (load a model, Start Server on port 1234). Gemini
   full solution — unless the learner explicitly asks for the solution.
 - Anchor answers to the module README, not to your own memory of how a tool behaves.
 - Keep exercise code going through `llm_core` / `@learn-ai/llm-core`.
+
+## Writing exercise scaffolds (TODO stubs)
+
+Exercise files leave the pedagogically-core function as a stub (`raise NotImplementedError`
+/ `throw new Error("TODO: ...")`). The TODO comment must **hint, not hand over a
+copy-paste solution** — the learner should have to write the code, not just uncomment it.
+
+- **Keep** (good hints): the value's TYPE (e.g. "build a `ChatMessage[]`", Python type
+  hints), the return/object SHAPE, WHICH functions to call (`provider.chat`, `isYes`,
+  `Promise.all`, `np.linalg.solve`, …), WHICH parameters matter (`temperature: 0`, a small
+  `maxTokens`, `axis=1` — you may replace a giveaway magic value with `...`), and the
+  concept / numbered steps / math formulas in the header docstring.
+- **Remove** (spoilers): fully-assembled object/array literals, exact prompt STRINGS
+  (describe their intent instead), the final `return <expression>`, and copy-paste chains
+  like `xs.map(...).join(...)` (describe them in words). No line-for-line commented-out
+  solution.
+- Only edit comments on **unimplemented** stubs; never alter code the learner may have
+  already solved. Keep the Python and TypeScript hints parallel.

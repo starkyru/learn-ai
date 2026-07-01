@@ -117,36 +117,27 @@ def run_openai_responses(question: str) -> str:
     client = OpenAI(api_key=api_key)
     model = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
 
-    # TODO 4: Define tools in Responses-API format.
-    #   The tool schema is identical to Chat Completions:
-    #   {
-    #     "type": "function",
-    #     "name": "calculator",
-    #     "description": "...",
-    #     "parameters": { "type": "object", "properties": {...}, "required": [...] }
-    #   }
-    #   Define both "calculator" and "lookup" tools.
+    # TODO 4: Define tools in Responses-API format (a `list[dict]`).
+    #   Each tool is a flat dict with keys "type": "function", "name",
+    #   "description", and "parameters" (a JSON Schema object). Note the shape
+    #   is flatter than Chat Completions — name/parameters sit at the top level,
+    #   not nested under a "function" key. Define both "calculator" (takes an
+    #   "expression" string) and "lookup" (takes a "query" string).
     tools: list[dict] = []  # TODO 4: replace with real tool defs
 
     # TODO 5: Run the Responses API loop.
-    #   a) Call client.responses.create(model=model, input=question, tools=tools).
-    #   b) Inspect response.output — it's a list of output items.
-    #      - Items with type "message" contain the text answer.
-    #      - Items with type "function_call" need dispatch + result injection.
-    #   c) For each function_call item:
-    #        result = dispatch(item.name, json.loads(item.arguments))
-    #        Inject via client.responses.create(
-    #            model=model,
-    #            previous_response_id=response.id,
-    #            input=[{
-    #                "type": "function_call_output",
-    #                "call_id": item.call_id,
-    #                "output": result,
-    #            }],
-    #            tools=tools,
-    #        )
-    #   d) Repeat until no more function_call items; extract and return the text.
-    #   e) Log each tool call and result with print().
+    #   a) Call client.responses.create(...) passing model, input=question, tools.
+    #   b) response.output is a list of output items. Items whose type is
+    #      "message" hold the text answer; items whose type is "function_call"
+    #      need to be dispatched and their results injected.
+    #   c) For each function_call item: parse item.arguments (JSON string) with
+    #      json.loads and pass to dispatch(item.name, ...). Send the result back
+    #      by calling client.responses.create AGAIN with previous_response_id set
+    #      to the prior response.id, and input=[<a "function_call_output" dict
+    #      carrying item.call_id and the result>], plus tools.
+    #   d) Repeat until the output has no more function_call items; then extract
+    #      and return the text from the message item.
+    #   e) print() each tool call and its result so you can trace the loop.
     raise NotImplementedError("TODO 5: implement Responses API loop")
 
 
@@ -175,25 +166,27 @@ def run_anthropic_tools(question: str) -> str:
     client = anthropic.Anthropic(api_key=api_key)
     model = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5")
 
-    # TODO 6: Define Anthropic tool schemas.
-    #   { "name": "calculator", "description": "...",
-    #     "input_schema": { "type": "object", "properties": {...}, "required": [...] } }
+    # TODO 6: Define Anthropic tool schemas (a `list[dict]`).
+    #   Anthropic uses a different key than OpenAI: each tool has "name",
+    #   "description", and "input_schema" (the JSON Schema object — note the key
+    #   is input_schema, not parameters). Define "calculator" and "lookup".
     tools: list[dict] = []  # TODO 6: replace with real tool defs
 
     messages: list[dict] = [{"role": "user", "content": question}]
 
     # TODO 7: Implement the Anthropic tool-calling loop.
-    #   a) Call client.messages.create(model=model, max_tokens=1024, tools=tools, messages=messages).
-    #   b) While response.stop_reason == "tool_use":
-    #        - Find content blocks where block.type == "tool_use"
-    #        - Call dispatch(block.name, block.input) for each
-    #        - Append the assistant message, then inject results:
-    #          { "role": "user", "content": [
-    #              { "type": "tool_result", "tool_use_id": block.id, "content": result }
-    #          ]}
-    #        - Loop.
-    #   c) When stop_reason == "end_turn", extract the text block and return it.
-    #   d) Log each step.
+    #   a) Call client.messages.create(...) with model, tools, messages, and a
+    #      max_tokens budget.
+    #   b) Loop while response.stop_reason == "tool_use":
+    #        - Select the content blocks whose type == "tool_use".
+    #        - For each, call dispatch(block.name, block.input).
+    #        - Append the assistant's message (its full content list) to
+    #          `messages`, then append a role="user" message whose content is a
+    #          list of "tool_result" blocks — each carrying the block.id (as
+    #          tool_use_id) and the dispatch result. Then create again.
+    #   c) When stop_reason == "end_turn", pull the text out of the text content
+    #      block and return it.
+    #   d) print() each step so you can trace the loop.
     raise NotImplementedError("TODO 7: implement Anthropic tool loop")
 
 

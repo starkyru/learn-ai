@@ -44,14 +44,14 @@ const FEW_SHOT_EXAMPLES = [
 
 // ---------------------------------------------------------------------------
 // TODO 2: Implement buildZeroShotMessages.
-//         Return a messages array with:
-//           - system: "You are a sentiment classifier. Respond with exactly one
-//             word: positive, negative, or neutral."
-//           - user: the input text
-//         No examples.
+//         Return a messages array with two entries:
+//           - a system message that makes the model a sentiment classifier and
+//             tells it to reply with exactly one word (positive/negative/neutral)
+//           - a user message carrying `input`
+//         No examples yet — that's the whole point of "zero-shot".
 // ---------------------------------------------------------------------------
 function buildZeroShotMessages(input: string) {
-  // TODO: return [{ role: "system", content: "..." }, { role: "user", content: input }]
+  // TODO: build and return the two-message array described above
   return [] as { role: string; content: string }[];
 }
 
@@ -86,15 +86,11 @@ async function main() {
     //   - Zero-shot (no examples)
     //   - One-shot (first example from FEW_SHOT_EXAMPLES)
     //   - Three-shot (first three examples)
-    //   Trim whitespace and lowercase the result.
-    //   Print all three results in a table row.
+    //   Trim whitespace and lowercase each reply's text before printing.
+    //   Use FEW_SHOT_EXAMPLES.slice(0, 1) for one-shot and .slice(0, 3) for
+    //   three-shot; each call goes through llm.chat(...) with the messages from
+    //   your two builder functions above. Print all three in the table row.
     // -------------------------------------------------------------------------
-
-    // const zeroShot = await llm.chat(buildZeroShotMessages(input) as any);
-    // const oneShot  = await llm.chat(buildFewShotMessages(input, FEW_SHOT_EXAMPLES.slice(0, 1)) as any);
-    // const threeShot = await llm.chat(buildFewShotMessages(input, FEW_SHOT_EXAMPLES.slice(0, 3)) as any);
-    // const truncated = input.length > 50 ? input.slice(0, 47) + "..." : input;
-    // console.log(truncated.padEnd(55) + zeroShot.text.trim().padEnd(12) + oneShot.text.trim().padEnd(12) + threeShot.text.trim());
 
     const truncated = input.length > 50 ? input.slice(0, 47) + "..." : input;
     console.log(truncated.padEnd(55) + "TODO".padEnd(12) + "TODO".padEnd(12) + "TODO");

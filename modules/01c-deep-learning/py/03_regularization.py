@@ -51,11 +51,11 @@ def dropout_forward(
     Test: return x unchanged (identity).
 
     TODO: implement.
-      if not training:
-          return x
-      keep = 1.0 - p
-      mask = (rng.random(x.shape) < keep).astype(x.dtype)   # 1 = keep, 0 = drop
-      return x * mask / keep
+      - If not training, return `x` untouched.
+      - Otherwise let keep = 1 - p. Draw a keep/drop mask the shape of `x` using
+        `rng.random(x.shape)` compared against `keep` (True = keep).
+      - Return `x` with dropped units zeroed and survivors divided by `keep`, so
+        E[out] == x. Keep it vectorised (no Python loop).
     """
     raise NotImplementedError("TODO: implement dropout_forward()")
 
@@ -73,11 +73,11 @@ def batchnorm_forward(
 
     With gamma=1, beta=0 the OUTPUT has per-feature mean ≈ 0 and var ≈ 1.
 
-    TODO: implement (return the (N, D) output).
-      mu = x.mean(axis=0)
-      var = x.var(axis=0)
-      x_hat = (x - mu) / np.sqrt(var + eps)
-      return gamma * x_hat + beta
+    TODO: implement the four steps in the formula above and return the (N, D) output.
+      - Compute the per-feature mean and variance over the batch — reduce over the
+        rows, i.e. `axis=0`, so each is shape (D,).
+      - Normalise: subtract the mean, divide by sqrt(var + eps).
+      - Apply the learnable rescale/shift with `gamma` and `beta` (broadcasts over rows).
     """
     raise NotImplementedError("TODO: implement batchnorm_forward()")
 
@@ -87,7 +87,7 @@ def l2_grad(W: np.ndarray, lam: float) -> np.ndarray:
     Gradient contribution of the L2 penalty (λ/2)·ΣW²  →  λ·W.
     This is ADDED onto the data gradient of the same weight matrix.
 
-    TODO: return lam * W.
+    TODO: return the elementwise derivative of the (λ/2)·ΣW² penalty w.r.t. W.
     """
     raise NotImplementedError("TODO: implement l2_grad()")
 

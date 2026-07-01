@@ -50,13 +50,14 @@ orders(id INTEGER PK, customer_id INTEGER FK→customers, product_id INTEGER FK�
  * TODO: implement this function.
  *
  * Steps:
- *   1. Build a system prompt:
- *      - State the LLM is a SQL expert working with SQLite.
- *      - Include the SCHEMA constant.
- *      - Instruct: "Return ONLY the SQL statement, no explanation, no markdown fences."
- *   2. Build a user message with the question.
- *   3. Call provider.chat([systemMsg, userMsg], { temperature: 0 }).
- *   4. Clean the response with extractSql() and return the SQL string.
+ *   1. Build a `ChatMessage[]`:
+ *      - a system message establishing the model as a SQLite SQL expert,
+ *        embedding the `SCHEMA` constant, and forbidding any output other than
+ *        the raw SQL (no prose, no markdown fences);
+ *      - a user message carrying the `question`.
+ *   2. Call `provider.chat(messages, { temperature: ... })` — pick the setting
+ *      that makes generation deterministic.
+ *   3. Clean the reply with `extractSql()` and return the SQL string.
  */
 export async function generateSql(
   question: string,
@@ -72,12 +73,13 @@ export async function generateSql(
  * TODO: implement this function.
  *
  * Steps:
- *   1. Strip whitespace.
- *   2. Remove markdown code fences: replace /```(?:sql)?\n?/gi with "".
- *   3. Strip trailing backticks/spaces/newlines.
- *   4. Take text up to and including the first ";". If no ";" found, append one.
- *   5. Strip whitespace.
- *   6. Return the result.
+ *   1. Trim surrounding whitespace.
+ *   2. Strip any markdown code fences the model may have wrapped the SQL in
+ *      (```sql ... ``` or plain ``` ... ```) with a case-insensitive replace,
+ *      then trim stray backticks/spaces/newlines.
+ *   3. Keep only the first statement: slice up to and including the first ";".
+ *      If there is no ";", append one so the result ends in a semicolon.
+ *   4. Trim again and return the single-statement string.
  */
 export function extractSql(raw: string): string {
   // TODO: implement extractSql().
@@ -99,13 +101,13 @@ export interface QueryResult {
  * TODO: implement this function.
  *
  * Steps:
- *   1. const db = new Database(DB_PATH).
- *   2. const stmt = db.prepare(sql).
- *   3. const rows = stmt.all() — returns an array of row objects.
- *   4. Derive columns from Object.keys(rows[0]) (handle empty result: columns=[]).
- *   5. Convert rows to arrays: rows.map(r => Object.values(r)).
- *   6. db.close().
- *   7. Return { columns, rows }.
+ *   1. Open a connection: `new Database(DB_PATH)`.
+ *   2. Prepare the statement (`db.prepare(sql)`) and run `.all()` — it returns
+ *      an array of row objects keyed by column name.
+ *   3. Derive the `columns` from the keys of the first row, defaulting to an
+ *      empty array when the result set is empty.
+ *   4. Reduce each row object to its values so `rows` is `unknown[][]`.
+ *   5. Close the DB and return the `QueryResult` shape ({ columns, rows }).
  *
  * Let better-sqlite3 errors propagate — task 3 adds retry logic.
  */
@@ -124,9 +126,10 @@ export function executeSql(sql: string): QueryResult {
  * TODO: implement this function.
  *
  * Steps:
- *   1. sql = await generateSql(question, provider).
- *   2. result = executeSql(sql).
- *   3. Return { sql, ...result }.
+ *   1. Turn the question into SQL with `generateSql()` (await it).
+ *   2. Run it through `executeSql()` to get columns and rows.
+ *   3. Return the SQL merged with that result ({ sql } spread with the
+ *      QueryResult fields).
  */
 export async function query(
   question: string,

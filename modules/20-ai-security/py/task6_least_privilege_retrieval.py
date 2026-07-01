@@ -109,8 +109,9 @@ def redact_secrets(text: str) -> str:
     before embedding means the raw secret never enters the vector store, so no
     query — adversarial or accidental — can retrieve it.
     """
-    # TODO 1: For each (pattern, replacement) in SECRET_PATTERNS, apply
-    #   re.sub(pattern, replacement, text). Return the redacted text.
+    # TODO 1: Walk SECRET_PATTERNS in order, substituting every match of each
+    #   pattern with its typed placeholder (use re.sub). Each pass feeds the next,
+    #   so the final text has all secret/PII shapes replaced. Return it.
     raise NotImplementedError("TODO 1: redact secrets before indexing")
 
 
@@ -136,12 +137,11 @@ def classify_exfil_intent(query: str) -> bool:
     """
     provider = get_provider()
 
-    # TODO 2: Call provider.chat([
-    #     ChatMessage("system", EXFIL_CLASSIFIER_PROMPT),
-    #     ChatMessage("user", query),
-    #   ]).
-    #   Return True if the response text, upper-cased and stripped, starts with
-    #   "DENY"; otherwise return False.
+    # TODO 2: Build a `list[ChatMessage]` — a "system" turn with
+    #   EXFIL_CLASSIFIER_PROMPT and a "user" turn with `query` — and call
+    #   provider.chat(...). The classifier answers a single word; normalise the
+    #   reply (strip + upper-case) and return True only when it signals DENY,
+    #   False otherwise.
     raise NotImplementedError("TODO 2: classify data-exfiltration intent")
 
 
@@ -160,7 +160,8 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
 def user_can_access(doc: Doc, user: str) -> bool:
     """Access policy: public docs are visible to everyone; private docs only to
     their owner."""
-    # TODO 3: Return True if doc.classification == "public" OR doc.owner == user.
+    # TODO 3: Return True when the doc is public, OR when its owner is the
+    #   requesting user; deny everything else.
     raise NotImplementedError("TODO 3: implement the access policy")
 
 
@@ -178,10 +179,10 @@ def retrieve_with_acl(
     """
     provider = get_provider()
 
-    # TODO 4:
-    #   1. visible = [d for d in docs if user_can_access(d, user)]
-    #   2. Embed the query: provider.embed([query]).vectors[0].
-    #   3. Score each visible doc with cosine_similarity(query_vec, d.vector).
+    # TODO 4: Enforce the ACL BEFORE ranking (order is the whole point):
+    #   1. Filter `docs` down to the ones user_can_access(...) permits.
+    #   2. Embed `query` with provider.embed(...) to get its vector.
+    #   3. Score each permitted doc with cosine_similarity(query_vec, d.vector).
     #   4. Sort by score descending and return the top_k as (doc, score) tuples.
     raise NotImplementedError("TODO 4: ACL-filter then rank")
 
@@ -203,12 +204,11 @@ def answer_grounded(query: str, retrieved: list[tuple[Doc, float]]) -> str:
     context = "\n\n".join(f"[{d.id}] {d.text}" for d, _ in retrieved)
 
     # TODO 5:
-    #   1. Call provider.chat([
-    #        ChatMessage("system", ANSWER_SYSTEM_PROMPT),
-    #        ChatMessage("user", f"Context:\n{context}\n\nQuestion: {query}"),
-    #      ]).
-    #   2. Pass the reply text through redact_secrets() as a last-resort DLP
-    #      backstop and return the result.
+    #   1. Build a `list[ChatMessage]` — a "system" turn with ANSWER_SYSTEM_PROMPT
+    #      and a "user" turn combining the grounding `context` and the `query` —
+    #      and call provider.chat(...).
+    #   2. Run the reply text through redact_secrets() one more time as a
+    #      last-resort DLP backstop, and return that sanitised result.
     raise NotImplementedError("TODO 5: grounded answer + output DLP filter")
 
 

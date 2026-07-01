@@ -44,25 +44,21 @@ async function main() {
   );
   await app.invoke({ messages: [new HumanMessage("Now double it.")] }, config);
 
-  // TODO 1: list checkpoints (newest first) with id and `next` nodes.
-  //   const history: any[] = [];
-  //   for await (const snap of app.getStateHistory(config)) {
-  //     history.push(snap);
-  //     console.log(snap.config.configurable?.checkpoint_id, "next=", snap.next, "msgs=", snap.values.messages.length);
-  //   }
+  // TODO 1: iterate the `app.getStateHistory(config)` async generator (it yields
+  //         snapshots newest-first), collecting them into an array. For each, log its
+  //         checkpoint id (under snap.config.configurable), its `.next` nodes, and its
+  //         message count (snap.values.messages.length).
 
-  // TODO 2: fork from an EARLIER checkpoint by passing its config back in.
-  //   const earlier = history[history.length - 2];
-  //   const forked = await app.invoke(
-  //     { messages: [new HumanMessage("Actually, triple it instead.")] },
-  //     earlier.config,            // <-- resume from this checkpoint
-  //   );
-  //   console.log("forked branch:", forked.messages.at(-1).content);
+  // TODO 2: fork from an EARLIER checkpoint. Pick an older snapshot from the collected
+  //         history (e.g. second-to-last) and invoke the app with a new HumanMessage
+  //         BUT pass that snapshot's `.config` instead of the live config — resuming
+  //         from an old checkpoint FORKS a new branch. Log the forked reply.
 
-  // TODO 3: edit state with updateState, then continue from the correction.
-  //   const newConfig = await app.updateState(config, { messages: [new HumanMessage("Correction: the number was 7.")] });
-  //   const cont = await app.invoke(null, newConfig);
-  //   console.log("after edit:", cont.messages.at(-1).content);
+  // TODO 3: edit-then-continue. Call `app.updateState(config, { ... })` with a message
+  //         that corrects the state; it applies through the channel reducers and
+  //         returns a new config pointing at the edited checkpoint. Then invoke the app
+  //         with `null` as input and that new config to continue from the edit, and log
+  //         the result.
   console.log("TODO: list history, fork from an old checkpoint, edit-then-continue.");
 }
 

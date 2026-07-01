@@ -61,16 +61,15 @@ def get_model_info(model_name: str) -> dict:
       "family"          : e.g. "llama" (from details.family)
 
     TODO:
-      1. Build the request: POST to OLLAMA_BASE_URL + "/api/show"
-         with body {"name": model_name}.
-         Use urllib.request.urlopen() with a Request object.
-      2. Parse the JSON response.
-      3. Extract:
-           quant = data.get("details", {}).get("quantization_level", "unknown")
-           family = data.get("details", {}).get("family", "unknown")
-           param_size = data.get("details", {}).get("parameter_size", "unknown")
-      4. Return the dict.
-      5. On error, return {"parameter_size": "unknown", "quantization": "unknown", "family": "unknown"}.
+      1. POST to OLLAMA_BASE_URL + "/api/show" with a JSON body naming the model
+         ({"name": model_name}). Use urllib.request with a Request object and
+         urllib.request.urlopen(); remember to json-encode the body to bytes.
+      2. Decode and json.loads() the response.
+      3. The fields you need live under the "details" object: the quantization
+         level, the family, and the parameter size. Pull each out, defaulting to
+         "unknown" when missing.
+      4. Return the dict with keys parameter_size / quantization / family.
+      5. If anything raises, return the same dict with every value "unknown".
 
     Tip: Ollama must be running for this to work.
     """
@@ -96,13 +95,12 @@ def run_timed_prompt(model_name: str, prompt: str, max_tokens: int = 200) -> dic
     Uses OpenAICompatibleProvider with the given model_name.
 
     TODO:
-      1. Create an OpenAICompatibleProvider with:
-           name="ollama", api_key="ollama",
-           base_url=OLLAMA_BASE_URL + "/v1",
-           chat_model=model_name,
-           embed_model="nomic-embed-text"
-      2. Measure elapsed time around provider.chat().
-      3. Return the dict.
+      1. Construct an OpenAICompatibleProvider pointed at Ollama's OpenAI-shim
+         endpoint (OLLAMA_BASE_URL + "/v1"), with chat_model set to model_name.
+         The api_key can be any placeholder ("ollama"); set an embed_model too.
+      2. Time a single provider.chat() call the same way as task 1 (perf_counter
+         before/after, one "user" message, ChatOptions with max_tokens).
+      3. Return the dict with text / tokens_out / elapsed_s / tokens_per_s.
     """
     # TODO: implement run_timed_prompt
     raise NotImplementedError("TODO: implement run_timed_prompt()")

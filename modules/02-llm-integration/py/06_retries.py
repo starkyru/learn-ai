@@ -80,18 +80,13 @@ def with_retry(
     max_retries: int = 3,
     base_ms: float = 500.0,
 ) -> T:
-    # TODO: implement
-    # for attempt in range(max_retries + 1):
-    #     try:
-    #         return fn()
-    #     except Exception as err:
-    #         if attempt == max_retries or not is_retriable(err):
-    #             raise
-    #         delay_ms = base_ms * (2 ** attempt) + random.random() * base_ms
-    #         print(f"Attempt {attempt + 1} failed ({err}). Retrying in {delay_ms:.0f}ms...")
-    #         time.sleep(delay_ms / 1000)
-    # raise RuntimeError("unreachable")
-    raise NotImplementedError("with_retry not implemented yet — uncomment the block above")
+    # Loop attempts 0..max_retries. Each pass: try fn() and return on success.
+    # On exception, re-raise immediately when the attempt budget is spent OR
+    # not is_retriable(err); otherwise sleep for the backoff-with-jitter delay
+    # from the header (base_ms * 2**attempt + a random fraction of base_ms, in
+    # ms — use random.random() and time.sleep(seconds)), log the attempt, and
+    # continue.
+    raise NotImplementedError("with_retry not implemented yet")
 
 
 # ---------------------------------------------------------------------------
@@ -102,8 +97,9 @@ def chat_with_retry(
     max_retries: int = 3,
 ) -> ChatResult:
     llm = get_provider()
-    # TODO: return with_retry(lambda: llm.chat(messages), max_retries)
-    return llm.chat(messages)  # placeholder — replace with line above
+    # Wrap the llm.chat(messages) call in with_retry (pass it as a zero-arg
+    # callable, e.g. a lambda) so a transient failure is retried, and return that.
+    return llm.chat(messages)  # placeholder — route through with_retry instead
 
 
 # ---------------------------------------------------------------------------

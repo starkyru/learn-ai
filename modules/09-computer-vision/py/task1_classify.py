@@ -66,18 +66,20 @@ def classify_hosted(image_path: Path) -> list[dict]:
     with open(image_path, "rb") as f:
         image_bytes = f.read()
 
-    # TODO (exercise): call client.image_classification() with the right arguments.
-    # Hint: client.image_classification(image=image_bytes, model=HF_MODEL)
-    # The return value is a list of ClassificationOutput objects with .label / .score.
-    results = None  # replace with actual API call
+    # TODO (exercise): classify the image via the client.
+    #   - Call `client.image_classification(...)`, passing the raw `image_bytes`
+    #     and telling it which `model` to use (HF_MODEL).
+    #   - The return value is a list of ClassificationOutput objects, each with
+    #     `.label` and `.score` attributes.
+    results = None  # replace with the API call
 
     raise NotImplementedError(
         "Complete the TODO above: call client.image_classification() "
         "and assign the result to `results`."
     )
 
-    # TODO (exercise): return the results as a plain list of dicts so they're
-    # easy to print. Each item should be {"label": ..., "score": ...}.
+    # TODO (exercise): return `results` as a plain list of `{"label": ..., "score": ...}`
+    # dicts (read the .label / .score off each item) so they print cleanly.
     return results  # type: ignore[return-value]
 
 
@@ -90,15 +92,13 @@ def classify_local(image_path: Path) -> list[dict]:
     Uncomment and call this instead of classify_hosted() to run offline.
     First run will download ~350 MB of model weights.
     """
-    # TODO (optional exercise): uncomment and complete the local path.
-    #
-    # from transformers import pipeline
-    # from PIL import Image
-    #
-    # pipe = pipeline("image-classification", model=HF_MODEL)
-    # image = Image.open(image_path).convert("RGB")
-    # results = pipe(image)         # returns list of {"label": ..., "score": ...}
-    # return sorted(results, key=lambda x: x["score"], reverse=True)
+    # TODO (optional exercise): implement the offline path.
+    #   - From `transformers`, build an "image-classification" `pipeline(...)`
+    #     pointed at HF_MODEL; open the file with PIL's `Image.open(...)` and
+    #     convert it to "RGB".
+    #   - Run the pipeline on the image (it returns a list of
+    #     `{"label": ..., "score": ...}` dicts) and return them sorted by score,
+    #     highest first.
 
     raise NotImplementedError("Local path is not implemented yet — see the TODO above.")
 

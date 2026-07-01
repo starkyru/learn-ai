@@ -88,17 +88,16 @@ function concatCols(mats: Matrix[]): Matrix {
  *
  * The softmax must be numerically stable: subtract the per-row max before exp().
  *
- * TODO: implement.
- *   1. dK = K[0].length
- *   2. scores = matMul(Q, transpose(K)) then divide every entry by Math.sqrt(dK)
- *   3. if mask: scores[i][j] += mask[i][j]
- *   4. Row-wise stable softmax on scores:
- *        rowMax = Math.max(...row)
- *        exps   = row.map(v => Math.exp(v - rowMax))
- *        sum    = exps.reduce((a, b) => a + b, 0)
- *        weightsRow = exps.map(e => e / sum)
- *   5. output = matMul(weights, V)
- *   6. return { weights, output }
+ * TODO: implement. Steps:
+ *   - Form scores = matMul(Q, transpose(K)) and scale every entry by dividing by
+ *     Math.sqrt(dK) (dK = K[0].length).
+ *   - If a mask was passed, add its entries onto the scores (it blocks positions
+ *     before the softmax).
+ *   - Turn each score row into a probability distribution with a numerically-stable
+ *     softmax: subtract that row's max before Math.exp, then divide by the row's sum
+ *     so the row totals 1.
+ *   - output = matMul(weights, V).
+ *   - Return the { weights, output } object.
  */
 function scaledDotProductAttention(
   Q: Matrix,
@@ -135,16 +134,15 @@ function causalMask(n: number): Matrix {
  * @param mask optional additive mask (n × n), applied inside every head.
  * @returns output, shape (n × dModel)
  *
- * TODO: implement.
- *   1. n = X.length ; dModel = X[0].length ; dK = dModel / numHeads
- *   2. Q = matMul(X, Wq) ; K = matMul(X, Wk) ; V = matMul(X, Wv)  (each n×dModel)
- *   3. For each head hIdx in [0, numHeads):
- *        start = hIdx*dK ; end = start+dK
- *        Qh = sliceCols(Q, start, end) etc.
- *        const { output } = scaledDotProductAttention(Qh, Kh, Vh, mask)
- *        collect output  (each n×dK)
- *   4. concat = concatCols(headOutputs)   // n×dModel
- *   5. return matMul(concat, Wo)
+ * TODO: implement. Steps:
+ *   - Compute dK = dModel / numHeads.
+ *   - Project X once into Q, K, V (each matMul(X, W...), n×dModel).
+ *   - For each head, carve out that head's contiguous block of dK columns from Q, K, V
+ *     with sliceCols (head hIdx owns columns hIdx*dK .. hIdx*dK+dK) and run
+ *     scaledDotProductAttention on those slices, passing the mask through. Keep only
+ *     each head's `output`.
+ *   - Stitch the per-head outputs side by side with concatCols to get back to n×dModel.
+ *   - Apply the output projection Wo (matMul) to the concatenation and return it.
  */
 function multiHeadAttention(
   X: Matrix,

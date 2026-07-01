@@ -68,16 +68,18 @@ def naive_fixed_size_chunks(
     """
     Naive fixed-size chunker from module 04 (reproduced here for comparison).
 
-    TODO: implement this function.
-
-    Steps:
-      1. Split text on whitespace into words.
-      2. Walk through words, accumulating a window.  When adding the next word
-         would exceed max_tokens*4 characters, emit a Chunk and slide forward
-         by (max_tokens - overlap_tokens)*4 characters worth of words.
-      3. id = f"{source}-naive-{index}"
-      4. metadata = {"estimated_tokens": estimate_tokens(chunk_text)}
-      5. Return the list of Chunk objects.
+    Hints:
+      - Work in words (split on whitespace) so you never cut mid-word.
+      - Grow a window until adding the next word would push the chunk past the
+        `max_tokens` budget — remember the chars/token ratio from
+        `estimate_tokens`, so the char budget is roughly `max_tokens * 4`.
+      - Emit a `Chunk`, then slide the window forward but leave `overlap_tokens`
+        worth of words behind so adjacent chunks share context (advance by the
+        non-overlapping span).
+      - Give each chunk a stable `id` like `"{source}-naive-{index}"` and record
+        its `estimate_tokens(...)` under a metadata key such as
+        "estimated_tokens".
+      - Return the list of `Chunk` objects.
     """
     raise NotImplementedError("TODO: implement naive_fixed_size_chunks()")
 
@@ -92,25 +94,22 @@ def section_chunks(
     Section-aware chunker: split first by Markdown headings, then sub-chunk
     any section that is too large.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Split the document into (heading, body) pairs:
-         - Scan line by line for Markdown ATX headings (^#{1,3} ).
-         - When a heading is found, start a new section.
-         - Each section = (heading_text, body_text).
-         - Text before the first heading goes into section ("(preamble)", text).
-      2. For each section:
-         a. If estimate_tokens(heading + body) <= max_tokens:
-              emit one Chunk.
-         b. Otherwise: sub-chunk the body using naive_fixed_size_chunks()
-              (with max_tokens, overlap_tokens), then prepend the heading to
-              each sub-chunk's text so the section title is always present.
-      3. id = f"{source}-section-{section_index}-{sub_index}"
-      4. metadata = {"section": heading_text, "estimated_tokens": estimate_tokens(...)}
-      5. Return the list of Chunk objects.
-
-    Heading detection regex: r"^(#{1,3})\\s+(.+)" with re.MULTILINE.
+    Hints:
+      - First break the document into sections keyed by heading. Scan the lines
+        for Markdown ATX headings (levels H1–H3) and start a new section at each
+        one; capture each section as (heading_text, body_text). Any text before
+        the first heading is its own section — label it something like
+        "(preamble)".
+      - For each section, decide whether it fits: if
+        `estimate_tokens(heading + body)` is within `max_tokens`, emit it as a
+        single `Chunk`. If it is too big, sub-chunk the body with
+        `naive_fixed_size_chunks(...)` (passing `max_tokens`/`overlap_tokens`) and
+        prepend the heading text to every sub-chunk so the section title always
+        travels with the content.
+      - Give chunks stable ids that encode both the section and sub-chunk index
+        (e.g. `"{source}-section-{section_index}-{sub_index}"`), and store the
+        section heading plus `estimate_tokens(...)` in each chunk's metadata.
+      - Return the list of `Chunk` objects.
     """
     raise NotImplementedError("TODO: implement section_chunks()")
 

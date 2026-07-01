@@ -75,12 +75,13 @@ class ConversableAgent:
         its speaker so the agent can see who said what.
 
         TODO: implement.
-          1. messages = [{"role": "system", "content": self.system_message}]
-          2. For each entry in history, append a user message that carries the
-             speaker label, e.g.:
-                 {"role": "user",
-                  "content": f"{entry['name']}: {entry['content']}"}
-          3. return self.chat_fn(messages).strip()
+          - Build a `list[dict[str, str]]` starting with a "system" message
+            carrying this agent's self.system_message.
+          - Replay the shared transcript: for each history entry, append a "user"
+            message whose content prefixes the speaker name onto the text (e.g.
+            "<name>: <content>") so the model sees who said what.
+          - Call self.chat_fn(messages) and return the reply with surrounding
+            whitespace stripped.
         """
         # TODO: implement generate_reply (build messages from shared history)
         raise NotImplementedError("TODO: implement ConversableAgent.generate_reply()")
@@ -113,16 +114,14 @@ class GroupChatManager:
         an agent emits TERMINATION_PHRASE or we hit max_round replies.
 
         TODO: implement the manager loop.
-          1. gc = self.groupchat
-             Seed the transcript with the initial message:
-                 gc.messages.append({"name": initiator, "content": initial_message})
-          2. m = len(gc.agents)
-          3. for r in range(gc.max_round):
-                 a. speaker = gc.agents[r % m]           # round-robin rotation
-                 b. reply = speaker.generate_reply(gc.messages)
-                 c. gc.messages.append({"name": speaker.name, "content": reply})
-                 d. if TERMINATION_PHRASE in reply: break  # early stop (done-signal)
-          4. return gc.messages
+          - Seed the shared transcript (gc.messages) with the initial message as
+            a {"name", "content"} entry spoken by `initiator`.
+          - Loop at most max_round times. Each round, pick the speaker by
+            round-robin: rotate an index modulo the number of agents (r % m).
+          - Ask that speaker to generate_reply over the whole transcript, then
+            append its reply as a {"name", "content"} entry.
+          - Stop early (break) the moment a reply contains TERMINATION_PHRASE.
+          - Return the full transcript (gc.messages).
         """
         # TODO: implement GroupChatManager.run (round-robin loop + stop rules)
         raise NotImplementedError("TODO: implement GroupChatManager.run()")

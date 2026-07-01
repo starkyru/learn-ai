@@ -148,33 +148,24 @@ function gradeAnswer(module: string, userAnswer: string): string {
 /**
  * TODO 6: Create the MCP server and register handlers.
  *
- * a) new Server({ name: "learn-ai-course", version: "0.1.0" }, { capabilities: { tools: {} } })
+ * a) Construct a `new Server(...)` with a name/version and, in the second arg,
+ *    declare a tools capability (capabilities: { tools: {} }).
  *
- * b) Register ListToolsRequestSchema handler:
- *    server.setRequestHandler(ListToolsRequestSchema, async () => ({
- *        tools: [
- *            { name: "search_docs", description: "...", inputSchema: { type: "object",
- *              properties: { query: { type: "string" }, top_k: { type: "number" } },
- *              required: ["query"] } },
- *            { name: "read_module", description: "...", inputSchema: { ... } },
- *            { name: "run_exam_question", description: "...", inputSchema: {
- *              properties: { module: { type: "string" }, answer: { type: "string" } },
- *              required: ["module"] } },
- *        ],
- *    }));
+ * b) Register a handler for ListToolsRequestSchema via
+ *    server.setRequestHandler(...). It returns { tools: [...] } advertising the
+ *    three tools. Each tool needs a name, description, and inputSchema (a JSON
+ *    Schema with type "object", a properties map, and a required list):
+ *      - search_docs: required "query" (string); optional "top_k" (number).
+ *      - read_module: required "module" (string).
+ *      - run_exam_question: required "module" (string); optional "answer".
  *
- * c) Register CallToolRequestSchema handler:
- *    server.setRequestHandler(CallToolRequestSchema, async (request) => {
- *        const { name, arguments: args } = request.params;
- *        let text: string;
- *        if (name === "search_docs") { ... }
- *        else if (name === "read_module") { ... }
- *        else if (name === "run_exam_question") { ... }
- *        else throw new Error(`Unknown tool: ${name}`);
- *        return { content: [{ type: "text", text }] };
- *    });
+ * c) Register a handler for CallToolRequestSchema. Read name and arguments from
+ *    request.params, branch on name — dispatch search_docs to simpleSearch,
+ *    read_module to readModuleReadme, run_exam_question to getExamQuestion
+ *    (appending gradeAnswer output when an answer was supplied), and throw for
+ *    an unknown name. Return { content: [{ type: "text", text }] }.
  *
- * d) return server;
+ * d) return the server.
  */
 function buildServer(): Server {
   throw new Error("TODO 6: implement buildServer");
@@ -186,10 +177,9 @@ function buildServer(): Server {
 
 /**
  * TODO 7: Start the server with stdio transport.
- *   const server = buildServer();
- *   const transport = new StdioServerTransport();
- *   await server.connect(transport);
- *   // The process will now block, handling MCP requests on stdin/stdout.
+ *   Build the server with buildServer(), create a StdioServerTransport, and
+ *   await server.connect(transport). The process then blocks, handling MCP
+ *   requests on stdin/stdout.
  */
 async function main() {
   throw new Error("TODO 7: start StdioServerTransport and connect");

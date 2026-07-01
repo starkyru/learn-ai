@@ -30,9 +30,8 @@ def main() -> None:
     #         The history starts with the system message and grows as the user
     #         and assistant take turns. Build a list of ChatMessage objects.
     # -------------------------------------------------------------------------
-    history: list[ChatMessage] = [
-        # ChatMessage(role="system", content=SYSTEM_PROMPT),
-    ]
+    #         Seed it with a single system-role entry carrying SYSTEM_PROMPT.
+    history: list[ChatMessage] = []
 
     print('Multi-turn chat started. Type "exit" to quit.\n')
 
@@ -44,16 +43,14 @@ def main() -> None:
             continue
 
         # -------------------------------------------------------------------------
-        # TODO 3: Append the user's message to history, then call llm.chat() with
-        #         the full history. Store the assistant reply in history too so the
-        #         model "remembers" the previous turns on the next request.
-        #         Print the assistant's reply with an "Assistant: " prefix.
+        # TODO 3: Drive one turn of the conversation:
+        #         - Append the user's line to `history` as a user-role ChatMessage.
+        #         - Call llm.chat(history) with the WHOLE history (the model has no
+        #           memory of its own — history IS the memory).
+        #         - Append the reply back to `history` as an assistant-role message
+        #           so the next turn sees it.
+        #         - Print the reply with an "Assistant: " prefix.
         # -------------------------------------------------------------------------
-
-        # history.append(ChatMessage(role="user", content=user_input))
-        # result = llm.chat(history)
-        # history.append(ChatMessage(role="assistant", content=result.text))
-        # print(f"Assistant: {result.text}\n")
 
         print("TODO: implement the chat loop above.\n")
         break  # remove this once you've implemented the loop

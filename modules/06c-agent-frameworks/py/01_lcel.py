@@ -79,10 +79,11 @@ class Runnable:
         flat list of steps instead of nesting sequences.
 
         TODO: implement.
-          1. Collect self's steps: if isinstance(self, RunnableSequence) use
-             self.steps, else [self].
-          2. Collect other's steps the same way.
-          3. return RunnableSequence(left_steps + right_steps).
+          - Get self's steps as a list: an existing RunnableSequence already
+            has a `.steps` list; a plain Runnable is a one-element list [self].
+          - Do the same for `other`.
+          - Return a new RunnableSequence whose steps are the two lists
+            concatenated (left then right), so order is preserved.
         """
         # TODO: implement pipe (compose into a RunnableSequence)
         raise NotImplementedError("TODO: implement Runnable.pipe()")
@@ -98,9 +99,10 @@ class RunnableSequence(Runnable):
         """Run each step in order, threading output -> next input.
 
         TODO: implement.
-          1. acc = input
-          2. for step in self.steps: acc = step.invoke(acc)
-          3. return acc
+          - Fold left over self.steps with a running accumulator that starts as
+            `input`: for each step, call step.invoke(acc) and let its result
+            become the accumulator for the next step.
+          - Return the final accumulator (an empty step list returns `input`).
         """
         # TODO: implement the fold-left over self.steps
         raise NotImplementedError("TODO: implement RunnableSequence.invoke()")
@@ -127,7 +129,9 @@ class PromptTemplate(Runnable):
              -> "Tell a joke about cats"
 
         TODO: implement.
-          Use Python str formatting: return self.template.format(**variables)
+          - Substitute the keyword variables into the template's {placeholders}
+            by name and return the filled string. Python's built-in str
+            formatting already fills {name} slots from keyword arguments.
         """
         # TODO: implement template formatting
         raise NotImplementedError("TODO: implement PromptTemplate.format()")

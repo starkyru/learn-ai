@@ -59,7 +59,8 @@ function cosineSimilarity(a: number[], b: number[]): number {
 async function embedDocs(docs: Doc[]): Promise<number[][]> {
   const provider = getProvider();
 
-  // TODO 1: Call provider.embed(docs.map(d => d.text)).vectors and return it.
+  // TODO 1: Embed each doc's `text` via provider.embed(...) and return the
+  //   `vectors` array from the result.
   throw new Error("TODO 1: embed docs");
 }
 

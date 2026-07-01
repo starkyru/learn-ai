@@ -111,18 +111,16 @@ def conv2d(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     output = np.zeros((H, W), dtype=np.float32)
 
     # TODO (exercise): implement the convolution inner loop.
-    #
-    # for i in range(H):
-    #     for j in range(W):
-    #         patch = padded[i : i + K, j : j + K]
-    #         output[i, j] = np.sum(patch * kernel)
-    #
-    # Hint: the above is the complete answer — type it in, run it, then think
-    # about what each line does before moving on.
+    #   - Loop over every output position (i, j) for i in range(H), j in range(W).
+    #   - At each position, slice the K×K `patch` out of `padded` whose top-left
+    #     corner is (i, j) — because `padded` is already offset by k_half, this
+    #     patch is the neighbourhood centred on input pixel (i, j).
+    #   - Element-wise multiply the patch by `kernel` and sum it (np.sum) into
+    #     `output[i, j]`.
 
     raise NotImplementedError(
         "Implement the double for-loop that fills `output`. "
-        "See the TODO comment above for the exact code."
+        "See the TODO comment above for guidance."
     )
 
     return output

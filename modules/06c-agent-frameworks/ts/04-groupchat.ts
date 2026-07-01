@@ -77,12 +77,12 @@ class ConversableAgent {
    * can see who said what.
    *
    * TODO: implement.
-   *   1. const messages: Msg[] = [{ role: "system", content: this.systemMessage }];
-   *   2. for (const entry of history) messages.push({
-   *          role: "user",
-   *          content: `${entry.name}: ${entry.content}`,
-   *      });
-   *   3. return this.chatFn(messages).trim();
+   *   - Build a Msg[] starting with a "system" message carrying this.systemMessage.
+   *   - Replay the shared transcript: for each history entry, push a "user"
+   *     message whose content prefixes the speaker name onto the text (e.g.
+   *     "<name>: <content>") so the model sees who said what.
+   *   - Call this.chatFn(messages) and return the reply, trimmed of surrounding
+   *     whitespace.
    */
   generateReply(_history: TranscriptMsg[]): string {
     // TODO: implement generateReply (build messages from shared history)
@@ -114,16 +114,14 @@ class GroupChatManager {
    * agent emits TERMINATION_PHRASE or we hit maxRound replies.
    *
    * TODO: implement the manager loop.
-   *   1. const gc = this.groupchat;
-   *      gc.messages.push({ name: initiator, content: initialMessage });
-   *   2. const m = gc.agents.length;
-   *   3. for (let r = 0; r < gc.maxRound; r++) {
-   *        const speaker = gc.agents[r % m];              // round-robin rotation
-   *        const reply = speaker.generateReply(gc.messages);
-   *        gc.messages.push({ name: speaker.name, content: reply });
-   *        if (reply.includes(TERMINATION_PHRASE)) break; // early stop
-   *      }
-   *   4. return gc.messages;
+   *   - Seed the shared transcript (gc.messages) with the initial message as a
+   *     { name, content } entry spoken by `initiator`.
+   *   - Loop at most maxRound times. Each round, pick the speaker by round-robin:
+   *     rotate an index modulo the number of agents (r % agents.length).
+   *   - Ask that speaker to generateReply over the whole transcript, then push
+   *     its reply as a { name, content } entry.
+   *   - Stop early (break) the moment a reply contains TERMINATION_PHRASE.
+   *   - Return the full transcript (gc.messages).
    */
   run(_initialMessage: string, _initiator = "user"): TranscriptMsg[] {
     // TODO: implement GroupChatManager.run (round-robin loop + stop rules)

@@ -87,28 +87,27 @@ async function runOpenAIResponses(question: string): Promise<string> {
   console.log(`\nOpenAI Responses API | model: ${model}`);
   console.log(`Question: ${question}\n`);
 
-  // TODO 4: Define tool schemas in Responses-API format.
-  //   Same JSON Schema structure as Chat Completions:
-  //   { type: "function", name: "...", description: "...", parameters: { ... } }
-  //   Define "calculator" and "lookup".
+  // TODO 4: Define tool schemas in Responses-API format (an `object[]`).
+  //   Each tool is a flat object with `type: "function"`, `name`,
+  //   `description`, and `parameters` (a JSON Schema). Note the shape is
+  //   flatter than Chat Completions — name/parameters sit at the top level.
+  //   Define "calculator" (takes an "expression" string) and "lookup"
+  //   (takes a "query" string).
   const tools: object[] = []; // TODO 4: replace with real tool defs
 
   // TODO 5: Implement the Responses API loop.
   //   a) Call client.responses.create({ model, input: question, tools }).
-  //   b) Inspect response.output — list of output items:
-  //      - { type: "message", content: [{ type: "output_text", text: "..." }] } → done
-  //      - { type: "function_call", name, arguments, call_id } → call the tool
-  //   c) For each function_call item:
-  //        const result = dispatch(item.name, JSON.parse(item.arguments));
-  //        console.log(`  [tool] ${item.name}(...) -> ${result}`);
-  //        // Chain the next turn via previous_response_id:
-  //        response = await client.responses.create({
-  //            model,
-  //            previous_response_id: response.id,
-  //            input: [{ type: "function_call_output", call_id: item.call_id, output: result }],
-  //            tools,
-  //        });
-  //   d) Continue until no more function_call items; return the message text.
+  //   b) response.output is a list of items: a { type: "message" } item holds
+  //      the final text (in content[].text of an "output_text" block); a
+  //      { type: "function_call" } item (with name, arguments, call_id) needs
+  //      to be dispatched.
+  //   c) For each function_call item, JSON.parse its arguments and pass to
+  //      dispatch(item.name, ...). Chain the next turn by calling
+  //      client.responses.create AGAIN with previous_response_id set to the
+  //      prior response.id, and input as a single "function_call_output" object
+  //      carrying item.call_id and the result. Log each tool call.
+  //   d) Continue until there are no more function_call items; return the
+  //      message text.
   throw new Error("TODO 5: implement Responses API loop");
 }
 
@@ -134,8 +133,10 @@ async function runAnthropicTools(question: string): Promise<string> {
   console.log(`\nAnthropic tool use | model: ${model}`);
   console.log(`Question: ${question}\n`);
 
-  // TODO 6: Define Anthropic tool schemas.
-  //   [{ name: "calculator", description: "...", input_schema: { type: "object", ... } }]
+  // TODO 6: Define Anthropic tool schemas (an `Anthropic.Tool[]`).
+  //   Anthropic uses a different key than OpenAI: each tool has `name`,
+  //   `description`, and `input_schema` (the JSON Schema — note input_schema,
+  //   not parameters). Define "calculator" and "lookup".
   const tools: Anthropic.Tool[] = []; // TODO 6: replace with real tool defs
 
   const messages: Anthropic.MessageParam[] = [
@@ -143,19 +144,15 @@ async function runAnthropicTools(question: string): Promise<string> {
   ];
 
   // TODO 7: Implement the Anthropic tool-calling loop.
-  //   a) Call client.messages.create({ model, max_tokens: 1024, tools, messages }).
-  //   b) While response.stop_reason === "tool_use":
-  //      - Find content blocks where block.type === "tool_use"
-  //      - Call dispatch(block.name, block.input as Record<string, string>)
-  //      - Log: console.log(`  [tool] ${block.name}(...) -> ${result}`)
-  //      - Append the assistant turn, then inject results:
-  //        messages.push({ role: "assistant", content: response.content });
-  //        messages.push({
-  //            role: "user",
-  //            content: [{ type: "tool_result", tool_use_id: block.id, content: result }],
-  //        });
-  //      - Loop.
-  //   c) When stop_reason === "end_turn", extract and return text content.
+  //   a) Call client.messages.create({ model, max_tokens, tools, messages }).
+  //   b) Loop while response.stop_reason === "tool_use": select the content
+  //      blocks whose type === "tool_use", and for each call
+  //      dispatch(block.name, block.input as Record<string, string>). Append
+  //      the assistant turn (response.content), then push a role: "user"
+  //      message whose content is a list of "tool_result" blocks — each
+  //      carrying block.id (as tool_use_id) and the dispatch result. Then call
+  //      create again. Log each tool call.
+  //   c) When stop_reason === "end_turn", extract and return the text content.
   throw new Error("TODO 7: implement Anthropic tool-calling loop");
 }
 

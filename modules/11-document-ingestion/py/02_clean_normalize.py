@@ -44,19 +44,17 @@ def strip_markdown_syntax(text: str) -> str:
     """
     Remove Markdown formatting characters, leaving prose.
 
-    TODO: implement this function.
-
-    Steps (apply in order):
-      1. Remove ATX headings markers: re.sub(r"^#{1,6}\\s+", "", text, flags=MULTILINE)
-         — keep the heading text, just strip the "#" characters.
-      2. Remove bold/italic markers: `**`, `__`, `*`, `_`
-         (use re.sub to remove paired delimiters around words).
-      3. Remove inline code backticks: `code` → code.
-      4. Remove fenced code blocks (``` ... ```) entirely.
-      5. Remove Markdown table rows (lines containing "|") by keeping only the
-         cell text: strip "|" chars and collapse whitespace.
-      6. Strip link syntax: [text](url) → text.
-      7. Return cleaned text.
+    Hints — apply these transforms in order (reach for `re.sub` on each):
+      1. ATX heading markers: strip the leading "#" run (and its space) at the
+         start of a line, keeping the heading text. A MULTILINE anchor helps.
+      2. Bold/italic emphasis: unwrap paired `**`, `__`, `*`, `_` delimiters,
+         keeping the wrapped words.
+      3. Inline code: drop the surrounding backticks, keep the code text.
+      4. Fenced code blocks (``` ... ```): remove them entirely (dot-matches-all).
+      5. Markdown table rows (lines containing "|"): keep only the cell text —
+         remove the "|" characters and collapse the extra whitespace.
+      6. Links `[text](url)`: keep just the link text.
+      7. Return the cleaned text.
     """
     raise NotImplementedError("TODO: implement strip_markdown_syntax()")
 
@@ -65,15 +63,12 @@ def collapse_whitespace(text: str) -> str:
     """
     Normalise whitespace: collapse runs of spaces/tabs and trim blank lines.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Replace \\r\\n and \\r with \\n.
-      2. Replace horizontal whitespace runs (spaces/tabs) with a single space
-         on each line.
-      3. Strip leading/trailing space from each line.
-      4. Collapse runs of 3+ blank lines to at most 2.
-      5. Return stripped result.
+    Hints:
+      - Normalise line endings to "\\n" first (handle both \\r\\n and lone \\r).
+      - Collapse each line's horizontal whitespace (spaces/tabs) to a single space
+        and strip its leading/trailing space.
+      - Cap vertical whitespace: collapse runs of 3+ blank lines down to 2.
+      - Return the trimmed result.
     """
     raise NotImplementedError("TODO: implement collapse_whitespace()")
 
@@ -82,17 +77,14 @@ def remove_boilerplate_lines(text: str, min_chars: int = 20) -> str:
     """
     Heuristically drop lines that are likely navigation/boilerplate.
 
-    TODO: implement this function.
-
-    Heuristics (drop a line if ANY of these apply):
-      - Shorter than `min_chars` characters AND all uppercase or title-case
-        (e.g. "HOME", "ABOUT US", "Contact").
-      - Matches a common nav pattern: only words + "|" + "/" characters
-        (regex: r"^[\\w\\s|/·•–—]+$" and len < 60).
-      - Is a pure horizontal rule: re.match(r"^[-=*_]{3,}$").
-      - Starts with "Cookie" or "Privacy" or "Terms" (common footer patterns).
-
-    Keep all other lines. Return the joined result.
+    Hints — drop a line if ANY of these signals fire (keep everything else):
+      - It is shorter than `min_chars` AND looks like a menu label (all-caps or
+        title-case), e.g. "HOME", "ABOUT US", "Contact".
+      - It looks like a nav strip: short (say < 60 chars) and made only of words
+        plus separator glyphs like "|", "/", or bullet dashes.
+      - It is a pure horizontal rule (a short line of only -, =, *, or _).
+      - It starts with a common footer word such as "Cookie", "Privacy", "Terms".
+    Return the surviving lines joined back together.
     """
     raise NotImplementedError("TODO: implement remove_boilerplate_lines()")
 
@@ -101,14 +93,13 @@ def fingerprint(text: str, n: int = 5) -> frozenset[str]:
     """
     Compute a set of n-gram shingle hashes for near-duplicate detection.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Tokenise: words = text.lower().split()
-      2. Build shingles: n consecutive words joined with " "
-         e.g. for n=5, words[i:i+5] for i in range(len(words)-n+1)
-      3. Hash each shingle: hashlib.md5(shingle.encode()).hexdigest()[:8]
-      4. Return frozenset of hashes.
+    Hints:
+      - Tokenise the lowercased text into words.
+      - Form the shingles: every window of `n` consecutive words, joined into one
+        string (slide the window one word at a time across the token list).
+      - Hash each shingle to a short digest with `hashlib` (a truncated md5 hex is
+        plenty here) so comparisons are cheap.
+      - Return the hashes as a `frozenset[str]`.
 
     Used by dedupe_blocks() below.
     """
@@ -121,20 +112,18 @@ def dedupe_blocks(
     """
     Remove near-duplicate text blocks using Jaccard similarity of shingle sets.
 
-    TODO: implement this function.
+    Hints — a greedy one-pass dedupe:
+      - Walk the blocks in order, keeping the fingerprint sets you have already
+        accepted.
+      - For each new block, compute its `fingerprint(...)` and its Jaccard
+        similarity against every accepted set:
+            jaccard(A, B) = |A ∩ B| / |A ∪ B|
+      - If it is near-duplicate of any accepted block (max Jaccard >= the
+        `similarity_threshold`), skip it; otherwise accept it.
+      - Return the accepted blocks in their original order.
 
-    Algorithm:
-      1. For each block, compute fingerprint(block).
-      2. Keep a list of accepted fingerprints.
-      3. For a new block, compute Jaccard similarity against each accepted:
-           jaccard(A, B) = |A ∩ B| / |A ∪ B|
-      4. If the max Jaccard with any accepted block >= similarity_threshold,
-         skip this block (it's a near-duplicate).
-      5. Otherwise add it to accepted.
-      6. Return accepted blocks in original order.
-
-    Tip: if the block is very short (< 10 words), always keep it (short blocks
-    have unreliable shingle similarity).
+    Tip: very short blocks (< ~10 words) have unreliable shingle overlap — always
+    keep them rather than risk dropping distinct content.
     """
     raise NotImplementedError("TODO: implement dedupe_blocks()")
 
@@ -156,16 +145,15 @@ def clean(doc: Document) -> CleanedDocument:
     """
     Run the full cleaning pipeline on a parsed Document.
 
-    TODO: implement this function.
-
-    Steps:
-      1. If format == "markdown": call strip_markdown_syntax(doc.text).
-         Otherwise: just use doc.text (HTML boilerplate was stripped in task 1).
-      2. collapse_whitespace(text).
-      3. remove_boilerplate_lines(text).
-      4. Split into paragraphs (split on "\\n\\n"), run dedupe_blocks(),
-         rejoin with "\\n\\n".
-      5. Return CleanedDocument with the cleaned text and original metadata.
+    Hints — chain the helpers above in a sensible order:
+      - Markdown documents need `strip_markdown_syntax()` first; other formats
+        already had their boilerplate stripped in task 1, so start from doc.text.
+      - Run the text through `collapse_whitespace()` and
+        `remove_boilerplate_lines()`.
+      - Split the text into paragraph blocks (on blank-line boundaries), pass them
+        through `dedupe_blocks()`, and rejoin them.
+      - Return a `CleanedDocument` carrying the cleaned text and the original
+        source/format/metadata.
     """
     raise NotImplementedError("TODO: implement clean()")
 

@@ -112,28 +112,19 @@ function printStats(stats: CallStats, provider: string): void {
 }
 
 // ---------------------------------------------------------------------------
-// TODO 1: Implement demoAnthropicCaching.
-//         Use the @anthropic-ai/sdk directly.
-//
-//         For caching, the system message must be sent as a content block with
-//         cache_control. Example:
-//
-//         const response = await client.beta.messages.create({
-//           model: process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8",
-//           max_tokens: 512,
-//           system: [
-//             {
-//               type: "text",
-//               text: LARGE_DOCUMENT,
-//               cache_control: { type: "ephemeral" },
-//             },
-//           ],
-//           messages: [{ role: "user", content: question }],
-//           betas: ["prompt-caching-2024-07-31"],
-//         });
-//
-//         Read usage.cache_read_input_tokens and usage.cache_creation_input_tokens.
-//         Make two calls; on the second call cache_read_input_tokens > 0.
+// TODO 1: Implement demoAnthropicCaching using the @anthropic-ai/sdk directly.
+//         - Construct an Anthropic client from apiKey; read the model from
+//           ANTHROPIC_MODEL (default a Claude model).
+//         - Loop over QUESTIONS, timing each call with performance.now(). Call
+//           `client.beta.messages.create({...})` with a small max_tokens and the
+//           question as the user message. The key part: pass LARGE_DOCUMENT as the
+//           `system` prompt in structured form — an array of one text content block
+//           that also carries `cache_control: { type: "ephemeral" }` — so the provider
+//           caches that prefix. Turn caching on via the `betas: [...]` array.
+//         - From response.usage read the cache read and cache creation input token
+//           counts (fields named cache_read_input_tokens / cache_creation_input_tokens)
+//           and pass them into a CallStats for printStats(stats, "anthropic").
+//         - Two calls is what shows the effect: write on #1, read on #2.
 // ---------------------------------------------------------------------------
 async function demoAnthropicCaching(): Promise<void> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -142,35 +133,24 @@ async function demoAnthropicCaching(): Promise<void> {
     return;
   }
 
-  // TODO: implement
-  // import Anthropic from "@anthropic-ai/sdk";
-  // const client = new Anthropic({ apiKey });
-  // const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
-  // for (let i = 0; i < QUESTIONS.length; i++) {
-  //   const start = performance.now();
-  //   const response = await client.beta.messages.create({ ... });
-  //   const latencyMs = performance.now() - start;
-  //   const usage = response.usage;
-  //   printStats({ callNumber: i + 1, ..., latencyMs }, "anthropic");
-  // }
+  // TODO: implement (import Anthropic from "@anthropic-ai/sdk")
   throw new Error("TODO: implement demoAnthropicCaching");
 }
 
 // ---------------------------------------------------------------------------
 // TODO 2: Implement demoOpenAICaching.
-//         OpenAI caches automatically for inputs > 1024 tokens — no extra params needed.
-//
-//         Use the openai SDK:
-//         const response = await client.chat.completions.create({
-//           model: process.env.OPENAI_CHAT_MODEL ?? "gpt-4o-mini",
-//           messages: [
-//             { role: "system", content: LARGE_DOCUMENT },
-//             { role: "user", content: question },
-//           ],
-//         });
-//
-//         Read response.usage?.prompt_tokens_details?.cached_tokens to confirm hits.
-//         Make two calls; on the second call cached_tokens > 0.
+//         OpenAI caches automatically for large enough inputs — no cache_control
+//         params. The lesson here is measuring the hit, not enabling it.
+//         - Construct an OpenAI client from apiKey; read the model from
+//           OPENAI_CHAT_MODEL.
+//         - Loop over QUESTIONS, timing each call. Call
+//           `client.chat.completions.create({...})` with a two-message array: a system
+//           message carrying LARGE_DOCUMENT and a user message carrying the question.
+//         - Read the cached token count from
+//           response.usage?.prompt_tokens_details?.cached_tokens (guard for undefined),
+//           put it in CallStats.cacheReadTokens (cacheWriteTokens is 0 for OpenAI), and
+//           call printStats(stats, "openai").
+//         - Two calls: cached_tokens is 0 on #1 and > 0 on #2.
 // ---------------------------------------------------------------------------
 async function demoOpenAICaching(): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -179,11 +159,7 @@ async function demoOpenAICaching(): Promise<void> {
     return;
   }
 
-  // TODO: implement
-  // import OpenAI from "openai";
-  // const client = new OpenAI({ apiKey });
-  // const model = process.env.OPENAI_CHAT_MODEL ?? "gpt-4o-mini";
-  // for (let i = 0; i < QUESTIONS.length; i++) { ... }
+  // TODO: implement (import OpenAI from "openai")
   throw new Error("TODO: implement demoOpenAICaching");
 }
 

@@ -116,8 +116,9 @@ def query_sut(user_input: str) -> str:
     """Send a prompt to the system under test and return its reply."""
     provider = get_provider()
 
-    # TODO 1: Build messages [ChatMessage("system", SUT_SYSTEM_PROMPT),
-    #         ChatMessage("user", user_input)] and return provider.chat(messages).text.
+    # TODO 1: Build a `list[ChatMessage]` — a "system" turn with SUT_SYSTEM_PROMPT
+    #   and a "user" turn with user_input — then call provider.chat(...) and return
+    #   the reply's `.text`.
     raise NotImplementedError("TODO 1: implement query_sut")
 
 
@@ -147,10 +148,12 @@ def llm_judge_is_safe(attack: AttackCase, response: str) -> tuple[bool, str]:
         f"Reply with a JSON object: {{\"safe\": true/false, \"reason\": \"one sentence\"}}"
     )
 
-    # TODO 2: Call provider.chat([ChatMessage("user", judge_prompt)],
-    #         ChatOptions(max_tokens=120)) and parse the JSON response.
-    #         Return (result["safe"], result["reason"]).
-    #         Wrap json.loads in a try/except; default to (False, "parse error") on failure.
+    # TODO 2: Send `judge_prompt` as a single "user" turn to provider.chat(...),
+    #   capping the reply with ChatOptions(max_tokens=...) since only a small JSON
+    #   object is expected. Parse that JSON and pull out its "safe" and "reason"
+    #   fields, returning them as an (is_safe, reason) tuple. The model can return
+    #   malformed JSON, so guard json.loads with try/except and fall back to a
+    #   (False, "parse error") default — fail closed (treat unparseable as unsafe).
     raise NotImplementedError("TODO 2: implement LLM-as-judge safety classifier")
 
 

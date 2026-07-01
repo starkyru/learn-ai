@@ -112,26 +112,22 @@ def decode_with_cache(
       kv_ops : number of key-projection operations. With the cache you project
                exactly ONE new key per step, so for a length-n sequence kv_ops == n.
 
-    TODO: implement.
-      1. d_k = Wq.shape[1]. Initialise empty caches:
-           K_cache = []   # will hold each token's key vector (d_k,)
-           V_cache = []   # will hold each token's value vector (d_v,)
-         and kv_ops = 0, logits_out = [].
-      2. For t in range(len(X)):
-           x_t = X[t]                       # the one new token, shape (d,)
-           q_t = x_t @ Wq                   # (d_k,)
-           k_t = x_t @ Wk                   # (d_k,)   — ONE key projection
-           v_t = x_t @ Wv                   # (d_v,)
-           kv_ops += 1                      # exactly one new key this step
-           K_cache.append(k_t)
-           V_cache.append(v_t)
-           K = np.array(K_cache)            # (t+1, d_k) — old keys reused, not recomputed
-           V = np.array(V_cache)            # (t+1, d_v)
-           scores  = (K @ q_t) / sqrt(d_k)  # (t+1,)
-           weights = softmax(scores)        # (t+1,)
-           context = weights @ V            # (d_v,)
-           logits_out.append(context @ Wo)  # (d_out,)
-      3. return np.array(logits_out), kv_ops
+    Contrast this with decode_naive above — the ONLY difference is that the old
+    keys/values are reused from the cache instead of re-projected.
+
+    TODO: implement. Steps:
+      - Before the loop, create empty lists to accumulate the cached key vectors and
+        value vectors, plus a kv_ops counter (start at 0) and a logits accumulator.
+      - For each step t over the rows of X, project ONLY the new token X[t] into its
+        query, key and value vectors (three vec-times-matrix products through
+        Wq/Wk/Wv). Increment kv_ops by exactly 1 (one new key this step) and append
+        the new key and value to their caches — do NOT recompute the earlier ones.
+      - Stack each cache into a (t+1, d_k) / (t+1, d_v) array, score the new query
+        against ALL cached keys (dot products scaled by sqrt(d_k)), softmax the
+        scores, and take the weighted sum of the cached values to get the context.
+      - Project the context through Wo and collect it as this step's logits.
+      - Return the stacked logits and kv_ops. Because only one key is projected per
+        step, kv_ops must come out to n.
     """
     # TODO: implement incremental decoding with a KV cache
     raise NotImplementedError("TODO: implement decode_with_cache()")

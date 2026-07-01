@@ -84,29 +84,21 @@ def classify_action(action_type: str, details: dict) -> ActionRisk:
       high    — irreversible; requires human confirmation
       blocked — forbidden regardless of confirmation
     """
-    # TODO 1: Implement risk classification.
+    # TODO 1: Return an ActionRisk(level, reason) based on action_type + details.
     #
-    #   "navigate" actions:
-    #     - blocked if domain not in ALLOWED_DOMAINS
-    #     - safe otherwise
+    #   "navigate": parse the host out of details["url"] (e.g. urlparse(...).netloc,
+    #     stripped of a leading "www."). "blocked" if it is not in ALLOWED_DOMAINS,
+    #     otherwise "safe".
     #
-    #   "fill" actions:
-    #     - high if selector contains "password", "credit", "card", "ssn", "secret"
-    #     - medium otherwise (form submit is reversible in most cases)
+    #   "fill": "high" when the selector names a sensitive field (case-insensitive
+    #     match on keywords like password / credit / card / ssn / secret), else
+    #     "medium" (an ordinary form fill is usually reversible).
     #
-    #   "click" actions:
-    #     - high if description/text contains "delete", "remove", "cancel", "unsubscribe",
-    #             "send", "pay", "submit", "purchase", "buy", "confirm"
-    #     - safe otherwise
+    #   "click": "high" when the description/text hints at an irreversible action
+    #     (delete, remove, cancel, unsubscribe, send, pay, submit, purchase, buy,
+    #     confirm — case-insensitive), else "safe".
     #
-    #   "done" — always safe
-    #
-    # Example:
-    #   if action_type == "navigate":
-    #       domain = urlparse(details.get("url", "")).netloc.lstrip("www.")
-    #       if domain not in ALLOWED_DOMAINS:
-    #           return ActionRisk("blocked", f"Domain {domain!r} not in allowlist")
-    #       return ActionRisk("safe", "Navigation within allowed domains")
+    #   "done": always "safe". Any other type: treat as "medium".
     raise NotImplementedError("TODO 1: implement classify_action")
 
 
@@ -121,13 +113,11 @@ def request_human_confirmation(action_description: str, risk: ActionRisk) -> boo
     When HUMAN_CONFIRM=false, auto-approves medium and auto-blocks high.
     """
     # TODO 2: Implement the confirmation gate.
-    #   If not HUMAN_CONFIRM:
-    #       print(f"[auto] {risk.level}: {action_description}")
-    #       return risk.level != "high"   # auto-approve medium, block high
-    #
-    #   Print a warning with the risk level and reason.
-    #   Prompt the user: "Approve? [y/N] "
-    #   Return True if the user types "y" or "yes" (case-insensitive).
+    #   - When HUMAN_CONFIRM is off (automated mode): log the action and auto-decide —
+    #     approve anything that is not "high", block "high". Return that boolean.
+    #   - Otherwise print a warning with the risk level + reason, prompt the user with
+    #     something like "Approve? [y/N] ", and return True only for a "y"/"yes" answer
+    #     (case-insensitive).
     raise NotImplementedError("TODO 2: implement request_human_confirmation")
 
 
@@ -147,15 +137,12 @@ def safe_execute(page, action_type: str, details: dict, execute_fn) -> str:
     Returns an observation string, or a rejection message.
     """
     # TODO 3: Implement the safety gate.
-    #   a) risk = classify_action(action_type, details)
-    #   b) If risk.level == "blocked":
-    #          return f"BLOCKED: {risk.reason}"
-    #   c) If risk.level == "high":
-    #          description = f"{action_type}({details})"
-    #          approved = request_human_confirmation(description, risk)
-    #          if not approved:
-    #              return "Action rejected by human."
-    #   d) Execute: return execute_fn(page, action_type, details)
+    #   a) Classify the action with classify_action(...).
+    #   b) If it is "blocked", return a "BLOCKED: <reason>" string without executing.
+    #   c) If it is "high", ask request_human_confirmation(...); on rejection return a
+    #      message saying the human declined, and do NOT execute.
+    #   d) Otherwise (or once approved) run execute_fn(page, action_type, details) and
+    #      return its observation.
     raise NotImplementedError("TODO 3: implement safe_execute")
 
 
@@ -174,11 +161,11 @@ def sanitise_page_content(raw_content: str) -> str:
     page content as instructions, only as data.
     """
     # TODO 4: Implement a basic sanitiser.
-    #   a) Remove lines that contain injection keywords:
-    #      ["ignore previous", "disregard", "new instruction", "system prompt",
-    #       "you are now", "forget everything"]
-    #      (case-insensitive match)
-    #   b) Truncate to 2000 characters to limit token injection surface.
+    #   a) Split into lines and drop any line that (case-insensitively) contains a
+    #      known injection phrase — e.g. "ignore previous", "disregard",
+    #      "new instruction", "system prompt", "you are now", "forget everything".
+    #   b) Rejoin the surviving lines and truncate to ~2000 chars to bound the token
+    #      injection surface.
     #   c) Return the sanitised string.
     raise NotImplementedError("TODO 4: implement sanitise_page_content")
 
@@ -214,9 +201,9 @@ def run_safe_demo() -> None:
 
         for action_type, details in test_actions:
             print(f"Proposed: {action_type}({details})")
-            # TODO 5: Call safe_execute and print the result.
-            #   result = safe_execute(page, action_type, details, dummy_execute)
-            #   print(f"  -> {result}\n")
+            # TODO 5: Run each proposed action through safe_execute(...) (passing
+            #   dummy_execute as the executor) and print the returned observation /
+            #   rejection message.
             raise NotImplementedError("TODO 5: call safe_execute in the demo loop")
 
         browser.close()

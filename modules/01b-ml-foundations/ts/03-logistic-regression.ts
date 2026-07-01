@@ -124,11 +124,8 @@ function stratifiedSplit(
  *
  * Clamp z to [-500, 500] before exp to avoid Infinity for very negative z.
  *
- * TODO: implement.
- *   return z.map(v => {
- *     const c = Math.max(-500, Math.min(500, v));
- *     return 1 / (1 + Math.exp(-c));
- *   });
+ * TODO: implement — map each entry to its logistic 1/(1 + e^{-z}), clamping the
+ * input to a safe range (e.g. [-500, 500]) before Math.exp.
  */
 function sigmoid(z: number[]): number[] {
   // TODO: implement the sigmoid
@@ -143,10 +140,9 @@ function sigmoid(z: number[]): number[] {
  * Clip each p to [1e-12, 1 - 1e-12] so log never sees 0 or 1.
  *
  * TODO: implement.
- *   1. accumulate, for each i:
- *        const pi = Math.max(1e-12, Math.min(1 - 1e-12, p[i]));
- *        sum += y[i] * Math.log(pi) + (1 - y[i]) * Math.log(1 - pi);
- *   2. return -sum / p.length;
+ *   - For each i, clamp p[i] to [1e-12, 1 - 1e-12], then accumulate the term
+ *     y[i]·log(p) + (1 - y[i])·log(1 - p) per the formula above.
+ *   - Return the negative mean (sum divided by count, negated).
  */
 function bceLoss(p: number[], y: number[]): number {
   // TODO: implement binary cross-entropy
@@ -172,8 +168,8 @@ class LogisticRegression {
   /**
    * Return P(class = 1 | x) = σ(X w) for each row of X.
    *
-   * TODO: implement (apply sigmoid to the linear score of each row).
-   *   return sigmoid(this.score(X));   // this.score(X) is provided above
+   * TODO: implement — apply sigmoid() to the per-row linear score. The private
+   * this.score(X) helper already computes X @ w for you.
    */
   predictProba(X: number[][]): number[] {
     // TODO: implement predictProba
@@ -198,21 +194,12 @@ class LogisticRegression {
    * Update:   w[j] -= lr · grad[j]
    *
    * TODO: implement.
-   *   1. const N = X.length;
-   *   2. const p = this.predictProba(X);
-   *   3. const loss = bceLoss(p, y);
-   *   4. const err = p.map((pi, i) => pi - y[i]);           // length N
-   *   5. const D = this.w.length;
-   *      const grad = new Array(D).fill(0);
-   *      for (let j = 0; j < D; j++) {
-   *        let g = 0;
-   *        for (let i = 0; i < N; i++) g += X[i][j] * err[i];
-   *        g /= N;
-   *        if (j >= 1) g += (this.lam / N) * this.w[j];      // L2, not on bias
-   *        grad[j] = g;
-   *      }
-   *   6. for (let j = 0; j < D; j++) this.w[j] -= this.lr * grad[j];
-   *   7. return loss;
+   *   - Forward pass: p = this.predictProba(X); record bceLoss(p, y) to return
+   *     at the end, and form the error vector p[i] - y[i].
+   *   - For each weight j, the data gradient is the average over samples of
+   *     X[i][j]·err[i]. For j ≥ 1 (skip the bias at j=0) add the L2 term
+   *     (this.lam / N)·this.w[j].
+   *   - Step every weight in place by -this.lr · grad[j], then return the loss.
    */
   gradientStep(X: number[][], y: number[]): number {
     // TODO: implement the gradient step

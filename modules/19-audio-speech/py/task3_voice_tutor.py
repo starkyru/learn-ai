@@ -92,10 +92,11 @@ def build_index(corpus: list[dict[str, str]]) -> tuple[list[list[float]], list[d
     provider = get_provider()
     texts = [doc["text"] for doc in corpus]
 
-    # TODO 1: Call provider.embed(texts) and return (result.vectors, corpus).
-    #         HINT: result = provider.embed(texts); return result.vectors, corpus
+    # TODO 1: Embed every chunk's text with `provider.embed(texts)`; the result
+    #         carries the per-chunk vectors. Return a (vectors, corpus) tuple so
+    #         vectors[i] lines up with corpus[i].
     #         Note: embedding all READMEs in one batch may hit token limits on
-    #         some providers. If needed, batch in groups of 50.
+    #         some providers — if so, embed in smaller batches and concatenate.
     raise NotImplementedError("TODO 1: embed the corpus chunks")
 
 
@@ -131,10 +132,11 @@ def retrieve(
     """
     provider = get_provider()
 
-    # TODO 2: Embed the query string (provider.embed([query]).vectors[0]),
-    #         compute cosine_similarity against every vector in `vectors`,
-    #         sort by descending similarity, and return the top_k chunks with
-    #         their score added under the key "score".
+    # TODO 2: Embed the query the same way (its single vector lives in the
+    #         result's vectors list), then score it against every corpus vector
+    #         using the `cosine_similarity()` helper above. Sort by descending
+    #         similarity and return the best `top_k` chunk dicts, each with its
+    #         similarity added under a new "score" key.
     raise NotImplementedError("TODO 2: embed query and rank corpus chunks")
 
 
@@ -166,10 +168,11 @@ def answer_with_rag(question: str, chunks: list[dict[str, str]]) -> str:
         "Keep your answer under 3 sentences — it will be read aloud."
     )
 
-    # TODO 3: Build a messages list:
-    #   [ChatMessage("system", system),
-    #    ChatMessage("user", f"Context:\n{context_block}\n\nQuestion: {question}")]
-    #   Call provider.chat(messages) and return result.text.
+    # TODO 3: Build a `list[ChatMessage]`: the `system` string above as the
+    #         system turn, and a user turn that stitches together `context_block`
+    #         and the `question` (label the two parts so the model knows which is
+    #         the retrieved context and which is the question). Call
+    #         `provider.chat(messages)` and return the reply's text.
     raise NotImplementedError("TODO 3: call provider.chat() with RAG context")
 
 
@@ -202,9 +205,11 @@ def record_from_mic(duration_s: int = 5, sample_rate: int = 16_000) -> Path:
     out_path = ASSETS_DIR / "mic_recording.wav"
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # TODO 4 (optional): Use sd.rec(int(duration_s * sample_rate),
-    #   samplerate=sample_rate, channels=1, dtype="int16") to record audio.
-    #   Wait for completion with sd.wait(), then save to out_path with sf.write().
+    # TODO 4 (optional): Record from the mic.
+    #   - Start capture with `sd.rec(...)`: the frame count is duration_s *
+    #     sample_rate, mono (channels=1), int16 dtype, at `samplerate`.
+    #   - Block until the recording finishes with `sd.wait()`.
+    #   - Write the buffer to `out_path` with `sf.write(...)` and return out_path.
     raise NotImplementedError("TODO 4 (optional): implement microphone recording")
 
 

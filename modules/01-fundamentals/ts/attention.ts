@@ -36,12 +36,12 @@ function transpose(a: Matrix): Matrix {
 /**
  * Row-wise softmax: each row becomes a probability distribution summing to 1.
  *
- * TODO:
- *   For each row:
- *     1. Find the row max; subtract it from every element BEFORE exp (numerical
- *        stability — same result, no overflow).
- *     2. Exponentiate each element.
- *     3. Divide each element by the row's sum of exponentials.
+ * TODO — process each row independently:
+ *   1. For stability, shift the row so its max is 0 BEFORE exp (subtract the row
+ *      max from every element — same result, no overflow).
+ *   2. Exponentiate each element.
+ *   3. Normalise: divide each element by the row's sum of exponentials so the
+ *      row sums to 1.
  */
 function softmaxRows(_x: Matrix): Matrix {
   throw new Error("Implement row-wise softmax — see the docstring TODOs.");
@@ -55,13 +55,15 @@ function softmaxRows(_x: Matrix): Matrix {
  * @param V values,  shape (n × dᵥ)
  * @returns { weights (n×n, each row sums to 1), output (n×dᵥ) }
  *
- * TODO:
- *   1. dK = Q[0].length.
- *   2. scores = matmul(Q, transpose(K))          // (n × n)
- *   3. divide every score by Math.sqrt(dK)        // the "scaled" part
- *   4. weights = softmaxRows(scores)
- *   5. output = matmul(weights, V)                // (n × dᵥ)
- *   6. return { weights, output }
+ * TODO (follow the formula in the file header):
+ *   1. Read dK off the width of Q.
+ *   2. Form the raw affinity scores (n × n) with the provided `matmul` and
+ *      `transpose` helpers: Q against Kᵀ.
+ *   3. Apply the "scaled" part — divide every score by `Math.sqrt(dK)` so the
+ *      dot products don't grow with dimension and saturate the softmax.
+ *   4. Turn each row of scores into weights with `softmaxRows`.
+ *   5. Mix the value vectors by `matmul`-ing the weights against V → (n × dᵥ).
+ *   6. Return the `{ weights, output }` object.
  */
 function attention(_Q: Matrix, _K: Matrix, _V: Matrix): { weights: Matrix; output: Matrix } {
   throw new Error("Implement scaled dot-product attention — see the TODOs.");

@@ -74,9 +74,12 @@ abstract class Runnable<I = unknown, O = unknown> {
    * list of steps instead of nesting sequences.
    *
    * TODO: implement.
-   *   1. leftSteps  = (this instanceof RunnableSequence) ? this.steps : [this]
-   *   2. rightSteps = (other instanceof RunnableSequence) ? other.steps : [other]
-   *   3. return new RunnableSequence([...leftSteps, ...rightSteps])
+   *   - Get this runnable's steps as a list: a RunnableSequence already exposes
+   *     a `.steps` array; a plain Runnable becomes a one-element list [this].
+   *     (An `instanceof RunnableSequence` check tells them apart.)
+   *   - Do the same for `other`.
+   *   - Return a new RunnableSequence whose steps are the two lists concatenated
+   *     (left then right) so order is preserved.
    */
   pipe(_other: Runnable<O, unknown>): RunnableSequence {
     // TODO: implement pipe (compose into a RunnableSequence)
@@ -94,9 +97,10 @@ class RunnableSequence extends Runnable<unknown, unknown> {
    * Run each step in order, threading output -> next input.
    *
    * TODO: implement.
-   *   1. let acc: unknown = input
-   *   2. for (const step of this.steps) acc = step.invoke(acc)
-   *   3. return acc
+   *   - Fold left over this.steps with a running accumulator that starts as
+   *     `input`: for each step, call step.invoke(acc) and let its result become
+   *     the accumulator for the next step.
+   *   - Return the final accumulator (an empty step list returns `input`).
    */
   invoke(_input: unknown): unknown {
     // TODO: implement the fold-left over this.steps
@@ -123,8 +127,9 @@ class PromptTemplate extends Runnable<Record<string, unknown>, string> {
    *      -> "Tell a joke about cats"
    *
    * TODO: implement.
-   *   Replace every {key} with String(variables[key]).
-   *   Hint: this.template.replace(/\{(\w+)\}/g, (_, k) => String(variables[k]))
+   *   - Return the template with every {key} placeholder replaced by the matching
+   *     value from `variables` (coerced to a string). A regex replace over the
+   *     {name} pattern, looking each captured name up in `variables`, does it.
    */
   format(_variables: Record<string, unknown>): string {
     // TODO: implement template formatting

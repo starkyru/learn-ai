@@ -72,18 +72,14 @@ interface ModelResult {
 //         Hint: result.usage has inputTokens and outputTokens.
 // ---------------------------------------------------------------------------
 async function callStandard(question: string): Promise<ModelResult> {
-  // const llm = getProvider("openai");
-  // const start = performance.now();
-  // const result = await llm.chat([{ role: "user", content: question }]);
-  // const latencyMs = performance.now() - start;
-  // return {
-  //   model: result.model,
-  //   strategy: "standard",
-  //   answer: result.text,
-  //   inputTokens: result.usage?.inputTokens ?? 0,
-  //   outputTokens: result.usage?.outputTokens ?? 0,
-  //   latencyMs,
-  // };
+  // Steps:
+  //   - Get the OpenAI provider via getProvider("openai") from llm-core.
+  //   - Capture performance.now() before the call; build a single-element
+  //     ChatMessage[] with a "user" message carrying the question.
+  //   - Await llm.chat(...) and compute the elapsed wall-clock in ms.
+  //   - Return a ModelResult with strategy "standard", the model/text from the
+  //     result, and token counts from result.usage (inputTokens / outputTokens,
+  //     defaulting to 0 when undefined).
   throw new Error("TODO: implement callStandard");
 }
 
@@ -92,21 +88,18 @@ async function callStandard(question: string): Promise<ModelResult> {
 //         Use the openai SDK directly (NOT llm-core) so you can pass
 //         `reasoning_effort` and `max_completion_tokens`.
 //
-//         Key differences from a standard call:
-//         - model: process.env.OPENAI_REASONING_MODEL ?? "o4-mini"
-//         - Use max_completion_tokens instead of max_tokens
-//         - Pass reasoning_effort: "medium" (or "high" for harder problems)
-//         - usage.completion_tokens_details shows reasoning vs visible tokens
-//
-//         Example skeleton:
-//           import OpenAI from "openai";
-//           const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-//           const response = await client.chat.completions.create({
-//             model: "o4-mini",
-//             messages: [{ role: "user", content: question }],
-//             max_completion_tokens: 4096,
-//             reasoning_effort: "medium",
-//           });
+//         Steps / key differences from a standard call:
+//         - Construct an OpenAI client (from "openai") with the OPENAI_API_KEY env var.
+//         - Time the call; await client.chat.completions.create({...}) with:
+//             * model = process.env.OPENAI_REASONING_MODEL ?? "o4-mini"
+//             * a one-message array carrying the question as a "user" role
+//             * max_completion_tokens: ... (NOT max_tokens — that param is ignored
+//               by reasoning models)
+//             * reasoning_effort: ... ("medium", or "high" for harder problems)
+//         - Read the visible answer from the first choice's message content, and
+//           token counts from response.usage (prompt_tokens / completion_tokens).
+//           Note usage.completion_tokens_details breaks out reasoning vs visible tokens.
+//         - Return a ModelResult with strategy "reasoning (openai)".
 // ---------------------------------------------------------------------------
 async function callReasoningOpenAI(question: string): Promise<ModelResult> {
   throw new Error("TODO: implement callReasoningOpenAI");
@@ -115,24 +108,23 @@ async function callReasoningOpenAI(question: string): Promise<ModelResult> {
 // ---------------------------------------------------------------------------
 // TODO 3 (alternative): Implement callReasoningAnthropic.
 //         Use the anthropic SDK with extended thinking enabled.
-//         This is a beta feature — pass betas: ["interleaved-thinking-2025-05-14"].
+//         This is a beta feature — enable it via the betas: [...] parameter with
+//         the interleaved-thinking beta flag.
 //
-//         Key parameters:
-//         - thinking: { type: "enabled", budget_tokens: 5000 }
-//         - The response.content array contains ThinkingBlock and TextBlock items.
-//         - Filter for blocks with type === "text" for the visible answer.
-//         - Filter for blocks with type === "thinking" to display reasoning.
-//
-//         Example skeleton:
-//           import Anthropic from "@anthropic-ai/sdk";
-//           const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-//           const response = await client.beta.messages.create({
-//             model: process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8",
-//             max_tokens: 8000,
-//             thinking: { type: "enabled", budget_tokens: 5000 },
-//             betas: ["interleaved-thinking-2025-05-14"],
-//             messages: [{ role: "user", content: question }],
-//           });
+//         Steps / key parameters:
+//         - Construct an Anthropic client (from "@anthropic-ai/sdk") with the
+//           ANTHROPIC_API_KEY env var.
+//         - Time the call; await client.beta.messages.create({...}) with:
+//             * model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8"
+//             * max_tokens: ... (must exceed the thinking budget)
+//             * thinking: { type: "enabled", budget_tokens: ... }
+//             * betas: [...] with the interleaved-thinking beta identifier
+//             * a one-message array carrying the question as a "user" role
+//         - response.content mixes thinking and text blocks: concatenate the
+//           blocks whose type === "text" for the visible answer (blocks whose
+//           type === "thinking" expose the reasoning).
+//         - Read token counts from response.usage and return a ModelResult with
+//           strategy "reasoning (anthropic)".
 // ---------------------------------------------------------------------------
 async function callReasoningAnthropic(question: string): Promise<ModelResult> {
   throw new Error("TODO: implement callReasoningAnthropic");

@@ -71,9 +71,8 @@ class Value {
     const out = new Value(this.data + o.data, [this, o], "+");
     out._backward = () => {
       // TODO: local grads of addition. c = a + b  →  ∂c/∂a = 1, ∂c/∂b = 1.
-      //   this.grad += 1.0 * out.grad
-      //   o.grad    += 1.0 * out.grad
-      // (use += so gradients accumulate when a node feeds multiple consumers)
+      // Push `out.grad` (scaled by each local derivative) onto this.grad and o.grad.
+      // Use += so gradients ACCUMULATE when a node feeds multiple consumers.
       throw new Error("TODO: implement add() backward");
     };
     return out;
@@ -84,8 +83,8 @@ class Value {
     const out = new Value(this.data * o.data, [this, o], "*");
     out._backward = () => {
       // TODO: local grads of multiplication. c = a * b  →  ∂c/∂a = b, ∂c/∂b = a.
-      //   this.grad += o.data    * out.grad
-      //   o.grad    += this.data * out.grad
+      // Each parent's grad gets `out.grad` times the OTHER factor's data.
+      // Use += to accumulate.
       throw new Error("TODO: implement mul() backward");
     };
     return out;
@@ -96,7 +95,8 @@ class Value {
     const out = new Value(t, [this], "tanh");
     out._backward = () => {
       // TODO: derivative of tanh. o = tanh(x)  →  do/dx = 1 - o².
-      //   this.grad += (1 - out.data ** 2) * out.grad
+      // `out.data` already holds tanh(x), so the local derivative is a cheap
+      // expression in it. Accumulate onto this.grad with +=.
       throw new Error("TODO: implement tanh() backward");
     };
     return out;
@@ -106,7 +106,8 @@ class Value {
     const out = new Value(this.data > 0 ? this.data : 0, [this], "relu");
     out._backward = () => {
       // TODO: derivative of relu. o = max(0, x)  →  do/dx = 1 if x>0 else 0.
-      //   this.grad += (out.data > 0 ? 1 : 0) * out.grad
+      // Gate `out.grad` by whether the unit was active (out.data > 0), then
+      // accumulate onto this.grad with +=.
       throw new Error("TODO: implement relu() backward");
     };
     return out;
@@ -115,22 +116,13 @@ class Value {
   backward(): void {
     // TODO: implement.
     //   1. Build a topological ordering `topo` of the graph reachable from `this`
-    //      (each node appears AFTER all nodes it depends on). DFS post-order:
-    //
-    //        const topo: Value[] = [];
-    //        const visited = new Set<Value>();
-    //        const build = (v: Value) => {
-    //          if (!visited.has(v)) {
-    //            visited.add(v);
-    //            for (const child of v._prev) build(child);
-    //            topo.push(v);
-    //          }
-    //        };
-    //        build(this);
-    //
+    //      (each node appears AFTER all nodes it depends on). Use a DFS post-order
+    //      walk: for an unvisited node, recurse into every child in `._prev` first,
+    //      THEN push the node — track a `visited` Set so shared nodes are added once.
     //   2. Seed the output gradient:  this.grad = 1.0   (∂L/∂L = 1)
-    //   3. Walk topo in REVERSE and call each node's closure:
-    //        for (let i = topo.length - 1; i >= 0; i--) topo[i]._backward();
+    //   3. Walk `topo` in REVERSE, calling each node's `_backward()` — the reverse
+    //      post-order guarantees a node's grad is fully accumulated before it pushes
+    //      to its parents.
     throw new Error("TODO: implement backward()");
   }
 
@@ -267,8 +259,8 @@ function trainXor(model: MLP, epochs = 200, lr = 0.1, printEvery = 20): number {
     loss.backward();
 
     // ── SGD update (TODO) ────────────────────────────────────────────────────
-    // TODO: for each parameter p in `params`:
-    //         p.data -= lr * p.grad
+    // TODO: nudge every parameter in `params` a small step DOWN its gradient —
+    //   subtract `lr` times each param's `.grad` from its `.data`, in place.
     //   (grads were already zeroed above and refilled by loss.backward();
     //    we zero again at the top of the next epoch.)
     throw new Error("TODO: implement the SGD parameter update");

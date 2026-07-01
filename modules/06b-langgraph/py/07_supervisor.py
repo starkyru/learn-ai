@@ -57,13 +57,14 @@ WORKERS = ["researcher", "mathematician"]
 
 def supervisor(state: State) -> Command[Literal["researcher", "mathematician", "__end__"]]:
     """Decide who works next, or finish. Returns a Command(goto=...)."""
-    # TODO 1: ask the model to pick the next worker or FINISH, then return a Command.
-    #   prompt = SystemMessage(content=(
-    #       "You route work between: researcher (facts), mathematician (arithmetic). "
-    #       "Reply with EXACTLY one word: researcher, mathematician, or FINISH."))
-    #   choice = get_chat_model().invoke([prompt, *state["messages"]]).content.strip().lower()
-    #   goto = END if "finish" in choice else ("researcher" if "research" in choice else "mathematician")
-    #   return Command(goto=goto, update={"next": goto})
+    # TODO 1: make ONE routing call. Build a SystemMessage telling the model it routes
+    #         between the two workers (researcher = facts, mathematician = arithmetic)
+    #         and must reply with EXACTLY one word: a worker name or FINISH. Invoke
+    #         get_chat_model() on [that system message, *state["messages"]] and normalise
+    #         the reply (strip + lowercase). Map it to a `goto`: END on "finish", else the
+    #         matching worker name. Return `Command(goto=goto, update={"next": goto})` so
+    #         the same move both records the choice and jumps. (import END from
+    #         langgraph.graph)
     raise NotImplementedError("TODO 1")
 
 
@@ -96,9 +97,9 @@ def main() -> None:
     app = build_app()  # noqa: F841
     question = "How tall is the Eiffel Tower in feet? (1 m = 3.281 ft)"  # noqa: F841
 
-    # TODO 3: stream updates and watch the handoffs (supervisor -> worker -> supervisor -> END).
-    #   for chunk in app.stream({"messages": [HumanMessage(content=question)]}, stream_mode="updates"):
-    #       print(list(chunk.keys()))
+    # TODO 3: stream the app with stream_mode="updates" on a HumanMessage carrying the
+    #         `question`, and print each chunk's node keys. Watch the handoffs cycle:
+    #         supervisor -> worker -> supervisor -> ... -> END.
     print("TODO: implement supervisor routing, then trace the handoffs.")
     # Bonus: note that create_react_agent / the `langgraph-supervisor` package
     # generate this supervisor graph for you.

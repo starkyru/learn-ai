@@ -108,21 +108,15 @@ def score_faithfulness(case: EvalCase, provider: Any) -> float:
 
     TODO: implement this function.
 
-    Prompt the LLM:
-      System: "You are a faithful AI evaluator."
-      User:
-        "Given the context and answer below, identify each factual claim in
-         the answer. For each claim, determine whether it is directly supported
-         by the context (true) or not (false).
-         Output ONLY valid JSON in this format:
-         [{\"claim\": \"...\", \"supported\": true/false}, ...]
-         Context:
-         {context}
-         Answer:
-         {answer}"
+    Build a `list[ChatMessage]`: a system message casting the model as a strict
+    evaluator, and a user message that asks it to break the answer into its
+    factual claims and mark each as supported-by-context or not, emitting ONLY a
+    JSON array of {claim, supported} objects. Interpolate `context_str` and
+    `case.answer`. Consider `ChatOptions(temperature=0)` for determinism.
 
-    Parse the JSON (handle errors with try/except — return 0.5 on failure).
-    Return: (# supported) / (# total claims).
+    Parse `result.text` as JSON inside try/except (return 0.5 on any parse
+    failure so the harness keeps going). Score = (# supported) / (# total
+    claims); guard against an empty list.
     """
     context_str = "\n\n".join(case.context)
     raise NotImplementedError("TODO: implement score_faithfulness()")
@@ -139,14 +133,13 @@ def score_context_relevance(case: EvalCase, provider: Any) -> float:
 
     TODO: implement this function.
 
-    Prompt the LLM:
-      "Rate how relevant the following context is for answering the question
-       on a scale of 0–10. 10 = perfectly relevant. 0 = completely irrelevant.
-       Reply with ONLY the integer score.
-       Question: {question}
-       Context: {context}"
+    Build a `list[ChatMessage]` asking the model to rate, on a 0–10 scale, how
+    relevant the context is for answering the question (10 = perfectly relevant,
+    0 = irrelevant) and reply with ONLY the integer. Interpolate `case.question`
+    and `context_str`.
 
-    Return: parsed_score / 10. Guard against ValueError (return 0.0).
+    Parse the integer from `result.text` (try/except ValueError → return 0.0)
+    and return it divided by 10 to land in the 0–1 range.
     """
     context_str = "\n\n".join(case.context)
     raise NotImplementedError("TODO: implement score_context_relevance()")
@@ -163,14 +156,12 @@ def score_answer_relevance(case: EvalCase, provider: Any) -> float:
 
     TODO: implement this function.
 
-    Prompt the LLM:
-      "On a scale of 0–10, how well does the following answer address the
-       question? 10 = fully. 0 = completely off-topic.
-       Reply with ONLY the integer score.
-       Question: {question}
-       Answer: {answer}"
+    Build a `list[ChatMessage]` asking the model to rate, on a 0–10 scale, how
+    well the answer addresses the question (10 = fully, 0 = off-topic) and reply
+    with ONLY the integer. Interpolate `case.question` and `case.answer`.
 
-    Return: parsed_score / 10.
+    Parse the integer from `result.text` and return it divided by 10 (guard
+    against a non-numeric reply, mirroring the other scorers).
     """
     raise NotImplementedError("TODO: implement score_answer_relevance()")
 

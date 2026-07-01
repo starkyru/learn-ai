@@ -112,12 +112,13 @@ async function evalVariant(variant: PromptVariant): Promise<EvalResult> {
   const samples: SampleResult[] = [];
 
   for (const point of DATASET) {
-    // TODO: call the LLM and record the result
-    // const messages = variant.buildPrompt(point.input);
-    // const result = await llm.chat(messages as any);
-    // const predicted = parseOutput(result.text);
-    // const correct = predicted === point.label.toLowerCase();
-    // samples.push({ id: point.id, input: point.input, expected: point.label, predicted, correct });
+    // TODO: run this variant on `point` and record a real SampleResult.
+    //   - Build the messages with variant.buildPrompt(point.input) and send them
+    //     through llm.chat(...).
+    //   - Run the reply text through parseOutput(...) to get the predicted label,
+    //     and mark it correct when it matches point.label case-insensitively.
+    //   - Push a SampleResult with those id/input/expected/predicted/correct
+    //     fields (replace the placeholder below).
 
     // Placeholder until implemented:
     samples.push({ id: point.id, input: point.input, expected: point.label, predicted: "TODO", correct: false });
@@ -162,14 +163,10 @@ async function main() {
   console.log(`Variants: ${VARIANTS.length}\n`);
 
   // -------------------------------------------------------------------------
-  // TODO 5: Run eval for each variant and collect results.
-  //         Tip: run them in parallel with Promise.all to save time:
-  //           const results = await Promise.all(VARIANTS.map(evalVariant));
-  //         Then call printResults(results).
+  // TODO 5: Run evalVariant for each entry in VARIANTS, collect the results, and
+  //         hand them to printResults(...). Since each variant is independent,
+  //         run them concurrently with Promise.all rather than awaiting in a loop.
   // -------------------------------------------------------------------------
-
-  // const results = await Promise.all(VARIANTS.map(evalVariant));
-  // printResults(results);
 
   // Placeholder until implemented:
   console.log("TODO: implement the eval loop above and call printResults.");

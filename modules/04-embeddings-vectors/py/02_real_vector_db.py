@@ -58,11 +58,12 @@ def index_into_chroma(
     """
     Upsert documents into a Chroma collection.
 
-    TODO: call collection.upsert() with:
-      ids        = [d["id"] for d in docs]
-      embeddings = vectors
-      documents  = [d["text"] for d in docs]
-      metadatas  = [d.get("metadata", {}) for d in docs]
+    TODO: make ONE call to `collection.upsert(...)`. It takes four parallel
+    lists, all in the same document order:
+      - ids: each doc's "id"
+      - embeddings: the pre-computed `vectors` passed in
+      - documents: each doc's "text"
+      - metadatas: each doc's metadata (fall back to an empty dict if missing)
 
     "Upsert" (insert-or-update) is safe to call multiple times.
     """
@@ -160,27 +161,18 @@ if __name__ == "__main__":
 #         url = os.getenv("QDRANT_URL", "http://localhost:6333")
 #         self.client = QdrantClient(url=url)
 #         self.collection = "learn-ai-m04"
-#         # TODO: self.client.recreate_collection(
-#         #     collection_name=self.collection,
-#         #     vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
-#         # )
+#         # TODO: (re)create the collection with `recreate_collection(...)`. Pass a
+#         #       `VectorParams(size=..., distance=Distance.COSINE)` so vectors match
+#         #       the embedding `dim` and are compared by cosine.
 #
 #     def upsert(self, docs: list[dict], vectors: list[list[float]]) -> None:
-#         # TODO: self.client.upsert(
-#         #     collection_name=self.collection,
-#         #     points=[
-#         #         PointStruct(id=i, vector=vectors[i], payload={"id": docs[i]["id"], "text": docs[i]["text"]})
-#         #         for i in range(len(docs))
-#         #     ],
-#         # )
+#         # TODO: call `self.client.upsert(...)` with a list of `PointStruct` — one per
+#         #       doc. Each point needs a numeric id, its `vector`, and a `payload`
+#         #       carrying the original "id" and "text" so you can read them back.
 #         pass
 #
 #     def query(self, query_vec: list[float], k: int = 3) -> list[dict]:
-#         # TODO: results = self.client.search(
-#         #     collection_name=self.collection,
-#         #     query_vector=query_vec,
-#         #     limit=k,
-#         #     with_payload=True,
-#         # )
-#         # return [{"id": r.payload["id"], "score": r.score, "text": r.payload["text"]} for r in results]
+#         # TODO: call `self.client.search(...)` with the query vector, `limit=k`, and
+#         #       `with_payload=True`. Map each hit to a dict of its payload "id",
+#         #       the hit's `.score`, and payload "text".
 #         return []

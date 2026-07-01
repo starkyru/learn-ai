@@ -72,28 +72,14 @@ type Action =
 /**
  * TODO 1: Implement extractA11yTree.
  *
- * Snapshot the page accessibility tree and return a compact text string.
- *
- *   const snapshot = await page.accessibility.snapshot();
- *
- *   function walk(node: any, lines: string[], depth = 0): void {
- *     const role = node.role ?? "";
- *     const name = node.name ?? "";
- *     if (["none", "presentation", "generic"].includes(role)) {
- *       (node.children ?? []).forEach((c: any) => walk(c, lines, depth));
- *       return;
- *     }
- *     const indent = "  ".repeat(depth);
- *     let line = `${indent}[${role}] ${JSON.stringify(name)}`;
- *     if (node.url)   line += ` href=${node.url}`;
- *     if (node.value !== undefined) line += ` value=${JSON.stringify(node.value)}`;
- *     lines.push(line);
- *     (node.children ?? []).forEach((c: any) => walk(c, lines, depth + 1));
- *   }
- *
- *   const lines: string[] = [];
- *   if (snapshot) walk(snapshot, lines);
- *   return lines.join("\n") || "(no accessible content)";
+ * Get the snapshot via `await page.accessibility.snapshot()` (a nested tree of nodes
+ * with role/name, optional url/value, and children — or null when empty). Write a
+ * recursive `walk` that appends one indented line per meaningful node:
+ *   - Noise roles ("none" / "presentation" / "generic") emit no line: recurse into
+ *     their children WITHOUT indenting further.
+ *   - Otherwise push a `[role] "name"` line (indent by depth), appending ` href=...`
+ *     / ` value=...` when those fields exist, then recurse into children at depth+1.
+ * Join the lines with newlines, or return a "(no accessible content)" fallback.
  */
 async function extractA11yTree(page: any): Promise<string> {
   throw new Error("TODO 1: implement extractA11yTree");
@@ -122,21 +108,13 @@ Rules:
 /**
  * TODO 2: Implement decideAction.
  *
- * Use llm-core to decide the next action based on the a11y tree text.
- * No images — this is pure text in, structured JSON out.
- *
- *   const llm = getProvider();
- *   const system: ChatMessage = { role: "system", content: SYSTEM_PROMPT.replace("{goal}", goal) };
- *   const user: ChatMessage = {
- *       role: "user",
- *       content: `Step ${step}. Accessibility tree:\n\n${a11yText}\n\nWhat is your next action?`,
- *   };
- *   const result = await llm.chat([system, user]);
- *   try {
- *       return parseAction(JSON.parse(result.text));
- *   } catch {
- *       return { type: "done", answer: `Parse error: ${result.text}` };
- *   }
+ * Use llm-core (text-in, JSON-out — no images). Get the provider with `getProvider()`
+ * and build a `ChatMessage[]`: a system message carrying
+ * `SYSTEM_PROMPT.replace("{goal}", goal)`, and a user message that embeds the step
+ * number and the `a11yText`, asking for the next action. Call `llm.chat([...])`, then
+ * `JSON.parse` the result text and pass it to `parseAction(...)`. Wrap that in a
+ * try/catch so a parse failure degrades to a "done" action whose answer reports the
+ * error and the raw text.
  */
 async function decideAction(
   a11yText: string,
@@ -149,14 +127,9 @@ async function decideAction(
 /**
  * TODO 3: Implement parseAction.
  *
- *   switch (data.action) {
- *     case "click_selector": return { type: "click_selector", selector: data.selector, description: data.description };
- *     case "click_text":     return { type: "click_text", text: data.text };
- *     case "fill":           return { type: "fill", selector: data.selector, value: data.value };
- *     case "navigate":       return { type: "navigate", url: data.url };
- *     case "done":           return { type: "done", answer: data.answer };
- *     default: throw new Error(`Unknown action: ${data.action}`);
- *   }
+ * Switch on `data.action` and return the matching `Action` variant, reading each
+ * field off `data`. The five action strings map to click_selector / click_text /
+ * fill / navigate / done. Throw for an unknown action string.
  */
 function parseAction(data: Record<string, any>): Action {
   throw new Error("TODO 3: implement parseAction");
@@ -169,22 +142,14 @@ function parseAction(data: Record<string, any>): Action {
 /**
  * TODO 4: Implement executeAction.
  *
- * Execute an Action using Playwright selectors. Return an observation string.
- *
- *   case "click_selector":
- *     await page.locator(action.selector).first().click();
- *     return `Clicked selector ${action.selector}`;
- *   case "click_text":
- *     await page.getByText(action.text, { exact: false }).first().click();
- *     return `Clicked text "${action.text}"`;
- *   case "fill":
- *     await page.locator(action.selector).fill(action.value);
- *     return `Filled ${action.selector} with "${action.value}"`;
- *   case "navigate":
- *     await page.goto(action.url, { waitUntil: "domcontentloaded" });
- *     return `Navigated to ${action.url}`;
- *   case "done":
- *     return `Done: ${action.answer}`;
+ * Switch on `action.type` and drive Playwright, returning a short observation string:
+ *   - "click_selector" -> locate by CSS selector and click the first match
+ *     (`page.locator(...).first().click()`)
+ *   - "click_text"     -> locate by visible text and click the first match
+ *     (`page.getByText(..., { exact: false })`)
+ *   - "fill"           -> locate by selector and `.fill(value)`
+ *   - "navigate"       -> `page.goto(url, { waitUntil: "domcontentloaded" })`
+ *   - "done"           -> no browser call; report the answer
  */
 async function executeAction(page: any, action: Action): Promise<string> {
   throw new Error("TODO 4: implement executeAction");
@@ -197,15 +162,12 @@ async function executeAction(page: any, action: Action): Promise<string> {
 /**
  * TODO 5: Implement runDomAgent.
  *
- * Loop until ActionDone or maxSteps:
- *   a) a11yText = await extractA11yTree(page)
- *   b) console.log step number and a11y preview (first 300 chars)
- *   c) action = await decideAction(a11yText, goal, step)
- *   d) console.log the action
- *   e) If action.type === "done": close browser, return action.answer
- *   f) obs = await executeAction(page, action)
- *   g) await page.waitForLoadState("domcontentloaded")
- *   h) console.log obs
+ * Launch chromium (viewport 1280x720) and navigate to startUrl. Loop up to maxSteps:
+ *   - extract the a11y tree text and log the step number plus a short preview,
+ *   - ask decideAction(...) for the next action and log it,
+ *   - when it is a "done" action, close the browser and return its answer,
+ *   - otherwise execute it, wait for load to settle, and log the observation.
+ * If the loop finishes without a "done", return a "max steps reached" message.
  */
 async function runDomAgent(
   goal: string,

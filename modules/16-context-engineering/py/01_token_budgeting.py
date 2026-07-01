@@ -68,15 +68,11 @@ MAX_TOKEN_BUDGET = 200  # a tight budget to make truncation interesting
 
 # ---------------------------------------------------------------------------
 # TODO 1: Implement count_tokens using tiktoken.
-#         Use the "cl100k_base" encoding (GPT-4 / GPT-3.5 tokeniser).
-#         Steps:
-#           enc = tiktoken.get_encoding("cl100k_base")
-#           return len(enc.encode(text))
+#         - Get the encoder for the "cl100k_base" encoding (GPT-4 / GPT-3.5).
+#         - Encode the text to a list of token ids and return how many there are.
 # ---------------------------------------------------------------------------
 def count_tokens(text: str) -> int:
-    # TODO: implement with tiktoken
-    # enc = tiktoken.get_encoding("cl100k_base")
-    # return len(enc.encode(text))
+    # TODO: implement with tiktoken (uncomment the import at the top of the file)
 
     # Rough fallback until you implement the above:
     return int(len(text.split()) * 1.3)
@@ -85,13 +81,11 @@ def count_tokens(text: str) -> int:
 # ---------------------------------------------------------------------------
 # TODO 2: Implement truncate_head.
 #         Keep the FIRST max_tokens tokens; discard the tail.
-#         Steps:
-#           enc = tiktoken.get_encoding("cl100k_base")
-#           tokens = enc.encode(text)
-#           return enc.decode(tokens[:max_tokens])
+#         - Encode the text to token ids, keep only the leading slice up to
+#           max_tokens, then decode that slice back to a string.
 # ---------------------------------------------------------------------------
 def truncate_head(text: str, max_tokens: int) -> str:
-    # TODO: implement with tiktoken
+    # TODO: implement with tiktoken (encode -> slice the head -> decode)
     words = text.split()
     approx = int(max_tokens / 1.3)
     return " ".join(words[:approx])

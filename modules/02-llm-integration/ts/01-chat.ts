@@ -32,9 +32,8 @@ async function main() {
   //         and assistant take turns. Build an array of ChatMessage objects.
   //         Hint: the system message uses role "system".
   // ---------------------------------------------------------------------------
-  const history: ChatMessage[] = [
-    // { role: "system", content: SYSTEM_PROMPT },
-  ];
+  //         Seed it with a single system-role entry carrying SYSTEM_PROMPT.
+  const history: ChatMessage[] = [];
 
   const rl = readline.createInterface({ input, output });
   console.log('Multi-turn chat started. Type "exit" to quit.\n');
@@ -45,16 +44,14 @@ async function main() {
     if (!userInput.trim()) continue;
 
     // -------------------------------------------------------------------------
-    // TODO 3: Append the user's message to history, then call llm.chat() with
-    //         the full history. Store the assistant reply in history too so the
-    //         model "remembers" the previous turns on the next request.
-    //         Print the assistant's reply with a "Assistant: " prefix.
+    // TODO 3: Drive one turn of the conversation:
+    //         - Push the user's line onto `history` as a user-role ChatMessage.
+    //         - Call `llm.chat(history)` with the WHOLE history (the model has no
+    //           memory of its own — history IS the memory).
+    //         - Push the reply back onto `history` as an assistant-role message
+    //           so the next turn sees it.
+    //         - Print the reply with an "Assistant: " prefix.
     // -------------------------------------------------------------------------
-
-    // history.push({ role: "user", content: userInput });
-    // const result = await llm.chat(history);
-    // history.push({ role: "assistant", content: result.text });
-    // console.log(`Assistant: ${result.text}\n`);
 
     console.log("TODO: implement the chat loop above.\n");
     break; // remove this once you've implemented the loop

@@ -158,81 +158,45 @@ def _grade_answer(module: str, user_answer: str) -> str:
 def build_server():
     """Create and return the MCP server instance with all tools registered."""
     # TODO 5: Import and instantiate the MCP server.
-    #   from mcp.server import Server
-    #   from mcp.server.models import InitializationOptions
-    #   import mcp.types as types
-    #
-    #   server = Server("learn-ai-course")
+    #   You'll need `Server` from mcp.server, InitializationOptions from
+    #   mcp.server.models, and mcp.types (aliased as `types`). Create a
+    #   Server(...) with a name identifying this course server.
     raise NotImplementedError("TODO 5: import mcp and create server = Server('learn-ai-course')")
 
     # TODO 6: Register the list_tools handler.
-    #   @server.list_tools()
-    #   async def handle_list_tools() -> list[types.Tool]:
-    #       return [
-    #           types.Tool(
-    #               name="search_docs",
-    #               description="Search across all module READMEs by keyword.",
-    #               inputSchema={
-    #                   "type": "object",
-    #                   "properties": {
-    #                       "query": {"type": "string", "description": "Search query"},
-    #                       "top_k": {"type": "integer", "description": "Max results", "default": 3},
-    #                   },
-    #                   "required": ["query"],
-    #               },
-    #           ),
-    #           types.Tool(name="read_module", description="Return a module's README.",
-    #               inputSchema={"type":"object","properties":{"module":{"type":"string"}},"required":["module"]}),
-    #           types.Tool(name="run_exam_question", description="Get an exam question for a module.",
-    #               inputSchema={"type":"object","properties":{
-    #                   "module":{"type":"string"},
-    #                   "answer":{"type":"string","description":"Optional: your answer to grade"}
-    #               },"required":["module"]}),
-    #       ]
+    #   Decorate an async function with @server.list_tools(); it returns a
+    #   list[types.Tool] advertising the three tools. Each types.Tool needs a
+    #   name, a description, and an inputSchema (a JSON Schema object with
+    #   "type": "object", a "properties" map, and a "required" list):
+    #     - search_docs: required "query" (string); optional "top_k" (integer).
+    #     - read_module: required "module" (string).
+    #     - run_exam_question: required "module" (string); optional "answer"
+    #       (string) that, when present, gets graded.
 
     # TODO 7: Register the call_tool handler.
-    #   @server.call_tool()
-    #   async def handle_call_tool(name: str, arguments: dict | None) -> list[types.TextContent]:
-    #       args = arguments or {}
-    #       if name == "search_docs":
-    #           results = _simple_search(args["query"], args.get("top_k", 3))
-    #           text = json.dumps(results, indent=2) if results else "No results found."
-    #       elif name == "read_module":
-    #           text = _read_module_readme(args["module"])
-    #       elif name == "run_exam_question":
-    #           text = _get_exam_question(args["module"])
-    #           if "answer" in args:
-    #               text += "\n\n" + _grade_answer(args["module"], args["answer"])
-    #       else:
-    #           raise ValueError(f"Unknown tool: {name}")
-    #       return [types.TextContent(type="text", text=text)]
+    #   Decorate an async function with @server.call_tool(); it takes (name,
+    #   arguments) and returns a list with a single types.TextContent block.
+    #   Default arguments to {} if None, then branch on name:
+    #     - "search_docs" → call _simple_search with the query and top_k; render
+    #       the results as pretty JSON (json.dumps) or a "no results" message.
+    #     - "read_module" → call _read_module_readme.
+    #     - "run_exam_question" → call _get_exam_question; if an "answer" was
+    #       supplied, append the _grade_answer result.
+    #     - anything else → raise ValueError.
+    #   Wrap the final text in types.TextContent(type="text", text=...).
 
-    # return server  # TODO: un-comment when TODOs above are done
+    # Return the fully-configured server once both handlers are registered.
 
 
 def main() -> None:
     """Run the MCP server over stdio."""
-    # TODO 8: Run the server using the stdio transport.
-    #   import asyncio
-    #   from mcp.server.stdio import stdio_server
-    #
-    #   server = build_server()
-    #
-    #   async def run():
-    #       async with stdio_server() as (read_stream, write_stream):
-    #           await server.run(
-    #               read_stream,
-    #               write_stream,
-    #               InitializationOptions(
-    #                   server_name="learn-ai-course",
-    #                   server_version="0.1.0",
-    #                   capabilities=server.get_capabilities(
-    #                       notification_options=NotificationOptions(),
-    #                       experimental_capabilities={},
-    #                   ),
-    #               ),
-    #           )
-    #   asyncio.run(run())
+    # TODO 8: Run the server over the stdio transport.
+    #   Build the server with build_server(). Open the stdio_server() async
+    #   context (from mcp.server.stdio) to get a (read_stream, write_stream)
+    #   pair, then await server.run(read_stream, write_stream, <init options>).
+    #   The init options are an InitializationOptions carrying the server name,
+    #   a version, and capabilities from server.get_capabilities(...). Drive the
+    #   coroutine with asyncio.run().
     raise NotImplementedError("TODO 8: start the stdio MCP server")
 
 

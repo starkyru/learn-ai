@@ -39,13 +39,15 @@ interface ThroughputResult {
  * Send `prompt` to `provider` and measure tokens per second.
  *
  * TODO:
- *   1. Record start time: performance.now() (ms).
- *   2. Call provider.chat([{ role: "user", content: prompt }],
- *        { max_tokens: 256 }).
- *   3. Record end time. Compute elapsedS = (end - start) / 1000.
- *   4. Get tokensOut from result.usage.output_tokens ?? 0.
- *   5. Compute tokensPerS = tokensOut / elapsedS (0 if elapsedS === 0).
- *   6. Return the ThroughputResult.
+ *   1. Snapshot performance.now() (ms) before the call.
+ *   2. Send one message through provider.chat(): a single "user" message
+ *      carrying the prompt, plus an options object with a bounded max_tokens
+ *      (a couple hundred).
+ *   3. Snapshot performance.now() again; elapsedS is the difference in seconds.
+ *   4. Read the output token count off result.usage.output_tokens, defaulting
+ *      to 0 when absent.
+ *   5. tokensPerS = tokensOut / elapsedS, guarding against a zero elapsed.
+ *   6. Return the ThroughputResult with the fields declared above.
  */
 async function measureThroughput(
   prompt: string,

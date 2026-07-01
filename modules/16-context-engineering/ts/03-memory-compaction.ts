@@ -57,26 +57,21 @@ const CONVERSATION_SCRIPT: Array<[string, string]> = [
 
 // ---------------------------------------------------------------------------
 // TODO 1: Implement summariseTurns.
-//         Given an array of ChatMessage objects, ask the LLM to produce a 2–3 sentence
-//         summary of that exchange. Return a ChatMessage with role="system" and content
-//         starting with "Summary of earlier conversation: ...".
-//
-//         Suggested prompt:
-//           "Summarise the following conversation exchange in 2-3 sentences.
-//            Focus on key facts, decisions, and topics discussed.
-//            Do not include conversational filler.\n\n<transcript>"
+//         Given an array of ChatMessage objects, ask the LLM to compress them.
+//         - Flatten `turns` into one transcript string ("<role>: <content>" per line).
+//         - Build a prompt asking the model to summarise the exchange in 2–3 sentences,
+//           keeping key facts / decisions / topics and dropping conversational filler,
+//           with the transcript appended.
+//         - Send it as a single user message via `llm.chat([...], { temperature: 0 })`
+//           so the summary is deterministic.
+//         - Return a ChatMessage with role "system" whose content begins with
+//           "Summary of earlier conversation: " followed by the model's text (that
+//           prefix is what maybeCompact and the model rely on to spot the summary).
 // ---------------------------------------------------------------------------
 async function summariseTurns(
   turns: ChatMessage[],
   llm: ReturnType<typeof getProvider>,
 ): Promise<ChatMessage> {
-  // const transcript = turns.map((m) => `${m.role}: ${m.content}`).join("\n");
-  // const prompt =
-  //   "Summarise the following conversation exchange in 2-3 sentences. " +
-  //   "Focus on key facts, decisions, and topics discussed. " +
-  //   "Do not include conversational filler.\n\n" + transcript;
-  // const result = await llm.chat([{ role: "user", content: prompt }], { temperature: 0 });
-  // return { role: "system", content: "Summary of earlier conversation: " + result.text };
   throw new Error("TODO: implement summariseTurns");
 }
 
@@ -96,21 +91,15 @@ async function maybeCompact(
   budget: number,
   llm: ReturnType<typeof getProvider>,
 ): Promise<ChatMessage[]> {
-  // const current = countHistoryTokens(messages);
-  // if (current <= budget) return messages;
-  //
-  // console.log(`\n  [COMPACTION] tokens=${current} > budget=${budget}; compacting...`);
-  // const systemMsgs = messages.filter((m) => m.role === "system");
-  // const convoMsgs  = messages.filter((m) => m.role !== "system");
-  //
-  // const split = Math.max(1, Math.floor(convoMsgs.length / 2));
-  // const toSummarise = convoMsgs.slice(0, split);
-  // const toKeep      = convoMsgs.slice(split);
-  //
-  // const summary = await summariseTurns(toSummarise, llm);
-  // const newMessages = [...systemMsgs, summary, ...toKeep];
-  // console.log(`  [COMPACTION] done — new token count=${countHistoryTokens(newMessages)}`);
-  // return newMessages;
+  // - Use countHistoryTokens(messages); if it is within `budget`, return messages
+  //   unchanged (fast path — no LLM call).
+  // - Otherwise log a line noting compaction fired (so you can watch it in the demo),
+  //   then split messages into system messages and conversation (non-system) turns.
+  // - Choose how many of the OLDEST conversation turns to compress — summarising
+  //   roughly the first half (at least one) is a reasonable split. Call summariseTurns
+  //   on that oldest slice and keep the rest verbatim.
+  // - Rebuild in order: system messages, then the single summary message, then the
+  //   kept recent turns — and return that new array.
   throw new Error("TODO: implement maybeCompact");
 }
 

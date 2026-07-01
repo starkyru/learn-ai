@@ -43,8 +43,9 @@ const PROBLEMS = [
 //         Keep it short. The model should respond with JUST the answer, no explanation.
 // ---------------------------------------------------------------------------
 function buildDirectPrompt(question: string): string {
-  // TODO: return a prompt that instructs the model to answer directly.
-  // Example: "Answer the following question with only the final answer, no explanation.\n\nQuestion: ..."
+  // TODO: return a single prompt string that instructs the model to reply with
+  //       only the final answer (no reasoning, no explanation) and then embeds
+  //       `question`.
   return `TODO: build direct (non-CoT) prompt for: ${question}`;
 }
 
@@ -63,11 +64,11 @@ function buildCoTPrompt(question: string): string {
 
 // ---------------------------------------------------------------------------
 // TODO 3: Implement extractFinalAnswer.
-//         Parse the model's CoT response to extract just the final answer.
-//         Your extraction logic should match the format you chose in TODO 2.
-//         For "Final answer: X" format: /[Ff]inal answer:\s*(.+)/
-//         For "the answer is X" format: /the answer is\s*([\d.]+|yes|no)/i
-//         Trim whitespace and lowercase the result.
+//         Parse the model's CoT response to pull out just the final answer.
+//         Your extraction logic must match the answer format you asked for in
+//         TODO 2 — e.g. if you used a "Final answer: <x>" marker, match that line
+//         with a regex and capture what follows it; fall back sensibly if the
+//         marker is missing. Trim and lowercase the captured value.
 // ---------------------------------------------------------------------------
 function extractFinalAnswer(cotResponse: string): string {
   // TODO: implement extraction matching your CoT prompt format
@@ -103,40 +104,25 @@ async function main() {
 
     // -----------------------------------------------------------------------
     // TODO 5: Zero-shot direct answer.
-    //         Call llm.chat with the direct prompt. Print result.
+    //         Send a one-message user chat built from buildDirectPrompt(question)
+    //         and print the reply's trimmed text.
     // -----------------------------------------------------------------------
-    // const directResult = await llm.chat([{ role: "user", content: buildDirectPrompt(question) }]);
-    // console.log(`Direct (0-shot): ${directResult.text.trim()}`);
     console.log("Direct (0-shot): TODO");
 
     // -----------------------------------------------------------------------
     // TODO 6: Single CoT sample.
-    //         Call llm.chat with the CoT prompt at temperature=0 (deterministic).
-    //         Extract and print the final answer.
+    //         Call llm.chat with buildCoTPrompt(question) and a { temperature: ... }
+    //         option pinned to 0 for a deterministic run, then run the reply
+    //         through extractFinalAnswer and print it.
     // -----------------------------------------------------------------------
-    // const cotResult = await llm.chat(
-    //   [{ role: "user", content: buildCoTPrompt(question) }],
-    //   { temperature: 0 }
-    // );
-    // const cotAnswer = extractFinalAnswer(cotResult.text);
-    // console.log(`CoT (single):   ${cotAnswer}`);
-    // console.log("Reasoning snippet:", cotResult.text.slice(0, 200) + "...");
     console.log("CoT (single):   TODO");
 
     // -----------------------------------------------------------------------
-    // TODO 7: Self-consistency — sample N_SAMPLES CoT responses at temperature=0.7,
-    //         extract each answer, majority vote, print all samples + winner.
+    // TODO 7: Self-consistency — call the CoT prompt N_SAMPLES times with a
+    //         non-zero { temperature: ... } (e.g. ~0.7) so the samples vary,
+    //         collect extractFinalAnswer for each, then majorityVote them.
+    //         Print the samples array and the winning answer.
     // -----------------------------------------------------------------------
-    // const samples: string[] = [];
-    // for (let i = 0; i < N_SAMPLES; i++) {
-    //   const r = await llm.chat(
-    //     [{ role: "user", content: buildCoTPrompt(question) }],
-    //     { temperature: 0.7 }
-    //   );
-    //   samples.push(extractFinalAnswer(r.text));
-    // }
-    // const winner = majorityVote(samples);
-    // console.log(`Self-consistency: samples=${JSON.stringify(samples)}, vote=${winner}`);
     console.log(`Self-consistency (N=${N_SAMPLES}): TODO`);
   }
 

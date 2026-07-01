@@ -71,15 +71,12 @@ def load_model_and_tokenizer() -> tuple:
     Returns (model, tokenizer).
 
     TODO:
-      1. Load the tokenizer:
-           tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-         Add a pad token if missing (OPT models sometimes omit it):
-           if tokenizer.pad_token is None:
-               tokenizer.pad_token = tokenizer.eos_token
-      2. Load the model:
-           model = AutoModelForCausalLM.from_pretrained(MODEL_ID, torch_dtype=torch.float32)
-         Use float32 on CPU (MPS/CUDA support can be added later).
-      3. Print total parameter count.
+      1. Load the tokenizer with AutoTokenizer.from_pretrained(MODEL_ID). OPT
+         models sometimes ship without a pad token — if tokenizer.pad_token is
+         None, set it to the eos_token so batching/padding works.
+      2. Load the model with AutoModelForCausalLM.from_pretrained(MODEL_ID, ...).
+         Pass torch_dtype=torch.float32 (CPU-safe; add MPS/CUDA later).
+      3. Print the total parameter count (sum of p.numel() over model.parameters()).
       4. Return (model, tokenizer).
     """
     # TODO: implement load_model_and_tokenizer
@@ -98,21 +95,17 @@ def add_lora_adapters(model, rank: int = 8) -> object:
     Returns the PEFT model.
 
     TODO:
-      1. Define a LoraConfig:
-           config = LoraConfig(
-               task_type=TaskType.CAUSAL_LM,
-               r=rank,
-               lora_alpha=16,          # scaling factor (usually 2*r)
-               lora_dropout=0.1,
-               target_modules=["q_proj", "v_proj"],  # OPT attention projections
-           )
-      2. Wrap the model:
-           peft_model = get_peft_model(model, config)
-      3. Print trainable vs total parameter counts:
-           peft_model.print_trainable_parameters()
-         This shows "trainable params: X || all params: Y || trainable%: Z%"
-         For opt-125m at rank=8 expect ~0.3% trainable.
-      4. Return peft_model.
+      1. Build a LoraConfig(...). The parameters that matter:
+           - task_type=TaskType.CAUSAL_LM
+           - r=rank                     (the adapter rank passed in)
+           - lora_alpha=...             (scaling factor, conventionally 2*r)
+           - lora_dropout=...           (a small dropout, e.g. ~0.1)
+           - target_modules=[...]       (which weights get adapters — for OPT
+                                         attention, the q and v projections)
+      2. Wrap the base model with get_peft_model(model, config).
+      3. Call peft_model.print_trainable_parameters() to see the trainable/total
+         split. For opt-125m at rank=8 expect ~0.3% trainable.
+      4. Return the wrapped peft_model.
     """
     # TODO: implement add_lora_adapters
     raise NotImplementedError("TODO: implement add_lora_adapters()")
@@ -134,14 +127,15 @@ def tokenize_dataset(tokenizer, pairs: list[tuple[str, str]], max_length: int = 
     Returns a HuggingFace Dataset ready for Trainer.
 
     TODO:
-      1. For each (prompt, completion) pair, build:
-           text = prompt + " " + completion + tokenizer.eos_token
-      2. Tokenize the text with:
-           tokenizer(text, truncation=True, max_length=max_length, padding="max_length")
-      3. Set labels = input_ids (for causal LM the labels are a copy of the input).
-      4. Build a dict {"input_ids": [...], "attention_mask": [...], "labels": [...]}
-         where each value is a list of tensors or lists.
-      5. Return hf_datasets.Dataset.from_dict(data_dict).
+      1. For each (prompt, completion) pair, join them into one training string:
+         the prompt, a space, the completion, then tokenizer.eos_token appended.
+      2. Tokenize that string with the tokenizer, passing truncation=True,
+         max_length=max_length, and padding="max_length" so every row is the
+         same length.
+      3. For causal LM the labels are just a copy of input_ids.
+      4. Collect the per-example input_ids / attention_mask / labels into a dict
+         of lists (one key per field).
+      5. Return a HF dataset built from that dict (hf_datasets.Dataset.from_dict).
     """
     # TODO: implement tokenize_dataset
     raise NotImplementedError("TODO: implement tokenize_dataset()")
@@ -157,24 +151,14 @@ def train(peft_model, tokenized_dataset, tokenizer, output_dir: str = "/tmp/lora
     Fine-tune the PEFT model for a small number of steps.
 
     TODO:
-      1. Define TrainingArguments:
-           args = TrainingArguments(
-               output_dir=output_dir,
-               num_train_epochs=3,
-               per_device_train_batch_size=1,
-               logging_steps=1,
-               save_strategy="no",
-               report_to="none",     # disable wandb / tensorboard
-               fp16=False,           # CPU-safe
-           )
-      2. Create a Trainer:
-           trainer = Trainer(
-               model=peft_model,
-               args=args,
-               train_dataset=tokenized_dataset,
-               data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False),
-           )
-      3. trainer.train()
+      1. Build TrainingArguments(output_dir=output_dir, ...). Settings that
+         matter for a quick CPU run: a few epochs (num_train_epochs), a tiny
+         per_device_train_batch_size, logging_steps=1 so you see loss every step,
+         save_strategy="no", report_to="none" (no wandb/tensorboard), fp16=False.
+      2. Create a Trainer wrapping peft_model, the args, the tokenized_dataset,
+         and a data_collator. For causal LM use DataCollatorForLanguageModeling
+         with mlm=False (we predict the next token, not a masked one).
+      3. Kick off training with trainer.train().
       4. Print the final training loss.
     """
     # TODO: implement train

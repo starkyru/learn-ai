@@ -109,11 +109,12 @@ def energy_vad(
         for i in range(0, len(samples) - frame_size + 1, frame_size)
     ]
 
-    # TODO 1: Compute RMS per frame: sqrt(mean(sample**2)).
-    #         Find max_rms across all frames.
-    #         Return [rms > threshold_ratio * max_rms for rms in rms_values].
-    #         HINT for RMS of a frame f:
-    #           math.sqrt(sum(s * s for s in f) / len(f))
+    # TODO 1: Turn `frames` into a per-frame speech/silence mask.
+    #   - Compute the RMS energy of each frame — the root-mean-square of its
+    #     samples (square each sample, average, take the sqrt via `math.sqrt`).
+    #   - Find the peak RMS across all frames.
+    #   - Return one bool per frame: True when that frame's RMS clears
+    #     `threshold_ratio * max_rms` (i.e. it's loud enough to be speech).
     raise NotImplementedError("TODO 1: implement energy-based VAD")
 
 
@@ -130,11 +131,13 @@ def trim_silence(data: WavData, frame_ms: int = 30, threshold_ratio: float = 0.0
     """
     frame_size = int(data.sample_rate * frame_ms / 1000)
 
-    # TODO 2: Call energy_vad to get frame_labels.
-    #         Find the index of the first True label (start_frame) and the
-    #         last True label (end_frame).
-    #         Slice samples[start_frame*frame_size : (end_frame+1)*frame_size].
-    #         Return WavData(trimmed_samples, data.sample_rate, data.n_channels).
+    # TODO 2: Use `energy_vad(...)` to label frames, then keep only the speech span.
+    #   - Find the first and last frame index marked True (the speech boundaries).
+    #     If no frame is speech, decide on a sensible fallback (e.g. return data).
+    #   - Convert those frame indices back to sample indices via `frame_size` and
+    #     slice `data.samples` between them (include the last speech frame).
+    #   - Return a new `WavData` with the trimmed samples, keeping the original
+    #     sample_rate and n_channels.
     raise NotImplementedError("TODO 2: implement silence trimming")
 
 
@@ -167,11 +170,14 @@ def reduce_noise_nr(data: WavData) -> WavData:
             "noisereduce not installed. Run: uv sync --extra audio"
         ) from exc
 
-    # TODO 3 (optional): Convert data.samples to a float32 numpy array
-    #   normalised to [-1, 1] (divide by 32767).
-    #   Call nr.reduce_noise(y=arr, sr=data.sample_rate) to get the cleaned
-    #   float array, then convert back to int16 by multiplying by 32767 and
-    #   casting.  Return WavData(denoised_samples, data.sample_rate, data.n_channels).
+    # TODO 3 (optional): Denoise via noisereduce.
+    #   - Convert `data.samples` to a float32 numpy array normalised to [-1, 1]
+    #     (int16 PCM ranges up to 32767).
+    #   - Run `nr.reduce_noise(y=..., sr=data.sample_rate)` to get the cleaned
+    #     float signal.
+    #   - Undo the normalisation back to int16 samples.
+    #   - Return a new `WavData` with the denoised samples, same sample_rate and
+    #     n_channels.
     raise NotImplementedError("TODO 3 (optional): apply noisereduce")
 
 

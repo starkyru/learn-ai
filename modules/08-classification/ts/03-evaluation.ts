@@ -257,18 +257,12 @@ async function llmClassify(
   labels: string[],
 ): Promise<string | null> {
   /**
-   * TODO: build a few-shot prompt and call provider.chat().
-   *
-   * Example format:
-   *   Classify the text into one of: technology, science, business, sports, health, politics
-   *   Reply with ONLY the label.
-   *
-   *   Text: <example>
-   *   Label: <label>
-   *   ... (repeat for all examples)
-   *
-   *   Text: <query>
-   *   Label:
+   * TODO: few-shot classify one text (same approach as Task 1's buildFewShotPrompt).
+   *   - Assemble a prompt that names the task and the valid `labels`, tells the model
+   *     to reply with ONLY the label, lists each FEW_SHOT_EXAMPLES pair in a
+   *     consistent labelled format, and ends with the query text awaiting its label.
+   *   - Call `provider.chat(...)` with `temperature: 0`, then run the reply through
+   *     the provided `parseLabel()` helper and return the result (or null).
    */
   throw new Error("TODO: implement llmClassify()");
 }

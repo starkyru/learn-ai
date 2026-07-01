@@ -163,18 +163,12 @@ class LocalTracer implements Tracer {
   }
 
   generation(rec: GenerationRecord): void {
-    // TODO 3: Record `rec` on this.records so endTrace() can total the costs,
-    // then print ONE indented line for this generation. Use this exact format so
-    // the tree stays readable (the header above is already printed):
-    //
-    //   console.log(
-    //     `  └─ generation '${rec.name}'  model=${rec.model}  ` +
-    //       `latency=${rec.latencyMs.toFixed(0)}ms  ` +
-    //       `tokens(in/out)=${rec.inputTokens}/${rec.outputTokens}  ` +
-    //       `cost=${fmtCost(rec.costUsd)}`,
-    //   );
-    //   console.log(`       in : ${JSON.stringify(rec.input.slice(0, 60))}`);
-    //   console.log(`       out: ${JSON.stringify(rec.output.slice(0, 60))}`);
+    // TODO 3: Push `rec` onto this.records so endTrace() can total the costs,
+    // then print ONE indented tree-node line for this generation (the trace header
+    // above is already printed). Include on that line: the generation name, model,
+    // latency in ms (0 decimals), the in/out token counts, and the cost formatted
+    // via the provided fmtCost() helper. Then print two more indented lines showing
+    // the truncated (first ~60 chars) input and output so the call is eyeball-able.
     throw new Error("TODO 3: record + print this generation (see comment)");
   }
 

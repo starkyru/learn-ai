@@ -44,9 +44,8 @@ def he_init(fan_in: int, fan_out: int) -> float:
     """
     He initialisation scale (std of the Normal), tuned for ReLU.
 
-    scale = sqrt(2 / fan_in)
-
-    TODO: return the He scale factor.
+    TODO: return the He scale factor (see the He-init formula in the file header) —
+    it depends only on `fan_in`.
     """
     raise NotImplementedError("TODO: implement he_init()")
 
@@ -55,9 +54,8 @@ def xavier_init(fan_in: int, fan_out: int) -> float:
     """
     Xavier/Glorot initialisation scale (std of the Normal), tuned for tanh/sigmoid.
 
-    scale = sqrt(2 / (fan_in + fan_out))
-
-    TODO: return the Xavier scale factor.
+    TODO: return the Xavier scale factor (see the Xavier-init formula in the file
+    header) — it uses both `fan_in` and `fan_out`.
     """
     raise NotImplementedError("TODO: implement xavier_init()")
 
@@ -73,8 +71,8 @@ def sgd_update(param: np.ndarray, grad: np.ndarray, state: dict, lr: float) -> N
 
     `state` is unused for SGD (kept for a uniform signature).
 
-    TODO: update `param` in place.
-      param -= lr * grad
+    TODO: update `param` in place — step it down the gradient by `lr` (use `-=` so
+    the numpy array is mutated in place, not rebound).
     """
     raise NotImplementedError("TODO: implement sgd_update()")
 
@@ -88,10 +86,11 @@ def momentum_update(
       v ← β·v + (1-β)·g
       param ← param - lr·v
 
-    TODO: implement.
-      1. v = state["v"]                       # same shape as param, starts at 0
-      2. v[:] = beta * v + (1 - beta) * grad  # update in place
-      3. param -= lr * v
+    TODO: implement using the two-line rule in the docstring above.
+      - Read the running velocity from `state["v"]` (same shape as param, starts 0).
+      - Update it to the exponential moving average of the gradient — write it back
+        in place (`v[:] = ...`) so the stored state persists across steps.
+      - Step `param` down that velocity by `lr` (in place, `-=`).
     """
     raise NotImplementedError("TODO: implement momentum_update()")
 
@@ -115,14 +114,14 @@ def adam_update(
       v̂ = v / (1 - β2^t)
       param ← param - lr·m̂ / (sqrt(v̂) + ε)
 
-    TODO: implement.
-      1. state["t"] += 1 ;  t = state["t"]
-      2. m, v = state["m"], state["v"]
-      3. m[:] = beta1 * m + (1 - beta1) * grad
-      4. v[:] = beta2 * v + (1 - beta2) * (grad ** 2)
-      5. m_hat = m / (1 - beta1 ** t)
-      6. v_hat = v / (1 - beta2 ** t)
-      7. param -= lr * m_hat / (np.sqrt(v_hat) + eps)
+    TODO: implement the six-line rule in the docstring above.
+      - Increment the step counter `state["t"]` and read it as `t` (needed for bias
+        correction — this is why t must persist in state, not reset each call).
+      - Update the two running moments `state["m"]` (mean of g) and `state["v"]`
+        (mean of g²) in place, mixing in the new gradient with beta1 / beta2.
+      - Bias-correct each moment by dividing by (1 - beta^t).
+      - Step `param` in place: the corrected mean over the sqrt of the corrected
+        second moment (plus `eps` for numerical safety), scaled by `lr`.
     """
     raise NotImplementedError("TODO: implement adam_update()")
 

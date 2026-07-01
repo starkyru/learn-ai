@@ -77,18 +77,12 @@ function makeGaussian(seed: number): () => number {
  *   3. Start at (FPR=0, TPR=0). Walk the sorted order; on each positive admitted
  *      tp += 1, on each negative fp += 1; after each step push (fp/Nn, tp/P).
  *
- * TODO: implement.
- *   1. const order = labels.map((_, i) => i).sort((a, b) => scores[b] - scores[a]);
- *   2. const P = labels.filter(l => l === 1).length;
- *      const Nn = labels.filter(l => l === 0).length;
- *   3. let tp = 0, fp = 0;
- *      const fpr = [0], tpr = [0];
- *      for (const i of order) {
- *        if (labels[i] === 1) tp++; else fp++;
- *        tpr.push(tp / P);
- *        fpr.push(fp / Nn);
- *      }
- *   4. return { fpr, tpr };
+ * TODO: implement (follow the numbered method above).
+ *   - Get item indices sorted by score descending, and count positives P and
+ *     negatives Nn.
+ *   - Start fpr and tpr at [0]; walk the sorted indices keeping running tp/fp
+ *     counts, pushing (fp/Nn, tp/P) after each admitted item.
+ *   - Return { fpr, tpr }.
  */
 function rocCurve(
   scores: number[],
@@ -103,12 +97,9 @@ function rocCurve(
  *
  * AUC = Σ_i (fpr[i+1] - fpr[i]) · (tpr[i+1] + tpr[i]) / 2
  *
- * TODO: implement.
- *   let area = 0;
- *   for (let i = 0; i < fpr.length - 1; i++) {
- *     area += (fpr[i + 1] - fpr[i]) * (tpr[i + 1] + tpr[i]) / 2;
- *   }
- *   return area;
+ * TODO: implement — sum the trapezoid areas between consecutive points per the
+ * formula above (each segment's width times the average of its two tpr
+ * endpoints) and return the total.
  */
 function auc(fpr: number[], tpr: number[]): number {
   // TODO: implement the trapezoidal AUC
@@ -131,15 +122,8 @@ function sqDist(a: number[], b: number[]): number {
  *
  * Returns an array of length X.length: the cluster index of each point.
  *
- * TODO: implement.
- *   return X.map((x) => {
- *     let best = 0, bestD = Infinity;
- *     for (let j = 0; j < centroids.length; j++) {
- *       const d = sqDist(x, centroids[j]);   // sqDist is provided above
- *       if (d < bestD) { bestD = d; best = j; }
- *     }
- *     return best;
- *   });
+ * TODO: implement — for each point, use the provided sqDist() to find the
+ * centroid with the smallest squared distance and return that centroid's index.
  */
 function assignClusters(X: number[][], centroids: number[][]): number[] {
   // TODO: implement nearest-centroid assignment
@@ -153,15 +137,10 @@ function assignClusters(X: number[][], centroids: number[][]): number[] {
  * leaving it as zeros / its old value is a reasonable fallback.)
  *
  * TODO: implement.
- *   const D = X[0].length;
- *   const sums = Array.from({ length: k }, () => new Array(D).fill(0));
- *   const counts = new Array(k).fill(0);
- *   for (let i = 0; i < X.length; i++) {
- *     const c = assignments[i];
- *     counts[c]++;
- *     for (let d = 0; d < D; d++) sums[c][d] += X[i][d];
- *   }
- *   return sums.map((s, c) => (counts[c] > 0 ? s.map((v) => v / counts[c]) : s));
+ *   - Accumulate a per-cluster feature sum and a per-cluster point count in one
+ *     pass over the points (using assignments to route each point).
+ *   - Each centroid is its sum divided by its count; guard the count == 0 case
+ *     with a fallback so you never divide by zero. Return the k centroids.
  */
 function updateCentroids(X: number[][], assignments: number[], k: number): number[][] {
   // TODO: implement the centroid update
@@ -173,10 +152,8 @@ function updateCentroids(X: number[][], assignments: number[], k: number): numbe
  *
  * inertia = Σ_i ||x_i - c_{assignments[i]}||²
  *
- * TODO: implement.
- *   let total = 0;
- *   for (let i = 0; i < X.length; i++) total += sqDist(X[i], centroids[assignments[i]]);
- *   return total;
+ * TODO: implement — sum, over every point, the sqDist() from that point to the
+ * centroid of its assigned cluster, and return the total.
  */
 function inertia(X: number[][], centroids: number[][], assignments: number[]): number {
   // TODO: implement the inertia

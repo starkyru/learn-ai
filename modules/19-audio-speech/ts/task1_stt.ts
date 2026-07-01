@@ -86,13 +86,11 @@ async function transcribeHosted(audioPath: string): Promise<string> {
 
   const client = new OpenAI({ apiKey });
 
-  // TODO 1: Call client.audio.transcriptions.create({
-  //   model: "whisper-1",
-  //   file: fs.createReadStream(audioPath),
-  //   response_format: "text",
-  // }) and return the result.
-  //
-  // HINT: the return type is `string` when response_format is "text".
+  // TODO 1: Call `client.audio.transcriptions.create({ ... })` with the Whisper
+  //   model, the audio as `file:` (a read stream over `audioPath` works), and
+  //   `response_format: "text"`. Return the transcript.
+  //   HINT: with response_format "text" the call resolves to a plain `string`,
+  //   so you can return it directly.
   throw new Error("TODO 1: call client.audio.transcriptions.create()");
 }
 

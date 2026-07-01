@@ -51,14 +51,14 @@ def build_app():
         last = state["messages"][-1]
         out: list[ToolMessage] = []
         for call in last.tool_calls:
-            # TODO 1: gate send_email behind a human decision.
-            #   if call["name"] == "send_email":
-            #       decision = interrupt({"action": "send_email", "args": call["args"]})
-            #       if decision != "approve":
-            #           out.append(ToolMessage(
-            #               content="Human DENIED this email. Do not retry; explain instead.",
-            #               tool_call_id=call["id"]))
-            #           continue
+            # TODO 1: gate send_email behind a human decision. When the call is for
+            #         "send_email", pause the graph by calling `interrupt(payload)` —
+            #         pass a payload dict describing the action and its args so the
+            #         human can review it. The value the human resumes with comes back
+            #         as interrupt()'s return. If it isn't an approval, append a
+            #         ToolMessage (tool_call_id=call["id"]) telling the model the human
+            #         denied it and to explain rather than retry, then `continue` past
+            #         the real invoke below.
             result = TOOLS_BY_NAME[call["name"]].invoke(call["args"])
             out.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
         return {"messages": out}
@@ -73,8 +73,8 @@ def build_app():
     graph.add_edge(START, "agent")
     graph.add_conditional_edges("agent", route)
     graph.add_edge("tools", "agent")
-    # TODO 2: compile WITH a checkpointer — interrupts require it.
-    #   return graph.compile(checkpointer=InMemorySaver())
+    # TODO 2: compile WITH a checkpointer (an `InMemorySaver()` is enough) — interrupts
+    #         cannot pause/resume without one. Return the compiled app.
     raise NotImplementedError("TODO 2")
 
 
@@ -83,16 +83,17 @@ def main() -> None:
     config = {"configurable": {"thread_id": "hitl-1"}}  # noqa: F841
     prompt = "Email ada@example.com to say the build passed."  # noqa: F841
 
-    # TODO 3: first invoke runs until interrupt(), then pauses.
-    #   result = app.invoke({"messages": [HumanMessage(content=prompt)]}, config)
-    #   pending = result.get("__interrupt__")          # the payload you passed to interrupt()
-    #   print("PAUSED, awaiting approval:", pending)
+    # TODO 3: first invoke the app normally (a HumanMessage with `prompt`, plus the
+    #         `config` carrying the thread_id). It runs until interrupt() and pauses;
+    #         the payload you passed to interrupt() surfaces under the result's
+    #         "__interrupt__" key. Print it to see what's awaiting approval.
     #
-    # TODO 4: resume with a human decision on the SAME thread.
-    #   approved = app.invoke(Command(resume="approve"), config)   # "deny" to reject
-    #   print(approved["messages"][-1].content)
+    # TODO 4: resume on the SAME thread by invoking the app with `Command(resume=...)`
+    #         (from langgraph.types) carrying the human's decision — the value flows
+    #         back as interrupt()'s return in the tools node. Print the final message.
     #
-    # Acceptance: with "deny", the email never sends and the agent replans/explains.
+    # Acceptance: with a "deny" decision, the email never sends and the agent
+    # replans/explains instead.
     print("TODO: invoke, observe the pause, resume with Command(resume=...).")
 
 

@@ -70,17 +70,15 @@ def extract_triples(text: str, provider: Any) -> list[Triple]:
     TODO: implement this.
 
     Steps:
-      1. messages:
-           system: 'Extract knowledge-graph triples from the text. Respond with
-                    ONLY a JSON array of [subject, relation, object] arrays, e.g.
-                    [["Alice","works_at","Acme"]]. Use short snake_case relations.'
-           user:   text
-         options = ChatOptions(temperature=0, max_tokens=300)
-      2. raw = _strip_code_fences(result.text)
-      3. data = json.loads(raw)  — a list of [s, r, o] lists
-      4. Return [(t[0], t[1], t[2]) for t in data if isinstance(t, list) and len(t) == 3]
-         — this SKIPS malformed rows instead of crashing on them. Wrap the whole
-         parse (steps 3–4) in try/except and return [] on any failure.
+      1. Build a list[ChatMessage]: a system message telling the model to extract
+         knowledge-graph triples and respond with ONLY a JSON array of
+         [subject, relation, object] arrays using short snake_case relations (giving
+         one tiny example helps), and a user message with the text. Use
+         ChatOptions(temperature=0, max_tokens=...).
+      2. Run the reply through the provided _strip_code_fences(), then json.loads().
+      3. Keep only rows that are lists of length 3 (skip malformed ones) and turn
+         them into 3-tuples. Wrap the whole parse in try/except and return [] on any
+         failure, so a bad reply doesn't crash graph building.
     """
     raise NotImplementedError("TODO: implement extract_triples()")
 
@@ -111,18 +109,19 @@ class KnowledgeGraph:
         TODO: implement this.
 
         Steps:
-          1. sk, ok = _norm(subj), _norm(obj)
-          2. Remember display labels: self.label.setdefault(sk, subj.strip()),
-             same for ok.
-          3. Append Edge(rel, ok, "out") to self.adj[sk]
-             Append Edge(rel, sk, "in")  to self.adj[ok]
-             (use setdefault(key, []) to create the list lazily)
+          1. Canonicalise both entities with _norm() to get their keys.
+          2. Remember a display label for each key the first time you see it (the
+             first spelling wins — setdefault does exactly this; don't overwrite).
+          3. Append an Edge to the subject key's adjacency list pointing "out" at the
+             object key, AND an Edge to the object key's list pointing "in" back at
+             the subject key (both carry rel). Use setdefault(key, []) to create each
+             list lazily.
         """
         raise NotImplementedError("TODO: implement add_triple()")
 
     def neighbors(self, entity: str) -> list[Edge]:
         """Return all edges touching `entity` (both directions), or []."""
-        # TODO: return self.adj.get(_norm(entity), []).
+        # TODO: look up the adjacency list for the _norm()-ed entity key, defaulting to [].
         raise NotImplementedError("TODO: implement neighbors()")
 
     def entities(self) -> list[str]:
@@ -141,17 +140,15 @@ def multi_hop_subgraph(graph: KnowledgeGraph, seeds: list[str], depth: int = 2) 
     TODO: implement this.
 
     Steps:
-      1. visited = set of normalised seed keys; queue = deque of (key, hop).
-      2. collected: list[Triple] = []  (and a set to dedupe).
-      3. While queue: pop (key, hop). If hop == depth, continue.
-         For each Edge e in graph.neighbors(key):
-           - reconstruct the triple in canonical SUBJECT->OBJECT order:
-               if e.direction == "out":  triple = (label[key], e.relation, label[e.other])
-               else:                      triple = (label[e.other], e.relation, label[key])
-             (use graph.label.get(k, k) for display)
-           - add triple to collected if unseen.
-           - if e.other not in visited: mark visited, append (e.other, hop+1).
-      4. Return collected.
+      1. Standard BFS. Seed a `visited` set with the _norm()-ed seed keys and a deque
+         of (key, hop) starting at hop 0. Keep a collected list[Triple] plus a set to
+         dedupe triples you've already emitted.
+      2. Pop (key, hop); stop expanding a node once hop == depth. For each Edge in
+         graph.neighbors(key), reconstruct the triple in canonical subject->object
+         order using the edge's direction ("out" means key is the subject; "in" means
+         key is the object) and graph.label for display names (fall back to the key).
+         Add it to collected if unseen.
+      3. Enqueue any unvisited neighbour at hop + 1. Return collected.
     """
     raise NotImplementedError("TODO: implement multi_hop_subgraph()")
 
@@ -175,14 +172,14 @@ def graph_rag_answer(query: str, graph: KnowledgeGraph, provider: Any) -> tuple[
     TODO: implement this.
 
     Steps:
-      1. seeds = find_seed_entities(query, graph)
-      2. triples = multi_hop_subgraph(graph, seeds, depth=2)
-      3. context = "\\n".join(f"{s} --{r}--> {o}" for s, r, o in triples)
-      4. messages:
-           system: "Answer the question using ONLY these knowledge-graph facts."
-           user:   f"Facts:\\n{context}\\n\\nQuestion: {query}"
-         options = ChatOptions(temperature=0, max_tokens=150)
-      5. return result.text.strip(), triples
+      1. Locate seed entities with the provided find_seed_entities(), then gather
+         their 2-hop neighbourhood with multi_hop_subgraph().
+      2. Serialise each triple into a readable one-line fact (e.g. "s --relation--> o")
+         and join them into a context string.
+      3. Build a list[ChatMessage]: a system message telling the model to answer using
+         ONLY these knowledge-graph facts, and a user message carrying the facts and
+         the question. Use ChatOptions(temperature=0, max_tokens=...).
+      4. Return the stripped reply text together with the triples you used.
     """
     raise NotImplementedError("TODO: implement graph_rag_answer()")
 

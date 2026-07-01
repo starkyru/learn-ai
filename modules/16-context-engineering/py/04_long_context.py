@@ -133,55 +133,31 @@ def split_into_chunks(text: str, max_tokens: int = MAX_TOKENS_PER_CHUNK) -> list
 
 # ---------------------------------------------------------------------------
 # TODO 2: Implement map_reduce.
-#         MAP phase: for each chunk, call the LLM with:
-#           "Based only on this excerpt, answer the question: {question}\nExcerpt: {chunk}"
-#           Collect the mini-answers.
-#         REDUCE phase: send all mini-answers to the LLM with:
-#           "Synthesise these partial answers into one final answer: {mini_answers}"
-#         Return the final synthesised answer.
+#         - MAP: iterate the chunks. For each, build a prompt instructing the model to
+#           answer the `question` using ONLY that excerpt (include the chunk text), send
+#           it via `llm.chat([ChatMessage("user", ...)], ChatOptions(temperature=0))`,
+#           and collect the trimmed mini-answer.
+#         - REDUCE: join the mini-answers into one blob, then make a single final LLM
+#           call whose prompt restates the question and asks the model to synthesise
+#           those partial answers into one coherent answer.
+#         - Return the reduce call's text.
 # ---------------------------------------------------------------------------
 def map_reduce(chunks: list[str], question: str, llm) -> str:
-    # TODO: implement
-    # mini_answers = []
-    # for chunk in chunks:
-    #     prompt = f"Based only on this excerpt, answer the question: {question}\nExcerpt:\n{chunk}"
-    #     result = llm.chat([ChatMessage("user", prompt)], ChatOptions(temperature=0))
-    #     mini_answers.append(result.text.strip())
-    #
-    # combined = "\n---\n".join(mini_answers)
-    # reduce_prompt = (
-    #     f"Original question: {question}\n\n"
-    #     f"Partial answers from different sections:\n{combined}\n\n"
-    #     "Synthesise these into one final, coherent answer."
-    # )
-    # final = llm.chat([ChatMessage("user", reduce_prompt)], ChatOptions(temperature=0))
-    # return final.text
     raise NotImplementedError("TODO: implement map_reduce")
 
 
 # ---------------------------------------------------------------------------
 # TODO 3: Implement refine.
-#         Start with an empty interim answer.
-#         For each chunk, update the interim:
-#           "Refine the current answer using any new information in the excerpt.
-#            Current answer: {interim}
-#            New excerpt: {chunk}
-#            Question: {question}"
-#         Return the final interim after all chunks.
+#         - Seed an `interim` answer with a placeholder (e.g. "No answer yet.").
+#         - Walk the chunks in order. For each, build a prompt that gives the model the
+#           question, the current `interim` answer, and the new excerpt, and asks it to
+#           refine the answer using only genuinely new information from that excerpt.
+#           Send it via `llm.chat(..., ChatOptions(temperature=0))` and overwrite
+#           `interim` with the trimmed reply.
+#         - Return `interim` after the last chunk (this sequential threading is what
+#           makes refine differ from map-reduce — later chunks can wash out earlier ones).
 # ---------------------------------------------------------------------------
 def refine(chunks: list[str], question: str, llm) -> str:
-    # TODO: implement
-    # interim = "No answer yet."
-    # for chunk in chunks:
-    #     prompt = (
-    #         f"Refine the current answer using any new information in the excerpt.\n"
-    #         f"Question: {question}\n"
-    #         f"Current answer: {interim}\n"
-    #         f"New excerpt:\n{chunk}"
-    #     )
-    #     result = llm.chat([ChatMessage("user", prompt)], ChatOptions(temperature=0))
-    #     interim = result.text.strip()
-    # return interim
     raise NotImplementedError("TODO: implement refine")
 
 

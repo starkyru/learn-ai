@@ -169,28 +169,18 @@ def print_stats(stats: CallStats, provider: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# TODO 1: Implement demo_anthropic_caching.
-#         Use the anthropic SDK directly.
-#
-#         For caching, the system message must be sent as a structured content block
-#         with cache_control. Example:
-#
-#         client.beta.messages.create(
-#             model=...,
-#             max_tokens=512,
-#             system=[
-#                 {
-#                     "type": "text",
-#                     "text": LARGE_DOCUMENT,
-#                     "cache_control": {"type": "ephemeral"},
-#                 }
-#             ],
-#             messages=[{"role": "user", "content": question}],
-#             betas=["prompt-caching-2024-07-31"],
-#         )
-#
-#         Read usage.cache_read_input_tokens and usage.cache_creation_input_tokens.
-#         Make the same call twice and observe the difference in cached tokens.
+# TODO 1: Implement demo_anthropic_caching using the anthropic SDK directly.
+#         - Create an `anthropic.Anthropic` client from the api_key; read the model
+#           from ANTHROPIC_MODEL (default a Claude model).
+#         - Loop over QUESTIONS, timing each call. Call `client.beta.messages.create(...)`
+#           with a small `max_tokens`, the user `question` as the message, and — the key
+#           part — pass LARGE_DOCUMENT as the `system` prompt as a structured content
+#           block (list of one {type: "text", text, cache_control}) so the provider
+#           caches it. Enable the caching beta via the `betas=[...]` argument.
+#         - From response.usage read the cache read / cache creation input token counts
+#           (attribute names begin with `cache_read_` / `cache_creation_`), build a
+#           CallStats, and hand it to print_stats(stats, "anthropic").
+#         - Calling twice is what reveals the cache: write on call #1, read on call #2.
 # ---------------------------------------------------------------------------
 def demo_anthropic_caching() -> None:
     import anthropic  # pip install anthropic
@@ -199,49 +189,22 @@ def demo_anthropic_caching() -> None:
         print("  ANTHROPIC_API_KEY not set — skipping Anthropic demo.")
         return
 
-    # TODO: create the Anthropic client and call the API twice.
-    # client = anthropic.Anthropic(api_key=api_key)
-    # model = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-8")
-    # all_stats = []
-    # for i, question in enumerate(QUESTIONS, 1):
-    #     start = time.time()
-    #     response = client.beta.messages.create(
-    #         model=model,
-    #         max_tokens=512,
-    #         system=[{"type": "text", "text": LARGE_DOCUMENT, "cache_control": {"type": "ephemeral"}}],
-    #         messages=[{"role": "user", "content": question}],
-    #         betas=["prompt-caching-2024-07-31"],
-    #     )
-    #     elapsed_ms = (time.time() - start) * 1000
-    #     usage = response.usage
-    #     stats = CallStats(
-    #         call_number=i,
-    #         input_tokens=usage.input_tokens,
-    #         output_tokens=usage.output_tokens,
-    #         cache_read_tokens=getattr(usage, "cache_read_input_tokens", 0) or 0,
-    #         cache_write_tokens=getattr(usage, "cache_creation_input_tokens", 0) or 0,
-    #         latency_ms=elapsed_ms,
-    #     )
-    #     all_stats.append(stats)
-    #     print_stats(stats, "anthropic")
     raise NotImplementedError("TODO: implement demo_anthropic_caching")
 
 
 # ---------------------------------------------------------------------------
 # TODO 2: Implement demo_openai_caching.
-#         OpenAI caches automatically for inputs > 1024 tokens — no extra params.
-#
-#         Use the openai SDK:
-#         client.chat.completions.create(
-#             model=...,
-#             messages=[
-#                 {"role": "system", "content": LARGE_DOCUMENT},
-#                 {"role": "user", "content": question},
-#             ],
-#         )
-#
-#         Read usage.prompt_tokens_details.cached_tokens to confirm cache hits.
-#         Make the same call twice and compare cached_tokens on the second call.
+#         OpenAI caches automatically for inputs above the eligibility threshold —
+#         no cache_control params needed. The lesson is measuring the hit.
+#         - Create an `_openai.OpenAI` client; read the model from OPENAI_CHAT_MODEL.
+#         - Loop over QUESTIONS, timing each call. Call
+#           `client.chat.completions.create(...)` with a two-message list: a system
+#           message carrying LARGE_DOCUMENT and a user message carrying the question.
+#         - From response.usage, read the prompt/completion token counts and the cached
+#           token count (nested under `prompt_tokens_details.cached_tokens`; guard for
+#           None). Put the cached count in CallStats.cache_read_tokens (cache_write is 0
+#           for OpenAI) and call print_stats(stats, "openai").
+#         - Call twice: cached_tokens is 0 on call #1 and > 0 on call #2.
 # ---------------------------------------------------------------------------
 def demo_openai_caching() -> None:
     import openai as _openai  # pip install openai
@@ -250,30 +213,6 @@ def demo_openai_caching() -> None:
         print("  OPENAI_API_KEY not set — skipping OpenAI demo.")
         return
 
-    # TODO: create the OpenAI client and call the API twice.
-    # client = _openai.OpenAI(api_key=api_key)
-    # model = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
-    # for i, question in enumerate(QUESTIONS, 1):
-    #     start = time.time()
-    #     response = client.chat.completions.create(
-    #         model=model,
-    #         messages=[
-    #             {"role": "system", "content": LARGE_DOCUMENT},
-    #             {"role": "user", "content": question},
-    #         ],
-    #     )
-    #     elapsed_ms = (time.time() - start) * 1000
-    #     usage = response.usage
-    #     cached = getattr(getattr(usage, "prompt_tokens_details", None), "cached_tokens", 0) or 0
-    #     stats = CallStats(
-    #         call_number=i,
-    #         input_tokens=usage.prompt_tokens or 0,
-    #         output_tokens=usage.completion_tokens or 0,
-    #         cache_read_tokens=cached,
-    #         cache_write_tokens=0,
-    #         latency_ms=elapsed_ms,
-    #     )
-    #     print_stats(stats, "openai")
     raise NotImplementedError("TODO: implement demo_openai_caching")
 
 

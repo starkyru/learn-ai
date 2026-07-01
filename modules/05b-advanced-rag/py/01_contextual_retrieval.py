@@ -141,17 +141,15 @@ def situate_chunk(document_text: str, chunk_text: str, provider: Any) -> str:
     TODO: implement this.
 
     Steps:
-      1. Build messages:
-           system: "You write a 1-2 sentence context that situates a chunk
-                    within its document, so the chunk makes sense on its own.
-                    Mention the document's subject and any entity the chunk only
-                    refers to indirectly. Do NOT repeat the chunk. Output only
-                    the context sentence(s)."
-           user:   f"<document>\\n{document_text}\\n</document>\\n\\n"
-                   f"<chunk>\\n{chunk_text}\\n</chunk>\\n\\n"
-                   "Context:"
-      2. result = provider.chat(messages, ChatOptions(temperature=0, max_tokens=80))
-      3. return result.text.strip()
+      1. Build a list[ChatMessage]: a system message instructing the model to write
+         a 1-2 sentence context that situates a chunk in its document (name the
+         document's subject and any entity the chunk only refers to indirectly; do
+         NOT repeat the chunk; output only the context), and a user message that
+         presents the full document_text and the chunk_text (e.g. wrapped in
+         <document>/<chunk> tags).
+      2. result = provider.chat(messages, ChatOptions(temperature=0, max_tokens=...))
+         — a short cap is enough for 1-2 sentences.
+      3. Return the reply text, stripped.
     """
     raise NotImplementedError("TODO: implement situate_chunk()")
 
@@ -172,11 +170,12 @@ def build_contextual_index(
 
     Steps:
       1. Build a lookup: doc_id -> document_text.
-      2. For each chunk, call situate_chunk(doc_text, chunk.text, provider)
-         and form:  augmented = f"{context}\\n\\n{chunk.text}"
+      2. For each chunk, call situate_chunk(doc_text, chunk.text, provider) and
+         prepend that generated context to the original chunk text to form the
+         augmented text.
       3. Embed ALL augmented texts in one provider.embed([...]) call (batch).
-      4. Return IndexEntry(chunk=chunk, embed_text=augmented, vector=vec) per chunk
-         — note embed_text is the augmented text, chunk.text stays original.
+      4. Return one IndexEntry per chunk where embed_text is the augmented text but
+         chunk.text stays the original.
     """
     raise NotImplementedError("TODO: implement build_contextual_index()")
 

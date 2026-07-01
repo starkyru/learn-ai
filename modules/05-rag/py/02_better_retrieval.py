@@ -120,24 +120,18 @@ def llm_rerank(
     TODO: implement this function.
 
     Algorithm:
-      For each candidate, call provider.chat() with:
-        messages = [
-          ChatMessage("system", "You are a relevance judge."),
-          ChatMessage("user",
-              f"Rate the relevance of the following passage to the question "
-              f"on a scale of 0–10. Reply with ONLY the integer.\\n"
-              f"Question: {question}\\n"
-              f"Passage: {chunk.text}"),
-        ]
-        options = ChatOptions(temperature=0, max_tokens=5)
-      Parse the integer from result.text. Guard against ValueError (use 0).
-
-      Use a ThreadPoolExecutor to score all candidates in parallel:
-        with ThreadPoolExecutor() as ex:
-            futures = {ex.submit(score_one, c): c for c in candidates}
-            ...
-
-      Sort descending by score. Return top k.
+      Write a helper that scores ONE candidate:
+        - Build a `list[ChatMessage]`: a system message casting the model as a
+          relevance judge, and a user message that asks it to rate the passage's
+          relevance to the question on a 0–10 scale and reply with ONLY the
+          integer (interpolate `question` and `chunk.text`).
+        - Call `provider.chat(messages, ChatOptions(temperature=0, max_tokens=...))`
+          with a tiny token budget since you only need a number back.
+        - Parse the integer out of `result.text`; wrap in try/except ValueError
+          and fall back to 0 on garbage.
+      Score all candidates in parallel with a `ThreadPoolExecutor` (submit the
+      helper per candidate, collect results). Sort descending by score and
+      return the top k.
     """
     raise NotImplementedError("TODO: implement llm_rerank()")
 
@@ -159,13 +153,12 @@ def hyde_query_vector(question: str, provider: Any) -> list[float]:
     TODO: implement this function.
 
     Steps:
-      1. Call provider.chat() with:
-           system: "You are a knowledgeable assistant."
-           user:   "Write a short, factual 2–3 sentence paragraph that would
-                    be a good answer to this question. Be concise.
-                    Question: {question}"
-      2. Embed the generated hypothesis text.
-      3. Return vectors[0].
+      1. Call `provider.chat(...)` with a `list[ChatMessage]`: a system message
+         casting the model as a knowledgeable assistant, and a user message
+         asking it to write a short, factual 2–3 sentence paragraph that would
+         answer the question (interpolate `question`).
+      2. Embed the generated hypothesis text with `provider.embed([...])`.
+      3. Return the single vector from `.vectors`.
     """
     raise NotImplementedError("TODO: implement hyde_query_vector()")
 

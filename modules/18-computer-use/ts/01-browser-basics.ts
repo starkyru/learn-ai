@@ -49,22 +49,16 @@ const SCREENSHOT_PATH = path.join(ASSETS_DIR, "screenshot.png");
 /**
  * TODO 1: Implement navigateAndRead.
  *
- * Navigate to a URL and return basic page info.
+ * Navigate to a URL and return basic page info. Every Playwright call is async.
  *
  * Steps:
- *   import { chromium } from "playwright";
- *   const browser = await chromium.launch({ headless: HEADLESS });
- *   const page = await browser.newPage();
- *   await page.goto(url, { waitUntil: "domcontentloaded" });
- *
- *   const title = await page.title();
- *   const finalUrl = page.url();
- *   // Get visible body text (not raw HTML):
- *   const text = await page.locator("body").innerText();
- *   const linkCount = await page.locator("a").count();
- *
- *   await browser.close();
- *   return { title, url: finalUrl, text: text.slice(0, 1000), linkCount };
+ *   - Import `chromium` from "playwright", launch it with `{ headless: HEADLESS }`,
+ *     open a new page, and `goto(url, { waitUntil: "domcontentloaded" })`.
+ *   - Collect: the title, the final URL (after redirects), the visible body text
+ *     (locate "body" and read its INNER TEXT, not raw HTML), and the count of "a"
+ *     elements.
+ *   - Close the browser and return the object below, truncating `text` to ~1000 chars:
+ *     { title, url, text, linkCount }.
  */
 async function navigateAndRead(url: string): Promise<{
   title: string;
@@ -78,12 +72,9 @@ async function navigateAndRead(url: string): Promise<{
 /**
  * TODO 2: Implement takeScreenshot.
  *
- * Navigate to a URL and save a full-page screenshot as PNG.
- * Returns the output file path.
- *
- *   await page.screenshot({ path: outputPath, fullPage: true });
- *   await browser.close();
- *   return outputPath;
+ * Open a browser and navigate to `url` as in TODO 1, then call
+ * `page.screenshot(...)` with the output path and the full-page option enabled.
+ * Close the browser and return outputPath.
  */
 async function takeScreenshot(url: string, outputPath: string): Promise<string> {
   throw new Error("TODO 2: implement takeScreenshot");
@@ -96,13 +87,11 @@ async function takeScreenshot(url: string, outputPath: string): Promise<string> 
 /**
  * TODO 3: Implement searchOnPage.
  *
- * Navigate to a URL, type a query into a search input, press Enter,
- * and return the result page title.
- *
- *   await page.locator(searchSelector).fill(query);
- *   await page.keyboard.press("Enter");
- *   await page.waitForLoadState("domcontentloaded");
- *   return page.title();
+ * Navigate to `url`, then:
+ *   - locate the input via `searchSelector` and `.fill(query)` it,
+ *   - submit by pressing Enter on the keyboard,
+ *   - wait for the result page to load (`waitForLoadState("domcontentloaded")`),
+ *   - return the resulting page title.
  *
  * Example: searchSelector="input[name='q']" for DuckDuckGo.
  */
@@ -125,21 +114,15 @@ async function main() {
   console.log(`Headless : ${HEADLESS}\n`);
 
   console.log("=== navigateAndRead ===");
-  // TODO 4: Call navigateAndRead(TARGET_URL) and print the result.
+  // TODO 4: Await navigateAndRead(TARGET_URL) and print the fields it returns
+  //   (title, url, linkCount, and a preview of text). Remove the throw below once done.
   throw new Error("TODO 4: call navigateAndRead and print results");
 
-  // TODO 5: Call takeScreenshot and print where the file was saved.
-  // console.log("\n=== Screenshot ===");
-  // const saved = await takeScreenshot(TARGET_URL, SCREENSHOT_PATH);
-  // console.log(`Saved to : ${saved}`);
+  // TODO 5: Await takeScreenshot(TARGET_URL, SCREENSHOT_PATH) and print where the
+  //   file was saved.
 
-  // TODO 6 (stretch): Call searchOnPage on DuckDuckGo.
-  // const resultTitle = await searchOnPage(
-  //   "https://duckduckgo.com",
-  //   "input[name='q']",
-  //   "model context protocol"
-  // );
-  // console.log(`\nSearch result page title: ${resultTitle}`);
+  // TODO 6 (stretch): Await searchOnPage on DuckDuckGo (searchSelector "input[name='q']")
+  //   with a query of your choice and print the resulting page title.
 }
 
 main().catch(console.error);

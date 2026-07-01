@@ -72,18 +72,13 @@ def roc_curve(scores: np.ndarray, labels: np.ndarray) -> tuple[np.ndarray, np.nd
          (FPR = FP / Nn, TPR = TP / P).
       5. The curve therefore starts at (0, 0) and ends at (1, 1).
 
-    TODO: implement.
-      1. order = np.argsort(-scores)               # indices, highest score first
-      2. y = labels[order]
-      3. P = (labels == 1).sum(); Nn = (labels == 0).sum()
-      4. tp = fp = 0
-         tpr_list = [0.0]; fpr_list = [0.0]
-         for lbl in y:
-             if lbl == 1: tp += 1
-             else:        fp += 1
-             tpr_list.append(tp / P)
-             fpr_list.append(fp / Nn)
-      5. return np.array(fpr_list), np.array(tpr_list)
+    TODO: implement (follow the numbered method above).
+      - Get the label order sorted by score descending (np.argsort on the
+        negated scores gives highest-first indices).
+      - Count positives P and negatives Nn.
+      - Starting from (0, 0), walk the labels in that order keeping running tp/fp
+        counts; after each admitted item append the point (fp/Nn, tp/P).
+      - Return the fpr and tpr arrays.
     """
     # TODO: implement the ROC sweep
     raise NotImplementedError("TODO: implement roc_curve()")
@@ -98,11 +93,9 @@ def auc(fpr: np.ndarray, tpr: np.ndarray) -> float:
     (fpr must be non-decreasing — roc_curve returns it that way.)
 
     TODO: implement.
-      area = 0.0
-      for i in range(len(fpr) - 1):
-          area += (fpr[i+1] - fpr[i]) * (tpr[i+1] + tpr[i]) / 2
-      return area
-    (or, equivalently, return float(np.trapezoid(tpr, fpr)))
+      - Sum the trapezoid areas between consecutive points per the formula above
+        (each segment's width times the average of its two tpr endpoints).
+      - np.trapezoid(tpr, fpr) computes the same thing if you prefer.
     """
     # TODO: implement the trapezoidal AUC
     raise NotImplementedError("TODO: implement auc()")
@@ -125,13 +118,11 @@ def assign_clusters(X: np.ndarray, centroids: np.ndarray) -> np.ndarray:
       (N,) int array — the cluster index of each point.
 
     TODO: implement.
-      For each point x_i, compute ||x_i - c_j||² for every centroid j and take the
-      argmin. A vectorised way:
-        # dists[i, j] = squared distance from point i to centroid j
-        diff = X[:, None, :] - centroids[None, :, :]   # (N, k, D)
-        dists = (diff ** 2).sum(axis=2)                # (N, k)
-        return np.argmin(dists, axis=1)                # (N,)
-      (A plain double loop is fine too — clarity over cleverness.)
+      - For each point, compute its squared distance ||x_i - c_j||² to every
+        centroid j and return the argmin over j (shape N).
+      - A vectorised broadcast (X[:, None, :] - centroids[None, :, :], square,
+        sum over the feature axis, np.argmin over the centroid axis) works; a
+        plain double loop is equally fine — clarity over cleverness.
     """
     # TODO: implement nearest-centroid assignment
     raise NotImplementedError("TODO: implement assign_clusters()")
@@ -154,13 +145,10 @@ def update_centroids(X: np.ndarray, assignments: np.ndarray, k: int) -> np.ndarr
     cluster goes empty, so the simple mean is enough.
 
     TODO: implement.
-      D = X.shape[1]
-      new_centroids = np.zeros((k, D))
-      for j in range(k):
-          members = X[assignments == j]
-          if len(members) > 0:
-              new_centroids[j] = members.mean(axis=0)
-      return new_centroids
+      - For each cluster j, select the points whose assignment == j and set that
+        centroid to their column-wise mean.
+      - Guard the empty-cluster case (skip the mean / keep the fallback) so you
+        never take a mean of an empty selection. Return the (k, D) centroids.
     """
     # TODO: implement the centroid update
     raise NotImplementedError("TODO: implement update_centroids()")
@@ -173,12 +161,10 @@ def inertia(X: np.ndarray, centroids: np.ndarray, assignments: np.ndarray) -> fl
     inertia = Σ_i ||x_i - c_{assignments[i]}||²
 
     TODO: implement.
-      total = 0.0
-      for i in range(len(X)):
-          diff = X[i] - centroids[assignments[i]]
-          total += float(np.dot(diff, diff))
-      return total
-    (or vectorised: ((X - centroids[assignments]) ** 2).sum())
+      - Sum, over every point, the squared distance from that point to the
+        centroid of its assigned cluster, and return the total as a float.
+      - Vectorised: centroids[assignments] gathers each point's centroid, so
+        ((X - centroids[assignments]) ** 2).sum() is the whole objective.
     """
     # TODO: implement the inertia
     raise NotImplementedError("TODO: implement inertia()")

@@ -56,12 +56,10 @@ interface IndexedChunk {
 /**
  * Load the manifest from disk.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. If MANIFEST_PATH does not exist, return {}.
- *   2. Read JSON: JSON.parse(readFileSync(MANIFEST_PATH, "utf-8")).
- *   3. Return the parsed object typed as Record<string, ManifestEntry>.
+ * Hints:
+ *   - If MANIFEST_PATH doesn't exist yet (first run), return an empty object.
+ *   - Otherwise read and JSON-parse it, returning the result typed as
+ *     `Record<string, ManifestEntry>`.
  */
 function loadManifest(): Record<string, ManifestEntry> {
   // TODO: implement loadManifest().
@@ -71,11 +69,8 @@ function loadManifest(): Record<string, ManifestEntry> {
 /**
  * Persist the manifest to disk as JSON.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Serialise to JSON with JSON.stringify(manifest, null, 2).
- *   2. writeFileSync(MANIFEST_PATH, json, "utf-8").
+ * Hints:
+ *   - Serialise the mapping to indented JSON and write it to MANIFEST_PATH.
  */
 function saveManifest(manifest: Record<string, ManifestEntry>): void {
   // TODO: implement saveManifest().
@@ -89,11 +84,11 @@ function saveManifest(manifest: Record<string, ManifestEntry>): void {
 /**
  * Return a short SHA-256 hex digest of the document text.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. createHash("sha256").update(text, "utf-8").digest("hex").
- *   2. Return the first 16 characters.
+ * Hints:
+ *   - Feed the text through a SHA-256 hash (`createHash` from node:crypto) and
+ *     take the hex digest.
+ *   - Truncate to the first 16 hex chars — enough for a change-detection key and
+ *     keeps the manifest readable.
  */
 function contentHash(text: string): string {
   // TODO: implement contentHash().
@@ -121,23 +116,22 @@ function simpleChunks(text: string, source: string, maxWords = 150): string[] {
 /**
  * Ingest a list of file paths, skipping unchanged ones.
  *
- * TODO: implement this function.
+ * Returns the tally `{ newCount, changedCount, skippedCount }`.
  *
- * Returns { newCount, changedCount, skippedCount }.
- *
- * Algorithm for each path:
- *   1. Read file text: readFileSync(path, "utf-8").
- *   2. Compute hash = contentHash(text).
- *   3. Look up path in manifest:
- *      - Present & hash matches → skippedCount++; continue.
- *      - Present & hash differs → changedCount++ (will re-embed).
- *      - Absent               → newCount++.
- *   4. Chunk the text: simpleChunks(text, path).
- *   5. Embed all chunks: await provider.embed(chunks).
- *   6. Build IndexedChunk objects, push to inMemoryIndex.
- *   7. Update manifest[path] = { source, contentHash: hash,
- *        ingestedAt: new Date().toISOString(), numChunks, model }.
- *   8. Return the counts.
+ * Hints — loop over each path and let the content hash decide the work:
+ *   - Read the file text and compute its `contentHash(...)`.
+ *   - Compare against the manifest entry for that path (if any):
+ *       * same hash  → nothing changed: bump `skippedCount` and move on WITHOUT
+ *         re-embedding (that's the whole point — save the API call).
+ *       * different hash → count it as changed (fall through to re-embed).
+ *       * no entry → count it as new (fall through to embed).
+ *   - For new/changed docs: split with `simpleChunks(text, path)`, embed the
+ *     whole batch in ONE `await provider.embed(...)` call, wrap each result in an
+ *     `IndexedChunk`, and push to `inMemoryIndex`.
+ *   - Write a fresh manifest entry back for that path: its source, the new hash, a
+ *     current ISO timestamp (`new Date().toISOString()`), the chunk count, and the
+ *     provider's embed model.
+ *   - Return the three counts.
  */
 async function ingestDocuments(
   paths: string[],
@@ -152,12 +146,11 @@ async function ingestDocuments(
 /**
  * Remove manifest entries for documents that no longer exist on disk.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Find keys in manifest that are NOT in currentPaths.
- *   2. Delete them from manifest.
- *   3. Return the list of removed source paths.
+ * Hints:
+ *   - Find the manifest keys that are absent from `currentPaths` — those docs were
+ *     deleted or renamed.
+ *   - Delete each from the manifest (mutate it in place) and return the removed
+ *     source paths.
  */
 function removeStaleEntries(
   manifest: Record<string, ManifestEntry>,

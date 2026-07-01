@@ -97,24 +97,15 @@ function retrieveTopK(queryVec: number[], index: VectorEntry[], k: number): Retr
  *
  * TODO: implement this function.
  *
- * System message: Tell the LLM to:
- *   - Answer using ONLY the provided context.
- *   - Break its answer into individual factual claims.
- *   - For each claim, provide the id of the chunk it came from.
- *   - If a claim cannot be grounded in any chunk, set citation to null.
- *   - Output ONLY valid JSON in the format:
- *       { "claims": [{ "text": "...", "citation": "chunk-id-or-null" }, ...] }
- *
- * User message: list each chunk with its id label, then the question.
- *
- * Example context block:
- *   [embeddings-guide-chunk-0]
- *   Embeddings are dense vector representations...
- *
- *   [similarity-metrics-chunk-0]
- *   Cosine similarity is the standard metric...
- *
- *   Question: ...
+ * Return a ChatMessage[] of [system, user]:
+ *   - System message: instruct the model to answer using ONLY the context,
+ *     break its answer into individual factual claims, tag each claim with the
+ *     id of the chunk it came from (or null when it can't be grounded), and
+ *     output ONLY valid JSON shaped as
+ *       { "claims": [{ "text": ..., "citation": <chunk-id or null> }, ...] }
+ *   - User message: assemble a context block labelling each chunk with its id
+ *     (a "[{id}]\n{text}" section per chunk, blank-line separated), then append
+ *     the question.
  */
 function buildCitationPrompt(question: string, chunks: RetrievedChunk[]): ChatMessage[] {
   // TODO: implement buildCitationPrompt().
@@ -131,14 +122,18 @@ function buildCitationPrompt(question: string, chunks: RetrievedChunk[]): ChatMe
  * TODO: implement this function.
  *
  * Steps:
- *   1. Call provider.chat(messages, { temperature: 0 }).
- *   2. Parse the JSON from result.text. Handle parse errors gracefully.
- *   3. Extract the "claims" array: [{ text, citation }].
- *   4. validCitations   = citations that exist in chunks (by id).
- *   5. invalidCitations = citations that don't exist (hallucinated ids).
- *   6. uncitedClaims    = claims where citation is null.
- *   7. answer = claims.map(c => c.text + (c.citation ? ` [${c.citation}]` : " [UNCITED]")).join(" ")
- *   8. Return a CitedAnswer.
+ *   1. Build the prompt with buildCitationPrompt(...) and call
+ *      provider.chat(messages, { temperature: 0 }).
+ *   2. JSON.parse result.text inside a try/catch; on failure return an empty
+ *      CitedAnswer so the harness survives malformed output.
+ *   3. Read the "claims" array (each { text, citation }).
+ *   4. Compute the id set of the retrieved chunks, then partition claims into:
+ *        - validCitations:   non-null citations present in that id set
+ *        - invalidCitations: non-null citations absent from it (hallucinated)
+ *        - uncitedClaims:    the text of claims whose citation is null
+ *   5. Reconstruct a readable answer by joining each claim's text with a
+ *      trailing " [citation]" tag (or a " [UNCITED]" marker when null).
+ *   6. Return the assembled CitedAnswer.
  */
 async function citedRAG(
   question: string,

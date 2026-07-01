@@ -144,8 +144,8 @@ def check_alerts(report: MonitorReport, thresholds: dict[str, float]) -> None:
              error_rate     → report.error_rate
              avg_cost_usd   → report.avg_cost_usd
              total_cost_usd → report.total_cost_usd
-    TODO 4b: If a threshold is exceeded, append a message to report.alerts:
-             "[ALERT] p95_latency_ms=6234 exceeds threshold=5000"
+    TODO 4b: When a threshold is exceeded, append an ALERT-tagged message naming
+             the metric, its value, and the threshold it crossed.
     Modifies report in place.
     """
     raise NotImplementedError("TODO: implement check_alerts")
@@ -158,14 +158,10 @@ def check_alerts(report: MonitorReport, thresholds: dict[str, float]) -> None:
 def print_report(report: MonitorReport) -> None:
     """Format and print the monitoring report to stdout.
 
-    TODO 5: Print a section-based report:
-            --- Production Monitoring Report ---
-            Window: N entries (start → end)
-            Latency:  avg=X  p50=Y  p95=Z ms
-            Errors:   rate=X%
-            Tokens:   total=X
-            Cost:     avg=$X  total=$X
-            Alerts (if any): [ALERT] ...
+    TODO 5: Print a titled, section-based report covering the window (entry
+            count and start→end times), latency (avg/p50/p95), error rate,
+            total tokens, cost (avg and total), and any alerts. Format numbers
+            readably (percent for the rate, $ for cost).
     """
     raise NotImplementedError("TODO: implement print_report")
 

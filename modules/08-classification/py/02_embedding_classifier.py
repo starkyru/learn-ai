@@ -141,7 +141,8 @@ def accuracy(y_true: list[str], y_pred: list[str]) -> float:
     """
     Fraction of correct predictions.
 
-    TODO: sum(t == p for t, p in zip(y_true, y_pred)) / len(y_true)
+    TODO: count how many positions where y_true and y_pred agree (zip them),
+    then divide by the total number of samples.
     """
     # TODO: implement
     raise NotImplementedError("TODO: implement accuracy()")

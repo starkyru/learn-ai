@@ -35,18 +35,18 @@ export interface CleanedDocument {
 /**
  * Remove Markdown formatting characters, leaving prose.
  *
- * TODO: implement this function.
- *
- * Steps (apply in order):
- *   1. Remove ATX heading markers: replace /^#{1,6}\s+/gm with "".
- *      Keep the heading text — strip only the "#" characters.
- *   2. Remove bold/italic: replace **text**, __text__, *text*, _text_ with text.
- *      Use a regex like /(\*\*|__)(.*?)\1/g → "$2".
- *   3. Remove inline code backticks: /`([^`]+)`/g → "$1".
- *   4. Remove fenced code blocks: /```[\s\S]*?```/g → "".
- *   5. Remove Markdown table rows (lines with "|"): strip "|", collapse whitespace.
- *   6. Remove link syntax: /\[([^\]]+)\]\([^)]+\)/g → "$1".
- *   7. Return cleaned string.
+ * Hints — apply these transforms in order (a `.replace(regex, ...)` per step):
+ *   1. ATX heading markers: strip the leading "#" run + space at line start,
+ *      keeping the heading text (use a multiline anchor).
+ *   2. Bold/italic emphasis: unwrap paired `**`, `__`, `*`, `_`, keeping the
+ *      inner text (a back-reference lets you match the same delimiter on both
+ *      sides).
+ *   3. Inline code: drop the surrounding backticks, keep the code text.
+ *   4. Fenced code blocks (``` ... ```): remove them entirely.
+ *   5. Markdown table rows (lines with "|"): keep only the cell text — remove the
+ *      "|" characters and collapse the whitespace.
+ *   6. Links `[text](url)`: keep just the link text.
+ *   7. Return the cleaned string.
  */
 export function stripMarkdownSyntax(text: string): string {
   // TODO: implement stripMarkdownSyntax().
@@ -56,14 +56,12 @@ export function stripMarkdownSyntax(text: string): string {
 /**
  * Normalise whitespace: collapse runs of spaces/tabs and trim excess blank lines.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Normalise line endings: replace /\r\n|\r/g with "\n".
- *   2. Collapse horizontal whitespace per line: replace /[ \t]+/g with " ".
- *   3. Trim each line.
- *   4. Collapse runs of 3+ blank lines to 2: replace /\n{3,}/g with "\n\n".
- *   5. Return trimmed result.
+ * Hints:
+ *   - Normalise line endings to "\n" first (handle both \r\n and lone \r).
+ *   - Collapse each line's horizontal whitespace (spaces/tabs) to a single space
+ *     and trim its ends.
+ *   - Cap vertical whitespace: collapse runs of 3+ blank lines down to 2.
+ *   - Return the trimmed result.
  */
 export function collapseWhitespace(text: string): string {
   // TODO: implement collapseWhitespace().
@@ -73,16 +71,15 @@ export function collapseWhitespace(text: string): string {
 /**
  * Heuristically drop lines that are likely navigation or boilerplate.
  *
- * TODO: implement this function.
+ * Hints — drop a line if ANY of these signals fire (keep everything else):
+ *   - It is shorter than `minChars` AND looks like a menu label (all-caps or
+ *     title-case), e.g. "HOME", "About Us".
+ *   - It looks like a nav strip: short (say < 60 chars) and made only of words
+ *     plus separator glyphs like "|", "/", or bullet dashes.
+ *   - It is a pure horizontal rule (a short line of only -, =, *, or _).
+ *   - It starts with a common footer word: "Cookie", "Privacy", "Terms".
  *
- * Heuristics — drop a line if ANY of these apply:
- *   - Length < minChars AND matches /^[A-Z\s]+$/ or /^[A-Z][a-z]+(\s[A-Z][a-z]+)*$/
- *     (all-caps or title-case nav items like "HOME", "About Us").
- *   - Only words + pipe/slash chars, length < 60:  /^[\w\s|/·•–—]+$/.test(line)
- *   - Pure horizontal rule: /^[-=*_]{3,}$/.test(line.trim()).
- *   - Starts with "Cookie" | "Privacy" | "Terms" (footer text).
- *
- * Return the filtered lines joined with "\n".
+ * Return the surviving lines joined with "\n".
  */
 export function removeBoilerplateLines(text: string, minChars = 20): string {
   // TODO: implement removeBoilerplateLines().
@@ -92,14 +89,12 @@ export function removeBoilerplateLines(text: string, minChars = 20): string {
 /**
  * Compute a shingle fingerprint for near-duplicate detection.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Tokenise: words = text.toLowerCase().split(/\s+/).filter(Boolean).
- *   2. Build n-gram shingles: words.slice(i, i+n).join(" ") for i in range.
- *   3. Hash each shingle with a simple hash (e.g. FNV-like or just the string itself
- *      — a Set<string> is fine for this exercise since we don't need a fixed bit size).
- *   4. Return a Set<string> of shingles (or short hashes).
+ * Hints:
+ *   - Tokenise the lowercased text into words.
+ *   - Form the shingles: every window of `n` consecutive words joined into one
+ *     string (slide the window one word at a time across the token list).
+ *   - Collect them into a `Set<string>` — the shingle strings themselves work
+ *     fine as keys here (no fixed-width hash needed for this exercise).
  *
  * Used by dedupeBlocks() below.
  */
@@ -111,17 +106,17 @@ export function fingerprint(text: string, n = 5): Set<string> {
 /**
  * Remove near-duplicate text blocks using Jaccard similarity of shingle sets.
  *
- * TODO: implement this function.
+ * Hints — a greedy one-pass dedupe:
+ *   - Walk the blocks in order, keeping the fingerprint sets you've accepted.
+ *   - For each new block, compute its `fingerprint(...)` and its Jaccard
+ *     similarity against every accepted set:
+ *         jaccard(A, B) = |A ∩ B| / |A ∪ B|
+ *   - If it's a near-duplicate of any accepted block (max Jaccard >=
+ *     `similarityThreshold`), skip it; otherwise accept it.
+ *   - Return the accepted blocks in their original order.
  *
- * Algorithm:
- *   1. For each block, compute fingerprint(block).
- *   2. Keep a list of accepted fingerprint sets.
- *   3. For a new block, compute Jaccard(A, B) = |A ∩ B| / |A ∪ B| against each accepted.
- *   4. If max Jaccard >= similarityThreshold, skip (near-duplicate).
- *   5. Otherwise accept.
- *   6. Return accepted blocks in original order.
- *
- * Tip: short blocks (< 10 words) are always kept (shingles unreliable).
+ * Tip: very short blocks (< ~10 words) have unreliable shingle overlap — always
+ * keep them.
  */
 export function dedupeBlocks(
   blocks: string[],
@@ -138,15 +133,14 @@ export function dedupeBlocks(
 /**
  * Run the full cleaning pipeline on a parsed Document.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. If format === "markdown": stripMarkdownSyntax(text).
- *      Otherwise: use text as-is (HTML boilerplate stripped in task 1).
- *   2. collapseWhitespace(text).
- *   3. removeBoilerplateLines(text).
- *   4. Split on "\n\n", run dedupeBlocks(), rejoin with "\n\n".
- *   5. Return CleanedDocument.
+ * Hints — chain the helpers above in a sensible order:
+ *   - Markdown documents need `stripMarkdownSyntax()` first; other formats had
+ *     their boilerplate stripped in task 1, so start from doc.text.
+ *   - Run the text through `collapseWhitespace()` and `removeBoilerplateLines()`.
+ *   - Split into paragraph blocks (on blank-line boundaries), pass them through
+ *     `dedupeBlocks()`, and rejoin them.
+ *   - Return a `CleanedDocument` carrying the cleaned text and the original
+ *     source/format/metadata.
  */
 export function clean(doc: Document): CleanedDocument {
   // TODO: implement clean().

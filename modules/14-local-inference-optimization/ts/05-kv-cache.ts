@@ -96,7 +96,7 @@ function softmax(scores: number[]): number[] {
 /**
  * Return the embedding for `tokenId`.
  *
- * TODO: return EMBED_MATRIX[tokenId].
+ * TODO: index the fixed EMBED_MATRIX by tokenId to get its row.
  */
 function embed(tokenId: number): number[] {
   // TODO: implement embed
@@ -108,7 +108,8 @@ function embed(tokenId: number): number[] {
  *
  * Formula: k = W_K @ embed(tokenId)
  *
- * TODO: return matvec(W_K, embed(tokenId)).
+ * TODO: apply the formula above using the provided matvec() helper on W_K and
+ * the token's embedding.
  */
 function computeKey(tokenId: number): number[] {
   // TODO: implement computeKey
@@ -120,7 +121,8 @@ function computeKey(tokenId: number): number[] {
  *
  * Formula: q = W_Q @ embed(tokenId)
  *
- * TODO: return matvec(W_Q, embed(tokenId)).
+ * TODO: apply the formula above using the provided matvec() helper on W_Q and
+ * the token's embedding.
  */
 function computeQuery(tokenId: number): number[] {
   // TODO: implement computeQuery
@@ -139,14 +141,14 @@ function computeQuery(tokenId: number): number[] {
  * Returns [attentionOutput, keyComputations].
  *
  * TODO:
- *   1. Compute query = computeQuery(newTokenId).
- *   2. Compute key for every token in [...tokensSoFar, newTokenId].
- *      keyComputations = tokensSoFar.length + 1.
- *   3. Build K as the array of key vectors.
- *   4. scores = K.map(k => dot(k, query))
- *   5. weights = softmax(scores)
- *   6. attentionOutput = elementwise sum of weights[i] * K[i]
- *   7. Return [attentionOutput, keyComputations].
+ *   1. Compute the query for newTokenId.
+ *   2. Recompute a key for EVERY token in tokensSoFar plus the new one — this is
+ *      the wasteful part. keyComputations is that count (length + 1).
+ *   3. Collect those key vectors into an array K.
+ *   4. Score each key against the query with the provided dot() helper (one
+ *      score per key), then normalise with the provided softmax() helper.
+ *   5. The output is the softmax-weighted elementwise sum of the key vectors.
+ *   6. Return [attentionOutput, keyComputations].
  */
 function attentionUncached(
   tokensSoFar: number[],
@@ -169,13 +171,14 @@ function attentionUncached(
  * keyComputations is always 1.
  *
  * TODO:
- *   1. query = computeQuery(newTokenId).
- *   2. newKey = computeKey(newTokenId).  ← 1 computation
- *   3. updatedCache = [...kvCache, newKey].
- *   4. scores = updatedCache.map(k => dot(k, query))
- *   5. weights = softmax(scores)
- *   6. attentionOutput = weighted sum of cache keys.
- *   7. Return [attentionOutput, updatedCache, 1].
+ *   1. Compute the query for newTokenId.
+ *   2. Compute the key for newTokenId ONLY (1 computation) — the past keys are
+ *      already in kvCache.
+ *   3. Build updatedCache by appending the new key to a COPY of kvCache (don't
+ *      mutate the caller's array).
+ *   4. Score, softmax, and weighted-sum over updatedCache exactly as in the
+ *      uncached version (reuse dot() and softmax()).
+ *   5. Return [attentionOutput, updatedCache, 1].
  */
 function attentionCached(
   kvCache: number[][],
@@ -195,12 +198,11 @@ function attentionCached(
  * Returns [elapsedMs, totalKeyComputations].
  *
  * TODO:
- *   1. Record start = performance.now().
- *   2. totalKeyComps = 0.
- *   3. For t from 1 to tokens.length - 1:
- *        [_, comps] = attentionUncached(tokens.slice(0, t), tokens[t])
- *        totalKeyComps += comps
- *   4. Return [performance.now() - start, totalKeyComps].
+ *   1. Snapshot performance.now() and start a running key-computation counter.
+ *   2. Walk the sequence from the second token onward. At each position, call
+ *      attentionUncached with the prior tokens as history and the current token
+ *      as the new one; accumulate the count it returns.
+ *   3. Return [elapsedMs, totalKeyComputations].
  */
 function generateUncached(tokens: number[]): [number, number] {
   // TODO: implement generateUncached
@@ -213,12 +215,11 @@ function generateUncached(tokens: number[]): [number, number] {
  * Returns [elapsedMs, totalKeyComputations].
  *
  * TODO:
- *   1. Record start = performance.now().
- *   2. kvCache = [], totalKeyComps = 0.
- *   3. For each token in tokens:
- *        [_, kvCache, comps] = attentionCached(kvCache, token)
- *        totalKeyComps += comps
- *   4. Return [performance.now() - start, totalKeyComps].
+ *   1. Snapshot performance.now(), start an empty kvCache array and a counter.
+ *   2. Walk EVERY token in order. At each step, call attentionCached with the
+ *      current cache; it returns the grown cache (reassign kvCache to it) and
+ *      the per-step count (always 1) to accumulate.
+ *   3. Return [elapsedMs, totalKeyComputations].
  */
 function generateCached(tokens: number[]): [number, number] {
   // TODO: implement generateCached

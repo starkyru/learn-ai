@@ -31,8 +31,10 @@ from llm_core import get_provider, ChatMessage
 # ---------------------------------------------------------------------------
 def render_template(template: str, variables: dict[str, str]) -> str:
     # TODO: implement
-    # Hint: use re.sub(r"\{\{(\w+)\}\}", lambda m: variables[m.group(1)], template)
-    #       but raise ValueError for missing keys.
+    # Hint: scan for {{name}} tokens with a regex (the `re` module is imported)
+    #       and substitute each one with the matching value from `variables`.
+    #       If a referenced placeholder isn't in `variables`, raise a ValueError
+    #       rather than leaving the token in place.
     return template  # placeholder
 
 
@@ -71,7 +73,7 @@ def call_with_system(system_prompt: str, user_message: str) -> str:
         ChatMessage(role="system", content=system_prompt),
         ChatMessage(role="user", content=user_message),
     ]
-    # TODO: call llm.chat(messages) and return result.text
+    # TODO: send `messages` with `llm.chat(...)` and return the reply's text.
     return "TODO: implement call_with_system"
 
 

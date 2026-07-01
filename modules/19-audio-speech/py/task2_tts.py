@@ -71,10 +71,12 @@ def synthesise(
     client = openai.OpenAI(api_key=api_key)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # TODO 1: Call client.audio.speech.create(model=..., voice=..., input=...,
-    #         speed=..., response_format="mp3") and write the result to
-    #         output_path using response.stream_to_file(output_path).
-    #         HINT: the return value has a .stream_to_file() method.
+    # TODO 1: Synthesise the speech.
+    #   - Call `client.audio.speech.create(...)` passing the model, voice, the
+    #     text as `input=`, the speed, and `response_format="mp3"`.
+    #   - Persist the returned audio to `output_path` (the response object has a
+    #     `.stream_to_file(...)` helper for exactly this).
+    #   - Return `output_path`.
     raise NotImplementedError("TODO 1: call client.audio.speech.create()")
 
 
@@ -112,11 +114,12 @@ def synthesise_streaming(
     client = openai.OpenAI(api_key=api_key)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # TODO 2 (stretch): Use client.audio.speech.with_streaming_response.create(...)
-    #   as a context manager. Inside the block, open output_path in "wb" mode
-    #   and call response.stream_to_file(output_path).
-    #   This is functionally identical to synthesise() above but demonstrates
-    #   the streaming API surface.
+    # TODO 2 (stretch): Same result as synthesise(), but via the streaming API.
+    #   - Use `client.audio.speech.with_streaming_response.create(...)` as a
+    #     context manager (a `with` block) so chunks are written as they arrive.
+    #   - Inside the block, stream the response to `output_path`.
+    #   - Return `output_path`.
+    #   This mirrors synthesise() but exercises the streaming surface.
     raise NotImplementedError("TODO 2 (stretch): implement streaming TTS")
 
 

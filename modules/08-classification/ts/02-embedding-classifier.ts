@@ -171,7 +171,7 @@ class KNNClassifier {
 // ---------------------------------------------------------------------------
 
 function accuracy(yTrue: string[], yPred: string[]): number {
-  // TODO: sum(yTrue[i] === yPred[i]) / yTrue.length
+  // TODO: count the indices where yTrue and yPred match, then divide by the total length.
   throw new Error("TODO: implement accuracy()");
 }
 

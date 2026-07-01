@@ -97,13 +97,13 @@ def majority_vote(answers: list[str]) -> str:
 #         One CoT call at temperature=0. Return (answer, input_tokens, output_tokens).
 # ---------------------------------------------------------------------------
 def single_shot(question: str) -> tuple[str, int, int]:
-    # llm = get_provider()
-    # result = llm.chat(
-    #     [ChatMessage("system", COT_SYSTEM), ChatMessage("user", question)],
-    #     ChatOptions(temperature=0),
-    # )
-    # answer = extract_final_answer(result.text)
-    # return answer, result.usage.input_tokens or 0, result.usage.output_tokens or 0
+    # Steps:
+    #   - Get the default provider via get_provider().
+    #   - Make one chat call with a list[ChatMessage] of the COT_SYSTEM prompt
+    #     (system) plus the question (user), using ChatOptions(temperature=0).
+    #   - Run the reply through extract_final_answer() to pull out the answer.
+    #   - Return a tuple of (answer, input_tokens, output_tokens) taken from
+    #     result.usage (defaulting each token count to 0 when None).
     raise NotImplementedError("TODO: implement single_shot")
 
 
@@ -114,38 +114,24 @@ def single_shot(question: str) -> tuple[str, int, int]:
 #         Return (majority_vote(answers), total_input_tokens, total_output_tokens).
 # ---------------------------------------------------------------------------
 def self_consistency(question: str, n: int = N_SAMPLES) -> tuple[str, int, int]:
-    # llm = get_provider()
-    # answers, in_tok, out_tok = [], 0, 0
-    # for _ in range(n):
-    #     result = llm.chat(
-    #         [ChatMessage("system", COT_SYSTEM), ChatMessage("user", question)],
-    #         ChatOptions(temperature=0.8),
-    #     )
-    #     answers.append(extract_final_answer(result.text))
-    #     in_tok += result.usage.input_tokens or 0
-    #     out_tok += result.usage.output_tokens or 0
-    # return majority_vote(answers), in_tok, out_tok
+    # Steps:
+    #   - Loop n times, each iteration making the same CoT chat call as
+    #     single_shot but with a non-zero temperature (e.g. ChatOptions(
+    #     temperature=0.8)) so the samples diverge.
+    #   - Collect each extract_final_answer(...) into a list and accumulate the
+    #     input/output token counts across all n calls.
+    #   - Return (majority_vote(answers), total_input_tokens, total_output_tokens).
     raise NotImplementedError("TODO: implement self_consistency")
 
 
 # ---------------------------------------------------------------------------
-# TODO 5: Implement verify.
-#         Ask the model: "Is '<answer>' the correct answer to '<question>'?
-#         Reply with only YES or NO."
-#         Return True if the model says YES (case-insensitive).
+# TODO 5: Implement verify (an LLM-as-judge yes/no check).
+#         Make one chat call whose user message states the question and the
+#         proposed answer, then instructs the model to reply with only YES or NO.
+#         Use ChatOptions(temperature=0) for a deterministic verdict, and return
+#         True when the (trimmed, upper-cased) reply begins with YES.
 # ---------------------------------------------------------------------------
 def verify(question: str, answer: str) -> bool:
-    # llm = get_provider()
-    # prompt = (
-    #     f"Question: {question}\n"
-    #     f"Proposed answer: {answer}\n"
-    #     "Is this answer correct? Reply with only YES or NO."
-    # )
-    # result = llm.chat(
-    #     [ChatMessage("user", prompt)],
-    #     ChatOptions(temperature=0),
-    # )
-    # return result.text.strip().upper().startswith("YES")
     raise NotImplementedError("TODO: implement verify")
 
 

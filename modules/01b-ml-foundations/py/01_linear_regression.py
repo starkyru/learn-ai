@@ -93,9 +93,9 @@ def normal_equation(X: np.ndarray, y: np.ndarray) -> np.ndarray:
     length D+1, with w[0] the intercept.
 
     TODO: implement.
-      1. A = X.T @ X            # shape (D+1, D+1)
-      2. b = X.T @ y            # shape (D+1,)
-      3. return np.linalg.solve(A, b)
+      - Assemble the (D+1, D+1) coefficient matrix XᵀX and the (D+1,) right-hand
+        side Xᵀy.
+      - Hand that system to np.linalg.solve and return its solution.
     """
     # TODO: implement the normal equation via np.linalg.solve
     raise NotImplementedError("TODO: implement normal_equation()")
@@ -107,7 +107,7 @@ def predict(X: np.ndarray, w: np.ndarray) -> np.ndarray:
 
     X includes the bias column, so no separate intercept term is needed.
 
-    TODO: implement (one line: X @ w).
+    TODO: implement — one matrix-vector product of X against w.
     """
     # TODO: implement the linear prediction
     raise NotImplementedError("TODO: implement predict()")
@@ -118,8 +118,8 @@ def mse_loss(X: np.ndarray, y: np.ndarray, w: np.ndarray) -> float:
     Mean squared error:  L = (1/N) · Σ (ŷ_i - y_i)².
 
     TODO: implement.
-      1. resid = predict(X, w) - y
-      2. return float(np.mean(resid ** 2))
+      - Get predictions via predict(X, w), form the residual vector (prediction
+        minus target), and return the mean of its squared entries as a float.
     """
     # TODO: implement mean squared error
     raise NotImplementedError("TODO: implement mse_loss()")
@@ -136,10 +136,10 @@ def gradient_step(X: np.ndarray, y: np.ndarray, w: np.ndarray, lr: float) -> np.
     training loop reassigns w = gradient_step(...)).
 
     TODO: implement.
-      1. N = X.shape[0]
-      2. resid = predict(X, w) - y          # shape (N,)
-      3. grad  = (2.0 / N) * (X.T @ resid)  # shape (D+1,)
-      4. return w - lr * grad
+      - Form the residual vector predict(X, w) - y (shape N).
+      - Build the gradient ∇L = (2/N) · Xᵀ·residual (shape D+1) per the formula
+        above.
+      - Return the updated weights: the old w stepped by -lr times that gradient.
     """
     # TODO: implement one gradient-descent update
     raise NotImplementedError("TODO: implement gradient_step()")

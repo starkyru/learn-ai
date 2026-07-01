@@ -55,14 +55,15 @@ function norm(entity: string): string {
  * TODO: implement this.
  *
  * Steps:
- *   const messages: ChatMessage[] = [
- *     { role: "system", content: 'Extract knowledge-graph triples from the text. Respond with ONLY a JSON array of [subject, relation, object] arrays, e.g. [["Alice","works_at","Acme"]]. Use short snake_case relations.' },
- *     { role: "user", content: text },
- *   ];
- *   const r = await provider.chat(messages, { temperature: 0, maxTokens: 300 });
- *   try { const data = JSON.parse(stripCodeFences(r.text));
- *         return data.filter((t: unknown) => Array.isArray(t) && t.length === 3) as Triple[]; }
- *   catch { return []; }
+ *   - Build a `ChatMessage[]`: a system message telling the model to extract
+ *     knowledge-graph triples and respond with ONLY a JSON array of
+ *     [subject, relation, object] arrays using short snake_case relations (giving one
+ *     tiny example helps), and a user message with the text.
+ *   - Call `provider.chat(messages, { temperature: 0, maxTokens: ... })`.
+ *   - Parse the reply: run it through the provided `stripCodeFences()`, then
+ *     `JSON.parse`. Keep only entries that are 3-element arrays (skip malformed rows),
+ *     and wrap the whole parse in try/catch so a bad reply yields [] instead of
+ *     throwing.
  */
 async function extractTriples(text: string, provider: Provider): Promise<Triple[]> {
   // TODO: implement extractTriples().
@@ -91,12 +92,13 @@ class KnowledgeGraph {
    * TODO: implement this.
    *
    * Steps:
-   *   const sk = norm(subj), ok = norm(obj);
-   *   if (!this.label.has(sk)) this.label.set(sk, subj.trim());
-   *   if (!this.label.has(ok)) this.label.set(ok, obj.trim());
-   *   push { relation: rel, other: ok, direction: "out" } into adj[sk]
-   *   push { relation: rel, other: sk, direction: "in" }  into adj[ok]
-   *   (create the array with this.adj.get(k) ?? [] then set it back)
+   *   - Canonicalise both entities with `norm()` to get their keys.
+   *   - Remember a display label for each key the first time you see it (keep the
+   *     first spelling; don't overwrite).
+   *   - Append an Edge to the subject key's adjacency list with direction "out"
+   *     pointing at the object key, AND an Edge to the object key's list with
+   *     direction "in" pointing back at the subject key (both carry `rel`). Lazily
+   *     create each list via `this.adj.get(k) ?? []` then set it back.
    */
   addTriple(subj: string, rel: string, obj: string): void {
     // TODO: implement addTriple().
@@ -105,7 +107,7 @@ class KnowledgeGraph {
 
   /** All edges touching `entity` (both directions), or []. */
   neighbors(entity: string): Edge[] {
-    // TODO: return this.adj.get(norm(entity)) ?? [];
+    // TODO: look up the adjacency list for the norm()-ed entity key, defaulting to [].
     throw new Error("TODO: implement neighbors()");
   }
 
@@ -124,22 +126,15 @@ class KnowledgeGraph {
  * TODO: implement this.
  *
  * Steps:
- *   const visited = new Set(seeds.map(norm));
- *   const queue: Array<[string, number]> = [...visited].map((k) => [k, 0]);
- *   const collected: Triple[] = []; const seen = new Set<string>();
- *   while (queue.length) {
- *     const [key, hop] = queue.shift()!;
- *     if (hop === depth) continue;
- *     for (const e of graph.neighbors(key)) {
- *       const triple: Triple = e.direction === "out"
- *         ? [graph.label.get(key) ?? key, e.relation, graph.label.get(e.other) ?? e.other]
- *         : [graph.label.get(e.other) ?? e.other, e.relation, graph.label.get(key) ?? key];
- *       const sig = triple.join("|");
- *       if (!seen.has(sig)) { seen.add(sig); collected.push(triple); }
- *       if (!visited.has(e.other)) { visited.add(e.other); queue.push([e.other, hop + 1]); }
- *     }
- *   }
- *   return collected;
+ *   - Standard BFS. Seed a `visited` Set with the norm()-ed seed keys and a queue of
+ *     [key, hop] pairs starting at hop 0. Keep a `collected: Triple[]` plus a Set to
+ *     dedupe triples you've already emitted.
+ *   - Pop from the queue; stop expanding a node once its hop equals `depth`. For each
+ *     edge from graph.neighbors(key), reconstruct the triple in canonical
+ *     subject -> object order using the edge's `direction` ("out" means key is the
+ *     subject; "in" means key is the object) and the graph's label map for display
+ *     names. Add it to `collected` if unseen.
+ *   - Enqueue any unvisited neighbour at hop + 1. Return `collected`.
  */
 function multiHopSubgraph(graph: KnowledgeGraph, seeds: string[], depth = 2): Triple[] {
   // TODO: implement multiHopSubgraph().
@@ -165,15 +160,14 @@ function findSeedEntities(query: string, graph: KnowledgeGraph): string[] {
  * TODO: implement this.
  *
  * Steps:
- *   const seeds = findSeedEntities(query, graph);
- *   const triples = multiHopSubgraph(graph, seeds, 2);
- *   const context = triples.map(([s, r, o]) => `${s} --${r}--> ${o}`).join("\n");
- *   const messages: ChatMessage[] = [
- *     { role: "system", content: "Answer the question using ONLY these knowledge-graph facts." },
- *     { role: "user", content: `Facts:\n${context}\n\nQuestion: ${query}` },
- *   ];
- *   const r = await provider.chat(messages, { temperature: 0, maxTokens: 150 });
- *   return { answer: r.text.trim(), subgraph: triples };
+ *   - Locate seed entities with the provided `findSeedEntities()`, then gather their
+ *     2-hop neighbourhood with `multiHopSubgraph()`.
+ *   - Serialise each triple into a readable one-line fact (e.g. `s --relation--> o`)
+ *     and join them into a context string.
+ *   - Build a `ChatMessage[]`: a system message telling the model to answer using
+ *     ONLY these knowledge-graph facts, and a user message carrying the facts and the
+ *     question. Call `provider.chat(messages, { temperature: 0, maxTokens: ... })`.
+ *   - Return { answer: <trimmed reply>, subgraph: <the triples you used> }.
  */
 async function graphRagAnswer(
   query: string,

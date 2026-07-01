@@ -206,19 +206,12 @@ class LocalTracer:
         """Record a generation under the current trace and print it as a tree node.
 
         TODO 3: Append `rec` to self.records so end_trace() can total the costs,
-        then print ONE indented line for this generation. Use this exact format so
-        the tree stays readable (the header above is already printed):
-
-            print(
-                f"  └─ generation '{rec.name}'  model={rec.model}  "
-                f"latency={rec.latency_ms:.0f}ms  "
-                f"tokens(in/out)={rec.input_tokens}/{rec.output_tokens}  "
-                f"cost={_fmt_cost(rec.cost_usd)}"
-            )
-
-        Also print the truncated input/output so the learner can eyeball the call:
-            print(f"       in : {rec.input[:60]!r}")
-            print(f"       out: {rec.output[:60]!r}")
+        then print ONE indented tree-node line for this generation (the trace
+        header above is already printed). Include on that line: the generation
+        name, model, latency in ms (0 decimals), the in/out token counts, and the
+        cost formatted via the provided `_fmt_cost()` helper. Then print two more
+        indented lines showing the truncated (first ~60 chars) input and output,
+        so the learner can eyeball the call.
         """
         raise NotImplementedError("TODO 3: record + print this generation (see docstring)")
 

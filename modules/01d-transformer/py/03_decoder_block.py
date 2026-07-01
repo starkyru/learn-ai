@@ -111,11 +111,11 @@ def layer_norm(x: np.ndarray, gamma: np.ndarray, beta: np.ndarray, eps: float = 
 
     Note: with gamma=1, beta=0 each output row has mean ~0 and variance ~1.
 
-    TODO: implement.
-      1. mu  = x.mean(axis=1, keepdims=True)
-      2. var = ((x - mu) ** 2).mean(axis=1, keepdims=True)
-      3. xhat = (x - mu) / np.sqrt(var + eps)
-      4. return gamma * xhat + beta
+    TODO: implement. Per row (i.e. reduce along axis=1 with keepdims=True so it
+    broadcasts): compute the row mean mu, then the population variance (mean of
+    the squared deviations from mu — no Bessel/n-1 correction). Normalise with
+    (x - mu) / sqrt(var + eps), then apply the affine scale-and-shift using gamma
+    and beta (both length d, elementwise) and return the result.
     """
     # TODO: implement layer norm
     raise NotImplementedError("TODO: implement layer_norm()")
@@ -176,18 +176,15 @@ class TransformerBlock:
         p = self.p holds: Wq, Wk, Wv, Wo (each d×d), gamma1/beta1, gamma2/beta2
         (each length d), and W1,b1,W2,b2 for the FFN.
 
-        TODO: implement.
-          1. n = x.shape[0] ; mask = causal_mask(n)
-          2. Attention sublayer (pre-LN):
-               a = layer_norm(x, p["gamma1"], p["beta1"])
-               a = multi_head_attention(a, p["Wq"], p["Wk"], p["Wv"], p["Wo"],
-                                        self.num_heads, mask)
-               x = x + a                     # residual
-          3. Feed-forward sublayer (pre-LN):
-               f = layer_norm(x, p["gamma2"], p["beta2"])
-               f = ffn(f, p["W1"], p["b1"], p["W2"], p["b2"])
-               x = x + f                     # residual
-          4. return x
+        TODO: implement the two pre-LN sublayers (build the causal_mask from the
+        sequence length x.shape[0] first):
+          - Attention sublayer: layer_norm the input with gamma1/beta1, feed that
+            through multi_head_attention (Wq/Wk/Wv/Wo, self.num_heads, the mask),
+            and ADD the result back onto x (the residual connection).
+          - Feed-forward sublayer: layer_norm the running x with gamma2/beta2, feed
+            that through ffn (W1/b1/W2/b2), and again ADD it back onto x.
+          - Return the updated x. Note the pattern is x = x + sublayer(LN(x)) both
+            times — the residual path is never normalised.
         """
         # TODO: implement the pre-LN decoder block
         raise NotImplementedError("TODO: implement TransformerBlock.forward()")

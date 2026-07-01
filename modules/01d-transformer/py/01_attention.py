@@ -69,16 +69,15 @@ def scaled_dot_product_attention(
 
     The softmax must be numerically stable: subtract the per-row max before exp().
 
-    TODO: implement.
-      1. d_k = K.shape[-1]
-      2. scores = Q @ K.T / sqrt(d_k)                # shape (n_q, n_k)
-      3. if mask is not None: scores = scores + mask
-      4. Row-wise stable softmax:
-           scores = scores - scores.max(axis=-1, keepdims=True)
-           exp_s  = np.exp(scores)
-           weights = exp_s / exp_s.sum(axis=-1, keepdims=True)
-      5. output = weights @ V
-      6. return output, weights
+    TODO: implement. Steps:
+      - Form the raw scores as Q @ K.T, then scale by dividing by sqrt(d_k)
+        (d_k = K.shape[-1]). Result is (n_q, n_k).
+      - If a mask was passed, add it to the scores (it blocks entries before softmax).
+      - Apply a row-wise stable softmax: subtract the per-row max
+        (axis=-1, keepdims=True) before np.exp, then normalise each row by its sum
+        (again axis=-1, keepdims=True) so every row sums to 1.
+      - Multiply the weights by V to get the (n_q, d_v) output.
+      - Return the (output, weights) pair.
     """
     # TODO: implement scaled dot-product attention
     raise NotImplementedError("TODO: implement scaled_dot_product_attention()")
@@ -96,10 +95,9 @@ def causal_mask(n: int) -> np.ndarray:
 
     Use NEG_INF (defined above) as the stand-in for -inf.
 
-    TODO: implement.
-      1. Start with a zeros (n, n) array.
-      2. Set the strictly-upper-triangular entries (j > i) to NEG_INF.
-         Hint: np.triu(..., k=1) selects entries strictly above the diagonal.
+    TODO: implement. Start from a zeros (n, n) array and set the strictly-upper-
+    triangular entries (the future, j > i) to NEG_INF, leaving the diagonal and
+    below at 0. Hint: np.triu(..., k=1) selects entries strictly above the diagonal.
     """
     # TODO: implement causal mask
     raise NotImplementedError("TODO: implement causal_mask()")
@@ -127,17 +125,16 @@ def multi_head_attention(
     Returns:
       output, shape (n, d_model)
 
-    TODO: implement.
-      1. n, d_model = X.shape ; d_k = d_model // num_heads
-      2. Project: Q = X @ Wq, K = X @ Wk, V = X @ Wv   (each (n, d_model))
-      3. For each head h in range(num_heads):
-           - slice the head's columns: cols = slice(h*d_k, (h+1)*d_k)
-           - Qh, Kh, Vh = Q[:, cols], K[:, cols], V[:, cols]   (each (n, d_k))
-           - head_out, _ = scaled_dot_product_attention(Qh, Kh, Vh, mask)
-           - collect head_out
-      4. Concatenate the head outputs along axis=1 back to (n, d_model).
-         Hint: np.concatenate(head_outputs, axis=1)
-      5. return concat @ Wo
+    TODO: implement. Steps:
+      - Compute d_k = d_model // num_heads.
+      - Project the input once into Q, K, V (each X @ W..., shape (n, d_model)).
+      - For each head, take that head's contiguous block of d_k columns from Q, K, V
+        (head h owns columns h*d_k .. (h+1)*d_k) and run
+        scaled_dot_product_attention on those slices, passing the mask through.
+        Keep just the output of each head.
+      - Concatenate the per-head outputs along the feature axis (axis=1) back to
+        width d_model (np.concatenate).
+      - Apply the output projection Wo to the concatenation and return it.
     """
     # TODO: implement multi-head attention
     raise NotImplementedError("TODO: implement multi_head_attention()")

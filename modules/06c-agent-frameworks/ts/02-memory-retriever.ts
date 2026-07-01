@@ -66,7 +66,8 @@ class ConversationBufferMemory {
    * Append one (user, ai) turn to the buffer.
    *
    * TODO: implement.
-   *   this.turns.push([userInput, aiOutput]);
+   *   - Push a single [userInput, aiOutput] pair onto this.turns so the buffer
+   *     grows by one turn per call.
    */
   saveContext(_userInput: string, _aiOutput: string): void {
     // TODO: implement saveContext (append the turn)
@@ -79,8 +80,10 @@ class ConversationBufferMemory {
    * An empty buffer yields "".
    *
    * TODO: implement.
-   *   1. Build a lines array, two entries per turn.
-   *   2. return { history: lines.join("\n") }.
+   *   - Turn each stored turn into two lines — a "Human: ..." line for the user
+   *     input and an "AI: ..." line for the ai output.
+   *   - Join all lines with newlines into one transcript string and return it
+   *     under the `history` key (an empty buffer must yield "").
    */
   loadMemoryVariables(): { history: string } {
     // TODO: implement loadMemoryVariables (render buffer to a string)
@@ -114,11 +117,12 @@ function bagOfWords(text: string): Map<string, number> {
  * Return 0 if either vector has zero norm.
  *
  * TODO: implement.
- *   1. dot = 0; for each [w, av] in a: if b has w, dot += av * b.get(w)
- *   2. normA = sqrt(sum of av*av over a.values())
- *   3. normB = sqrt(sum of bv*bv over b.values())
- *   4. if normA === 0 || normB === 0 return 0
- *   5. return dot / (normA * normB)
+ *   - Compute the dot product: for each word/count in `a`, if `b` also has that
+ *     word, add the product of the two counts.
+ *   - Compute each vector's Euclidean norm — sqrt of the sum of its squared
+ *     counts (iterate the map values).
+ *   - Guard the divide: if either norm is 0, return 0.
+ *   - Otherwise return the dot product divided by the product of the two norms.
  */
 function cosine(_a: Map<string, number>, _b: Map<string, number>): number {
   // TODO: implement cosine similarity over sparse count vectors
@@ -137,11 +141,12 @@ class Retriever {
    * Return the top-k docs most similar to `query` (highest cosine first).
    *
    * TODO: implement.
-   *   1. q = bagOfWords(query).
-   *   2. Score each doc: build [{ score: cosine(q, docVecs[i]), doc: docs[i] }].
-   *   3. Sort by score descending (ties: keep original order — a stable sort
-   *      by (b.score - a.score) does this in modern JS engines).
-   *   4. Return the first k docs.
+   *   - Turn the query into a bag-of-words vector.
+   *   - Score every doc by cosine against the query, keeping each doc paired
+   *     with its score (the precomputed this.docVecs align with this.docs).
+   *   - Sort by score descending (ties keep original order — subtracting scores
+   *     is a stable comparator in modern JS engines).
+   *   - Return the docs (not the scores) of the first k entries.
    */
   getRelevant(_query: string, _k = 1): string[] {
     // TODO: implement top-k retrieval by cosine
@@ -156,18 +161,16 @@ class Retriever {
 /**
  * Build the RAG prompt from the memory transcript, retrieved context, question.
  *
- * TODO: implement — return this exact template, filled in:
- *
- *   `You are a helpful assistant. Use the context and prior conversation to answer.
- *
- *   Conversation so far:
- *   ${history}
- *
- *   Context:
- *   ${context}
- *
- *   Question: ${question}
- *   Answer:`
+ * TODO: implement.
+ *   Return one prompt string (a template literal is easiest) that, in order:
+ *     - opens with a short instruction to answer using the context + prior
+ *       conversation;
+ *     - includes a labelled "Conversation so far" section holding `history`;
+ *     - includes a labelled "Context" section holding `context`;
+ *     - ends with a "Question:" line carrying `question`, then an "Answer:" cue.
+ *   The stub tests only check that `context`, the question text, and prior-turn
+ *   history all appear in the assembled prompt — so the exact wording is yours,
+ *   but keep those three values in it.
  */
 function buildRagPrompt(_history: string, _context: string, _question: string): string {
   // TODO: implement RAG prompt assembly

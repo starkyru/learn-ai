@@ -61,41 +61,24 @@ const MCP_AUTH_TOKEN = process.env.MCP_AUTH_TOKEN ?? "";
  * Wrap the course MCP server (task 3) in an HTTP/SSE transport.
  *
  * Steps:
- *   a) Import the SSE server transport from the MCP SDK.
- *      Check the installed version for the correct import:
- *        import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+ *   a) Import the SSE server transport (SSEServerTransport) from the MCP SDK's
+ *      server/sse entry point — confirm the exact path for your installed
+ *      version.
  *
- *   b) Re-use buildServer() from task 3.
- *      Either import it or inline the tool defs to keep this file self-contained.
+ *   b) Re-use buildServer() from task 3 (import it, or inline the tool defs to
+ *      keep this file self-contained).
  *
- *   c) Create an HTTP server that routes:
- *      GET  /sse    → open an SSE stream and attach an MCP transport
- *      POST /message → receive client messages and forward to the MCP session
+ *   c) Create an http.createServer that routes two paths:
+ *        GET  /sse     → open an SSE stream, wrap the response in an
+ *                        SSEServerTransport, and connect a fresh server to it;
+ *                        track transports by their sessionId.
+ *        POST /message → read the sessionId from the query, look up the
+ *                        matching transport, and forward the request body to it.
+ *      Then server.listen(MCP_PORT).
  *
- *   d) Security: if MCP_AUTH_TOKEN is set, validate the Authorization header
- *      on every request. Return HTTP 401 if missing or wrong.
- *
- *   Sample skeleton (adjust to your SDK version):
- *
- *     const transports = new Map<string, SSEServerTransport>();
- *
- *     const server = http.createServer(async (req, res) => {
- *       if (MCP_AUTH_TOKEN) {
- *         const auth = req.headers["authorization"] ?? "";
- *         if (auth !== `Bearer ${MCP_AUTH_TOKEN}`) {
- *           res.writeHead(401); res.end("Unauthorized"); return;
- *         }
- *       }
- *       if (req.method === "GET" && req.url === "/sse") {
- *         const transport = new SSEServerTransport("/message", res);
- *         transports.set(transport.sessionId, transport);
- *         const mcpServer = buildServer();
- *         await mcpServer.connect(transport);
- *       } else if (req.method === "POST" && req.url === "/message") {
- *         // parse sessionId from query, look up transport, forward body
- *       }
- *     });
- *     server.listen(MCP_PORT, () => console.log(`MCP server on port ${MCP_PORT}`));
+ *   d) Security: when MCP_AUTH_TOKEN is set, check each request's Authorization
+ *      header for "Bearer <MCP_AUTH_TOKEN>" and return HTTP 401 if it's missing
+ *      or wrong, before handling the route.
  */
 async function serveHttp(): Promise<void> {
   throw new Error("TODO 1: implement HTTP/SSE MCP server");
@@ -111,25 +94,17 @@ async function serveHttp(): Promise<void> {
  * Connect to the remote server via SSE, list tools, and call one.
  *
  * Steps:
- *   a) Import SSEClientTransport:
- *        import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+ *   a) Import SSEClientTransport from the MCP SDK's client/sse entry point.
  *
- *   b) Build the transport:
- *        const headers: Record<string, string> = {};
- *        if (MCP_AUTH_TOKEN) headers["Authorization"] = `Bearer ${MCP_AUTH_TOKEN}`;
- *        const transport = new SSEClientTransport(new URL(MCP_SERVER_URL + "/sse"), { headers });
+ *   b) Build a headers object, adding an "Authorization" "Bearer ..." entry
+ *      when MCP_AUTH_TOKEN is set. Construct an SSEClientTransport pointing at
+ *      the server's /sse URL, passing those headers.
  *
- *   c) Create and connect a Client:
- *        const client = new Client({ name: "learn-ai-http-client", version: "1.0" });
- *        await client.connect(transport);
+ *   c) Create a Client (name + version) and await client.connect(transport).
  *
- *   d) List tools and call "search_docs":
- *        const { tools } = await client.listTools();
- *        console.log("Tools:", tools.map(t => t.name));
- *        const result = await client.callTool({ name: "search_docs", arguments: { query: "RAG" } });
- *        const text = (result.content as any[]).filter(b => b.type === "text").map(b => b.text).join(" ");
- *        console.log("\nsearch_docs('RAG'):", text.slice(0, 400));
- *        await client.close();
+ *   d) await client.listTools() and log the tool names, then call "search_docs"
+ *      with a sample query via client.callTool(...). Join the "text" content
+ *      blocks of the result and print them, then await client.close().
  */
 async function connectHttpClient(): Promise<void> {
   throw new Error("TODO 2: implement HTTP MCP client");

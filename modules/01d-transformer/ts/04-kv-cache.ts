@@ -126,21 +126,21 @@ function decodeNaive(
  * Returns { logits (n × dOut), kvOps }. Must match decodeNaive's logits exactly.
  * With the cache you project exactly ONE new key per step, so kvOps === n.
  *
- * TODO: implement.
- *   1. const dK = Wq[0].length; const scale = Math.sqrt(dK);
- *      const Kcache: Matrix = []; const Vcache: Matrix = [];
- *      const logits: Matrix = []; let kvOps = 0;
- *   2. for (let t = 0; t < X.length; t++):
- *        const qT = vecMatMul(X[t], Wq);
- *        const kT = vecMatMul(X[t], Wk);   // ONE key projection
- *        const vT = vecMatMul(X[t], Wv);
- *        kvOps += 1;
- *        Kcache.push(kT); Vcache.push(vT); // old entries reused, not recomputed
- *        const scores  = Kcache.map(kI => dot(qT, kI) / scale);
- *        const weights = softmax(scores);
- *        const context = zeros(dV); accumulate weights[i]*Vcache[i]
- *        logits.push(vecMatMul(context, Wo));
- *   3. return { logits, kvOps };
+ * Contrast this with decodeNaive above — the ONLY difference is that the old
+ * keys/values come from the cache instead of being re-projected each step.
+ *
+ * TODO: implement. Steps:
+ *   - Before the loop, create empty Kcache and Vcache matrices to accumulate cached
+ *     vectors, plus a kvOps counter (0) and a logits matrix.
+ *   - For each step t over the rows of X, project ONLY the new token X[t] into its
+ *     query, key and value with vecMatMul (through Wq/Wk/Wv). Increment kvOps by 1
+ *     and push the new key and value onto their caches — never recompute earlier ones.
+ *   - Score the new query against ALL cached keys (dot(qT, kI) scaled by
+ *     Math.sqrt(dK)), softmax the scores, and accumulate the weighted sum of the
+ *     cached value vectors into a context vector.
+ *   - Project the context through Wo with vecMatMul and push it as this step's logits.
+ *   - Return { logits, kvOps }; kvOps must total n since only one key is projected
+ *     per step.
  */
 function decodeWithCache(
   X: Matrix,

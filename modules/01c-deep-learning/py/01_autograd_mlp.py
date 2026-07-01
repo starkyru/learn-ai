@@ -66,9 +66,9 @@ class Value:
 
         def _backward() -> None:
             # TODO: local grads of addition. c = a + b  →  ∂c/∂a = 1, ∂c/∂b = 1.
-            #   self.grad  += 1.0 * out.grad
-            #   other.grad += 1.0 * out.grad
-            # (use += so gradients accumulate when a node feeds multiple consumers)
+            # Push `out.grad` (scaled by each local derivative) onto self.grad and
+            # other.grad. Use += so gradients ACCUMULATE when a node feeds multiple
+            # consumers.
             raise NotImplementedError("TODO: implement __add__ backward")
 
         out._backward = _backward
@@ -80,8 +80,8 @@ class Value:
 
         def _backward() -> None:
             # TODO: local grads of multiplication. c = a * b  →  ∂c/∂a = b, ∂c/∂b = a.
-            #   self.grad  += other.data * out.grad
-            #   other.grad += self.data  * out.grad
+            # Each parent's grad gets `out.grad` times the OTHER factor's data.
+            # Use += to accumulate.
             raise NotImplementedError("TODO: implement __mul__ backward")
 
         out._backward = _backward
@@ -93,7 +93,8 @@ class Value:
 
         def _backward() -> None:
             # TODO: derivative of tanh. o = tanh(x)  →  do/dx = 1 - o².
-            #   self.grad += (1 - out.data ** 2) * out.grad
+            # Note `out.data` already holds tanh(x), so the local derivative is a
+            # cheap expression in it. Accumulate onto self.grad with +=.
             raise NotImplementedError("TODO: implement tanh backward")
 
         out._backward = _backward
@@ -104,7 +105,8 @@ class Value:
 
         def _backward() -> None:
             # TODO: derivative of relu. o = max(0, x)  →  do/dx = 1 if x>0 else 0.
-            #   self.grad += (1.0 if out.data > 0 else 0.0) * out.grad
+            # Gate `out.grad` by whether the unit was active (out.data > 0), then
+            # accumulate onto self.grad with +=.
             raise NotImplementedError("TODO: implement relu backward")
 
         out._backward = _backward
@@ -116,22 +118,14 @@ class Value:
 
         TODO: implement.
           1. Build a topological ordering `topo` of the graph reachable from self
-             (each node appears AFTER all nodes it depends on). A depth-first
-             post-order visit does this:
-
-               topo, visited = [], set()
-               def build(v):
-                   if v not in visited:
-                       visited.add(v)
-                       for child in v._prev:
-                           build(child)
-                       topo.append(v)
-               build(self)
-
+             (each node appears AFTER all nodes it depends on). Use a depth-first
+             post-order visit: for an unvisited node, recurse into every child in
+             `._prev` first, THEN append the node — with a `visited` set so shared
+             nodes are added once.
           2. Seed the output gradient:  self.grad = 1.0   (∂L/∂L = 1)
-          3. Walk topo in REVERSE and call each node's closure:
-               for v in reversed(topo):
-                   v._backward()
+          3. Walk `topo` in REVERSE and call each node's `_backward()` closure — the
+             reverse post-order guarantees a node's grad is fully accumulated before
+             it pushes to its parents.
         """
         raise NotImplementedError("TODO: implement backward()")
 
@@ -286,8 +280,8 @@ def train_xor(model: MLP, epochs: int = 200, lr: float = 0.1, print_every: int =
         loss.backward()
 
         # ── SGD update (TODO) ────────────────────────────────────────────────
-        # TODO: for each parameter p in `params`:
-        #         p.data -= lr * p.grad
+        # TODO: nudge every parameter in `params` a small step DOWN its gradient —
+        #   i.e. subtract `lr` times each param's `.grad` from its `.data`, in place.
         #   (grads were already zeroed above and refilled by loss.backward();
         #    we zero again at the top of the next epoch.)
         raise NotImplementedError("TODO: implement the SGD parameter update")

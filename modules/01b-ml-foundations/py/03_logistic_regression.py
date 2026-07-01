@@ -95,8 +95,8 @@ def sigmoid(z: np.ndarray) -> np.ndarray:
     keeps it finite and the result is effectively 0 anyway.)
 
     TODO: implement.
-      1. z = np.clip(z, -500, 500)
-      2. return 1.0 / (1.0 + np.exp(-z))
+      - First np.clip z to a safe range (e.g. [-500, 500]).
+      - Then return the element-wise logistic 1 / (1 + e^{-z}) using np.exp.
     """
     # TODO: implement the sigmoid
     raise NotImplementedError("TODO: implement sigmoid()")
@@ -111,9 +111,9 @@ def bce_loss(p: np.ndarray, y: np.ndarray) -> float:
     Clip p to [1e-12, 1 - 1e-12] first so log never sees 0 or 1.
 
     TODO: implement.
-      1. p = np.clip(p, 1e-12, 1 - 1e-12)
-      2. terms = y * np.log(p) + (1 - y) * np.log(1 - p)
-      3. return float(-np.mean(terms))
+      - np.clip p to [1e-12, 1 - 1e-12] so np.log never sees 0 or 1.
+      - Compute the per-sample term y·log(p) + (1-y)·log(1-p) per the formula,
+        and return the negative mean as a float.
     """
     # TODO: implement binary cross-entropy
     raise NotImplementedError("TODO: implement bce_loss()")
@@ -132,7 +132,7 @@ class LogisticRegression:
         """
         Return P(class = 1 | x) = σ(X w) for each row of X.
 
-        TODO: implement (sigmoid of the linear score X @ self.w).
+        TODO: implement — apply sigmoid() to the linear score X @ self.w.
         """
         # TODO: implement predict_proba
         raise NotImplementedError("TODO: implement predict_proba()")
@@ -156,15 +156,12 @@ class LogisticRegression:
         Update:   w -= lr · grad
 
         TODO: implement.
-          1. N = X.shape[0]
-          2. p = self.predict_proba(X)
-          3. loss = bce_loss(p, y)
-          4. grad = X.T @ (p - y) / N
-          5. reg = (self.lam / N) * self.w
-             reg[0] = 0.0                 # don't regularise the bias
-             grad = grad + reg
-          6. self.w -= self.lr * grad
-          7. return loss
+          - Forward pass: p = self.predict_proba(X); record the pre-update
+            bce_loss(p, y) to return at the end.
+          - Data gradient: Xᵀ·(p - y) / N per the formula above.
+          - L2 term: (self.lam / N) · self.w, but with the bias entry (index 0)
+            zeroed so the intercept is never regularised; add it to the gradient.
+          - Update self.w in place by -lr · grad, then return the recorded loss.
         """
         # TODO: implement the gradient step
         raise NotImplementedError("TODO: implement gradient_step()")

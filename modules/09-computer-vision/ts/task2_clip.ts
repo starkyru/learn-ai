@@ -66,17 +66,13 @@ async function clipLocal(
   imagePath: string,
   labels: string[]
 ): Promise<ScoredLabel[]> {
-  // TODO (exercise): import the pipeline and run CLIP.
-  //
-  // import { pipeline } from "@huggingface/transformers";
-  //
-  // const classifier = await pipeline("zero-shot-image-classification", HF_CLIP_MODEL);
-  //
-  // The pipeline accepts the image path and an array of candidate labels:
-  //   const output = await classifier(imagePath, { candidate_labels: labels });
-  //
-  // output is an object: { labels: string[], scores: number[] }
-  // Zip them into ScoredLabel[] and sort by score descending.
+  // TODO (exercise): run CLIP locally with transformers.js.
+  //   - Import `pipeline` from "@huggingface/transformers" and `await` it to
+  //     build a "zero-shot-image-classification" pipeline for HF_CLIP_MODEL.
+  //   - Call the classifier with `imagePath` and pass the candidate labels via
+  //     the options object (`{ candidate_labels: labels }`).
+  //   - The result is an object shaped `{ labels: string[], scores: number[] }`
+  //     — zip the parallel arrays into ScoredLabel[] and sort by score descending.
 
   throw new Error(
     "Complete the TODO: import pipeline from @huggingface/transformers and " +

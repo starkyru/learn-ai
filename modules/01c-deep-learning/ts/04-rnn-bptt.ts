@@ -181,11 +181,11 @@ function initParams(seed = 1): Params {
  *   logits = Why·h + by                       (length VOCAB)
  * Returns [h, logits]. x is a one-hot vector (length VOCAB); hPrev length HIDDEN.
  *
- * TODO: implement.
- *   const pre = addVec(matVec(P.Wxh, x), matVec(P.Whh, hPrev), P.bh);
- *   const h = pre.map(Math.tanh);
- *   const logits = addVec(matVec(P.Why, h), P.by);
- *   return [h, logits];
+ * TODO: implement the two equations above using the provided `matVec` / `addVec`.
+ *   - Form the pre-activation: sum the input term (Wxh·x), the recurrent term
+ *     (Whh·hPrev) and the bias bh, then apply tanh elementwise to get `h`.
+ *   - Project `h` through Why and add `by` to get `logits`.
+ *   - Return them as the tuple [h, logits].
  */
 function rnnStep(x: number[], hPrev: number[], P: Params): [number[], number[]] {
   throw new Error("TODO: implement rnnStep()");
@@ -206,18 +206,15 @@ interface Cache {
  *
  * Returns [loss, cache].
  *
- * TODO: implement.
- *   const xs: number[][] = [], ps: number[][] = [];
- *   const hs: number[][] = [hPrev.slice()];    // hs[0] = hPrev
- *   let loss = 0;
- *   for (let t = 0; t < inputs.length; t++) {
- *     const x = oneHot(inputs[t]);
- *     const [h, logits] = rnnStep(x, hs[t], P);   // hs[t] is h_{t-1}
- *     const p = softmax(logits);
- *     xs.push(x); hs.push(h); ps.push(p);
- *     loss += -Math.log(p[targets[t]] + 1e-12);
- *   }
- *   return [loss, { xs, hs, ps }];
+ * TODO: implement, honouring the +1 offset described above.
+ *   - Seed the hidden-state array with a COPY of hPrev at index 0 (hs[0] = the
+ *     state before step 0), and start empty xs/ps arrays and loss = 0.
+ *   - Loop t over the sequence: build the one-hot input, run `rnnStep(...)` passing
+ *     the PREVIOUS hidden state hs[t], softmax the logits, and push x / h / p onto
+ *     xs / hs / ps.
+ *   - Accumulate cross-entropy: add -log(prob the model gave the TRUE next char,
+ *     targets[t]); add a tiny 1e-12 inside the log to avoid log(0).
+ *   - Return [loss, { xs, hs, ps }].
  */
 function forward(
   inputs: number[],
@@ -237,36 +234,24 @@ function forward(
  * and hs[t+1] = h_t, at step t the "current" hidden state is hs[t+1] and the
  * "previous" one is hs[t].
  *
- * TODO: fill the marked (c)/(d)/(e) lines.
- *
- * Scaffold:
- *   const { xs, hs, ps } = cache;
- *   const g = {
- *     Wxh: zerosMat(HIDDEN, VOCAB), Whh: zerosMat(HIDDEN, HIDDEN),
- *     Why: zerosMat(VOCAB, HIDDEN), bh: zerosVec(HIDDEN), by: zerosVec(VOCAB),
- *   };
- *   let dhNext = zerosVec(HIDDEN);
- *   for (let t = inputs.length - 1; t >= 0; t--) {
- *     const hCur = hs[t + 1];   // h_t
- *     const hPrev = hs[t];      // h_{t-1}
- *     // softmax + cross-entropy gradient at the output (GIVEN):
- *     const dy = ps[t].slice();
- *     dy[targets[t]] -= 1;
- *     // (a) output-layer grads (shared → accumulate):
- *     addMatInto(g.Why, outer(dy, hCur));
- *     addVecInto(g.by, dy);
- *     // (b) gradient into the hidden state: output path + future:
- *     const dh = addVec(matTVec(P.Why, dy), dhNext);
- *     // (c) TODO: backprop through tanh.  h = tanh(a) → da = (1 - h²)·dh
- *     const da = dh.map((v, i) => (1 - hCur[i] * hCur[i]) * v);
- *     // (d) TODO: accumulate shared hidden-layer grads:
- *     addVecInto(g.bh, da);
- *     addMatInto(g.Wxh, outer(da, xs[t]));
- *     addMatInto(g.Whh, outer(da, hPrev));
- *     // (e) TODO: pass memory-gradient to the previous timestep:
- *     dhNext = matTVec(P.Whh, da);
- *   }
- *   return g;   // (the training loop clips these grads for you via clipGrads)
+ * TODO: implement, following the "Backward" equation block in the file header.
+ *   - Allocate a zero grad matching each Params field (use zerosMat/zerosVec with
+ *     the right shapes) and a running `dhNext` (length HIDDEN, starts 0) that
+ *     carries gradient BACKWARD in time.
+ *   - Loop t from the LAST timestep down to 0. Recall the offset: this step's
+ *     hidden state h_t is hs[t+1] and the previous one h_{t-1} is hs[t].
+ *     Two parts are GIVEN each iteration:
+ *       * the softmax+CE output gradient `dy` (copy ps[t], subtract 1 at targets[t]);
+ *       * the output-layer accumulation into g.Why / g.by, and the hidden gradient
+ *         `dh` = (output path via Whyᵀ·dy) + `dhNext`.
+ *   - (c) TODO — backprop `dh` through the tanh: scale each component by the tanh
+ *     local derivative expressed in the stored hidden state h_t → `da`.
+ *   - (d) TODO — accumulate the SHARED hidden-layer grads (use addVecInto/addMatInto
+ *     with `outer`): bias g.bh gets `da`; g.Wxh gets outer(da, this step's input);
+ *     g.Whh gets outer(da, the PREVIOUS hidden state).
+ *   - (e) TODO — set `dhNext` to the gradient pushed to the previous step through
+ *     the recurrent weight (Whhᵀ · da).
+ *   - Return the grad dict (the training loop clips it for you via clipGrads).
  */
 function backward(
   inputs: number[],

@@ -101,12 +101,11 @@ function addBias(Z: number[][], b: number[]): number[][] {
  *
  * Numerically stable: subtract the row-max before exp().
  *
- * TODO: implement.
- *   For each row:
- *     1. rowMax = Math.max(...row)
- *     2. expRow = row.map(v => Math.exp(v - rowMax))
- *     3. sumExp = sum of expRow
- *     4. return expRow.map(v => v / sumExp)
+ * TODO: implement row-wise. For each row of Z:
+ *   - Find the row's max (`Math.max(...row)`) and subtract it from every entry
+ *     before exponentiating — that keeps `Math.exp` from overflowing.
+ *   - Exponentiate the shifted values, then divide each by the row's total so the
+ *     row sums to 1. Return a new matrix of the same shape.
  */
 function softmax(Z: number[][]): number[][] {
   // TODO: implement row-wise numerically stable softmax
@@ -163,10 +162,9 @@ class LogisticRegressionScratch {
   /** Forward pass: compute softmax probabilities. Shape: (N, C). */
   forward(X: number[][]): number[][] {
     /**
-     * TODO:
-     *   1. Z = matMul(X, W)          shape: (N, C)
-     *   2. Z = addBias(Z, b)         broadcast bias
-     *   3. return softmax(Z)
+     * TODO: compute the linear scores then squash them.
+     *   - Multiply X by this.W with `matMul`, add the bias with `addBias`, and pass
+     *     the resulting (N, C) score matrix through `softmax`. Return the probs.
      */
     throw new Error("TODO: implement forward()");
   }
@@ -194,16 +192,15 @@ class LogisticRegressionScratch {
    *
    * Return the loss (for logging).
    *
-   * TODO: implement this method.
-   *
-   * Steps:
-   *   1. probs = this.forward(X)
-   *   2. loss = crossEntropyLoss(probs, y)
-   *   3. Build dZ: copy probs, then for each i subtract 1 from dZ[i][y[i]]
-   *   4. dW = matMul(transpose(X), dZ) scaled by 1/N
-   *   5. db = column means of dZ
-   *   6. Update this.W and this.b
-   *   7. Return loss
+   * TODO: implement this method — translate the math above into array ops.
+   *   - Forward pass (this.forward) to get probs, and compute the loss with
+   *     crossEntropyLoss so you can return it at the end.
+   *   - Build dZ from the dL/dz formula: start from probs and, for each sample i,
+   *     subtract 1 in the true-class column y[i] (that's probs - oneHot(y)).
+   *   - Turn dZ into dW and db using the formulas above — dW uses `matMul` on the
+   *     transpose of X and is scaled by 1/N; db is the per-column mean of dZ.
+   *   - Subtract lr * gradient from this.W (element-wise) and this.b, then return
+   *     the loss.
    */
   gradientStep(X: number[][], y: number[]): number {
     // TODO: implement gradient step

@@ -76,7 +76,8 @@ class ConversationBufferMemory:
         """Append one (user, ai) turn to the buffer.
 
         TODO: implement.
-          Append the tuple (user_input, ai_output) to self.turns.
+          - Append a single (user_input, ai_output) tuple to self.turns so the
+            buffer grows by one turn per call.
         """
         # TODO: implement save_context (append the turn)
         raise NotImplementedError("TODO: implement ConversationBufferMemory.save_context()")
@@ -90,8 +91,10 @@ class ConversationBufferMemory:
         Join all lines with "\\n". An empty buffer yields "".
 
         TODO: implement.
-          1. Build a list of lines, two per turn ("Human: u", "AI: a").
-          2. Return {"history": "\\n".join(lines)}.
+          - Turn each stored turn into two lines — a "Human: ..." line for the
+            user input and an "AI: ..." line for the ai output.
+          - Join every line with newlines into one transcript string and return
+            it under the "history" key (an empty buffer must yield "").
         """
         # TODO: implement load_memory_variables (render buffer to a string)
         raise NotImplementedError(
@@ -124,11 +127,11 @@ def cosine(a: Counter[str], b: Counter[str]) -> float:
     Return 0.0 if either vector has zero norm.
 
     TODO: implement.
-      1. dot = sum(a[w] * b[w] for w in a if w in b)   # shared words only
-      2. norm_a = sqrt(sum(c*c for c in a.values()))
-      3. norm_b = sqrt(sum(c*c for c in b.values()))
-      4. if norm_a == 0 or norm_b == 0: return 0.0
-      5. return dot / (norm_a * norm_b)
+      - Compute the dot product: sum a[w]*b[w] over the words the two vectors
+        share (a Counter returns 0 for missing keys, so only shared words add).
+      - Compute each vector's Euclidean norm with math.sqrt over its counts.
+      - Guard the divide: if either norm is 0, return 0.0.
+      - Otherwise return dot divided by the product of the two norms.
     """
     # TODO: implement cosine similarity over sparse count vectors
     raise NotImplementedError("TODO: implement cosine()")
@@ -146,12 +149,12 @@ class Retriever:
         """Return the top-k docs most similar to `query` (highest cosine first).
 
         TODO: implement.
-          1. q = bag_of_words(query).
-          2. Score each doc: pairs = [(cosine(q, dv), doc) for dv, doc in
-             zip(self.doc_vecs, self.docs)].
-          3. Sort pairs by score descending (ties: keep original order — a
-             stable sort on the negative score, or sort with key=-score, does it).
-          4. Return the docs of the first k pairs.
+          - Turn the query into a bag-of-words vector.
+          - Score every doc by cosine against the query, keeping each doc paired
+            with its score (the precomputed self.doc_vecs align with self.docs).
+          - Sort by score descending (ties keep original order — sorting on the
+            negative score is stable, so equal scores stay in input order).
+          - Return the docs (not the scores) of the first k pairs.
         """
         # TODO: implement top-k retrieval by cosine
         raise NotImplementedError("TODO: implement Retriever.get_relevant()")
@@ -175,7 +178,8 @@ def build_rag_prompt(history: str, context: str, question: str) -> str:
     """Fill RAG_TEMPLATE with the memory transcript, retrieved context, question.
 
     TODO: implement.
-      Return RAG_TEMPLATE.format(history=history, context=context, question=question).
+      - Substitute the three arguments into RAG_TEMPLATE's {history}, {context},
+        and {question} slots (by name) and return the filled prompt string.
     """
     # TODO: implement RAG prompt assembly
     raise NotImplementedError("TODO: implement build_rag_prompt()")

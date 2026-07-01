@@ -101,10 +101,11 @@ def rnn_step(x: np.ndarray, h_prev: np.ndarray, P: dict) -> tuple[np.ndarray, np
 
     Returns (h, logits). x is a one-hot column (VOCAB, 1); h_prev is (HIDDEN, 1).
 
-    TODO: implement.
-      h = np.tanh(P["Wxh"] @ x + P["Whh"] @ h_prev + P["bh"])
-      logits = P["Why"] @ h + P["by"]
-      return h, logits
+    TODO: implement the two equations in the docstring above.
+      - New hidden state: tanh of (input contribution `Wxh @ x` + recurrent
+        contribution `Whh @ h_prev` + bias `bh`).
+      - Logits: project the hidden state through `Why` and add `by`.
+      - Return (h, logits) in that order.
     """
     raise NotImplementedError("TODO: implement rnn_step()")
 
@@ -123,13 +124,15 @@ def forward(
       loss  : summed cross-entropy over the sequence (scalar)
 
     TODO: implement.
-      1. xs, hs, ps = {}, {}, {} ;  hs[-1] = h_prev.copy() ;  loss = 0.0
-      2. for t in range(len(inputs)):
-           xs[t] = one_hot(inputs[t])
-           hs[t], logits = rnn_step(xs[t], hs[t - 1], P)
-           ps[t] = softmax(logits)
-           loss += -np.log(ps[t][targets[t], 0] + 1e-12)   # CE for the true char
-      3. return loss, xs, hs, ps
+      - Use dicts keyed by timestep for xs/hs/ps and seed the "before step 0" state
+        at key -1 with a COPY of h_prev (so you never mutate the caller's array).
+        Start loss at 0.
+      - Loop t over the sequence: build the one-hot input for inputs[t], run
+        `rnn_step(...)` passing the PREVIOUS hidden state (key t-1), softmax the
+        logits, and store xs[t] / hs[t] / ps[t].
+      - Accumulate cross-entropy: add -log(prob the model gave the TRUE next char,
+        targets[t]); nudge the arg by a tiny 1e-12 to avoid log(0).
+      - Return (loss, xs, hs, ps).
     """
     raise NotImplementedError("TODO: implement forward()")
 
@@ -139,40 +142,25 @@ def backward(inputs: list[int], targets: list[int], xs: dict, hs: dict, ps: dict
     Backprop through time. Returns a dict of gradients matching P's keys.
 
     The output-layer gradient (softmax + cross-entropy) is given to you as `dy`.
-    You fill in the tanh local gradient and the through-time accumulation.
+    You fill in the tanh local gradient and the through-time accumulation, following
+    the "Backward" equation block in the file header.
 
-    TODO: implement the marked lines inside the loop.
-
-    Scaffold:
-      grads = {k: np.zeros_like(v) for k, v in P.items()}
-      dh_next = np.zeros((HIDDEN, 1))
-      for t in reversed(range(len(inputs))):
-          # softmax + cross-entropy gradient at the output (GIVEN):
-          dy = ps[t].copy()
-          dy[targets[t]] -= 1.0
-
-          # (a) output-layer grads (shared Why/by → accumulate with +=):
-          grads["Why"] += dy @ hs[t].T
-          grads["by"]  += dy
-
-          # (b) gradient flowing into the hidden state: output path + future:
-          dh = P["Why"].T @ dy + dh_next
-
-          # (c) TODO: backprop through tanh.  h = tanh(a) → da = (1 - h²)·dh
-          da = (1 - hs[t] ** 2) * dh
-
-          # (d) TODO: accumulate the shared hidden-layer grads (use +=):
-          grads["bh"]  += da
-          grads["Wxh"] += da @ xs[t].T
-          grads["Whh"] += da @ hs[t - 1].T
-
-          # (e) TODO: pass the memory-gradient to the previous timestep:
-          dh_next = P["Whh"].T @ da
-
-      # Clip to fight exploding gradients (GIVEN):
-      for k in grads:
-          np.clip(grads[k], -5.0, 5.0, out=grads[k])
-      return grads
+    Structure to implement:
+      - Allocate a zero grad the same shape as each entry of P, and a running
+        `dh_next` (HIDDEN, 1) that carries gradient BACKWARD in time (start at 0).
+      - Loop t from the LAST timestep down to 0. Two parts are GIVEN each iteration:
+          * the softmax+CE output gradient `dy` (copy ps[t], then subtract 1 at the
+            target index);
+          * the output-layer accumulation into grads["Why"]/["by"], and the hidden
+            gradient `dh` = (error from the output path via Whyᵀ) + `dh_next`.
+      - (c) TODO — backprop `dh` through the tanh: multiply by the tanh local
+        derivative expressed in the stored hidden state hs[t] → call it `da`.
+      - (d) TODO — accumulate the SHARED hidden-layer grads with +=: bias `bh` gets
+        `da`; `Wxh` gets the outer product of `da` with this step's input xs[t];
+        `Whh` gets the outer product of `da` with the PREVIOUS hidden state hs[t-1].
+      - (e) TODO — set `dh_next` = the gradient pushed to the previous step through
+        the recurrent weight (Whhᵀ · da).
+      - After the loop, clip every grad into [-5, 5] (GIVEN) and return the dict.
     """
     raise NotImplementedError("TODO: implement backward() (BPTT)")
 

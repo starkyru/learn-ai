@@ -40,10 +40,9 @@ class Tool:
 
 def calculator(args: str) -> str:
     """Evaluate a simple math expression given as a plain string."""
-    # TODO 1: Use Python's eval() to compute the expression.
-    #         Wrap in try/except and return an error message on failure.
+    # TODO 1: Evaluate the (stripped) expression with Python's `eval()`.
+    #         Wrap it in try/except and return an error message string on failure.
     #         WARNING: eval() is unsafe in production — this is a demo only.
-    #         HINT: eval(args.strip())
     raise NotImplementedError("TODO: implement calculator")
 
 
@@ -69,7 +68,8 @@ _MEMORY_STORE: dict[str, str] = {
 
 def retrieve(args: str) -> str:
     """Look up a key in the in-memory store."""
-    # TODO 3: Return _MEMORY_STORE.get(args.strip(), f"Not found: {args.strip()}")
+    # TODO 3: Look up the (stripped) key in `_MEMORY_STORE`. If it's missing,
+    #         return a "Not found: <key>" message instead of raising.
     raise NotImplementedError("TODO: implement retrieve")
 
 

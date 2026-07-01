@@ -91,18 +91,14 @@ const EVAL_CASES: EvalCase[] = [
  *
  * TODO: implement this function.
  *
- * Prompt the LLM:
- *   "Given the following context and answer, identify each factual claim in
- *    the answer. For each claim, determine whether it is directly supported
- *    by the context (yes) or not (no).
- *    Output ONLY a JSON array of {claim, supported} objects.
- *    Context: {context}
- *    Answer: {answer}"
+ * Build a ChatMessage[] asking the model to break the answer into its factual
+ * claims and mark each as supported-by-context or not, emitting ONLY a JSON
+ * array of {claim, supported} objects (interpolate the joined context and the
+ * answer). Call provider.chat(messages, { temperature: 0 }).
  *
- * Parse the JSON. Score = (# supported) / (# total).
- *
- * Hint: use a try/catch around JSON.parse. If parsing fails, return 0.5
- * and log a warning so the harness can continue.
+ * Parse result.text with JSON.parse inside a try/catch — on failure return 0.5
+ * and log a warning so the harness continues. Score = (# supported) / (# total);
+ * guard against an empty array.
  */
 async function scoreFaithfulness(
   evalCase: EvalCase,
@@ -121,16 +117,11 @@ async function scoreFaithfulness(
  *
  * TODO: implement this function.
  *
- * Prompt the LLM:
- *   "Given the following question and context, rate how relevant the context
- *    is for answering the question on a scale of 0 to 10.
- *    10 = the context perfectly addresses the question.
- *    0  = the context is completely irrelevant.
- *    Reply with ONLY the integer score.
- *    Question: {question}
- *    Context: {context}"
- *
- * Score = parsed integer / 10. Guard against NaN (return 0).
+ * Build a ChatMessage[] asking the model to rate, on a 0–10 scale, how relevant
+ * the context is for answering the question (10 = perfectly relevant, 0 =
+ * irrelevant) and reply with ONLY the integer (interpolate the question and the
+ * joined context). Parse the integer from result.text (guard against NaN →
+ * return 0) and return it divided by 10.
  */
 async function scoreContextRelevance(
   evalCase: EvalCase,
@@ -149,14 +140,10 @@ async function scoreContextRelevance(
  *
  * TODO: implement this function.
  *
- * Prompt the LLM:
- *   "On a scale of 0–10, how well does the following answer address the
- *    question? 10 = fully addresses it. 0 = completely off-topic.
- *    Reply with ONLY the integer score.
- *    Question: {question}
- *    Answer: {answer}"
- *
- * Score = parsed integer / 10.
+ * Build a ChatMessage[] asking the model to rate, on a 0–10 scale, how well the
+ * answer addresses the question (10 = fully, 0 = off-topic) and reply with ONLY
+ * the integer (interpolate the question and the answer). Parse the integer from
+ * result.text (guard against NaN, like the other scorers) and return it / 10.
  */
 async function scoreAnswerRelevance(
   evalCase: EvalCase,

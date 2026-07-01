@@ -65,23 +65,15 @@ def classify_with_guardrails(text: str, max_retries: int = 3) -> SentimentLabel:
     ]
 
     for attempt in range(max_retries):
-        # TODO: call llm.chat(messages), try parse_label on result.text
-        #       On ValueError:
-        #         - append ChatMessage(role="assistant", content=result.text)
-        #         - append ChatMessage(role="user", content=f'Invalid output: "{result.text}". ...')
-        #         - continue
-        #       On success: return the label
-
-        # result = llm.chat(messages)
-        # try:
-        #     return parse_label(result.text)
-        # except ValueError as err:
-        #     print(f"Attempt {attempt + 1}: parse failed ({err})")
-        #     messages.append(ChatMessage(role="assistant", content=result.text))
-        #     messages.append(ChatMessage(
-        #         role="user",
-        #         content=f'Invalid output: "{result.text}". Respond with EXACTLY one of: positive, negative, neutral.',
-        #     ))
+        # TODO: implement one attempt of the repair loop.
+        #   - Call llm.chat(messages) and try to parse_label(...) the reply text;
+        #     return the label immediately if it parses.
+        #   - If parse_label raises ValueError, the reply was malformed: grow the
+        #     conversation so the next attempt can self-correct. Append the model's
+        #     bad reply as a ChatMessage(role="assistant", ...), then append a
+        #     ChatMessage(role="user", ...) that quotes the bad output and restates
+        #     the one-word constraint. Then let the loop try again.
+        #   - After the loop exhausts max_retries, the raise below fires.
 
         print(f"Attempt {attempt + 1}: TODO — implement the retry loop above.")
         break  # remove once implemented

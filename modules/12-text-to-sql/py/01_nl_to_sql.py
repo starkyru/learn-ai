@@ -61,17 +61,15 @@ def generate_sql(question: str, provider: Any) -> str:
     TODO: implement this function.
 
     Steps:
-      1. Build a system prompt that:
-         - States the LLM is a SQL expert working with SQLite.
-         - Provides the schema (SCHEMA constant above).
-         - Instructs: "Return ONLY the SQL statement, no explanation,
-           no markdown fences."
-      2. Build a user message: the plain-English question.
-      3. Call provider.chat() with temperature=0 (deterministic output).
-      4. Extract and return the SQL string:
-         - Strip leading/trailing whitespace.
-         - Remove markdown fences if present: ```sql ... ``` or ``` ... ```.
-         - Return the first statement (up to the first ";") plus ";".
+      1. Build a `list[ChatMessage]`:
+         - A system message that establishes the model as a SQLite SQL expert,
+           embeds the `SCHEMA` constant as grounding, and forbids any output
+           other than the raw SQL (no prose, no markdown fences).
+         - A user message carrying the plain-English `question`.
+      2. Call `provider.chat(messages, ChatOptions(temperature=...))` — pick the
+         setting that makes generation deterministic.
+      3. Clean the model reply and return one SQL statement — reuse the
+         `extract_sql()` helper below rather than repeating its logic.
 
     Return type: str (the SQL statement, ready to execute).
     """
@@ -85,13 +83,13 @@ def extract_sql(raw: str) -> str:
     TODO: implement this function.
 
     Steps:
-      1. Strip whitespace.
-      2. Remove markdown code fences:
-           raw = re.sub(r"```(?:sql)?\\n?", "", raw, flags=re.IGNORECASE).strip()
-      3. Take only the text up to (and including) the first ";".
-         If no ";" found, return the whole string + ";".
-      4. Strip whitespace again.
-      5. Return the result.
+      1. Strip surrounding whitespace.
+      2. Strip any markdown code fences the model may have wrapped the SQL in
+         (```sql ... ``` or plain ``` ... ```). A case-insensitive `re.sub`
+         on the fence markers is the cleanest way.
+      3. Keep only the first statement: slice up to (and including) the first
+         ";". If there is no ";", append one so the result ends in a semicolon.
+      4. Strip again and return the single-statement string.
     """
     raise NotImplementedError("TODO: implement extract_sql()")
 
@@ -108,13 +106,13 @@ def execute_sql(sql: str) -> tuple[list[str], list[tuple[Any, ...]]]:
     TODO: implement this function.
 
     Steps:
-      1. conn = sqlite3.connect(DB_PATH)
-         conn.row_factory = sqlite3.Row  (so column names are accessible)
-      2. cursor = conn.execute(sql)
-      3. columns = [desc[0] for desc in cursor.description]
-      4. rows = cursor.fetchall()
-      5. Close connection.
-      6. Return (columns, rows).
+      1. Open a connection with `sqlite3.connect(DB_PATH)`; set its
+         `row_factory` to `sqlite3.Row` so column names are accessible.
+      2. Run the query with `conn.execute(sql)` — the returned cursor exposes
+         column metadata via `.description` and rows via `.fetchall()`.
+      3. Derive the column-name list from the cursor's `.description`
+         (each entry's first element is the column name).
+      4. Close the connection and return the `(columns, rows)` tuple.
 
     Let sqlite3 errors propagate — task 3 will add the retry/repair logic.
     """
@@ -133,9 +131,10 @@ def query(question: str, provider: Any) -> dict[str, Any]:
     TODO: implement this function.
 
     Steps:
-      1. sql = generate_sql(question, provider)
-      2. columns, rows = execute_sql(sql)
-      3. Return {"sql": sql, "columns": columns, "rows": rows}
+      1. Turn the question into SQL with `generate_sql()`.
+      2. Run it through `execute_sql()` to get columns and rows.
+      3. Return a dict keyed by "sql", "columns", and "rows" (the harness
+         reads those exact keys).
     """
     raise NotImplementedError("TODO: implement query()")
 

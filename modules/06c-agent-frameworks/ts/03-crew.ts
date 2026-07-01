@@ -74,17 +74,16 @@ class Agent {
    * Then call this.chatFn(messages) and return the reply.
    *
    * TODO: implement.
-   *   1. const system =
-   *        `You are ${this.role}. Your goal is ${this.goal}. ` +
-   *        `Backstory: ${this.backstory}`;
-   *   2. let user = task.description;
-   *      if (context) user += `\n\nContext from previous work:\n${context}`;
-   *      user += `\n\nExpected output: ${task.expectedOutput}`;
-   *   3. const messages = [
-   *        { role: "system", content: system },
-   *        { role: "user", content: user },
-   *      ];
-   *   4. return this.chatFn(messages);
+   *   - Build the system message from this agent's persona — its role, goal, and
+   *     backstory — so the model knows WHO it is.
+   *   - Build the user message: start from task.description; only when `context`
+   *     is non-empty, append a labelled "Context from previous work" section
+   *     carrying it; then append the expectedOutput hint. (The stub keys off the
+   *     exact phrase "Context from previous work" to detect threading, so keep
+   *     that label.)
+   *   - Assemble a Msg[]: a "system" message then a "user" message, each a
+   *     { role, content } object.
+   *   - Call this.chatFn(messages) and return its reply.
    */
   execute(_task: Task, _context = ""): string {
     // TODO: implement Agent.execute (assemble a role-grounded prompt)
@@ -129,17 +128,14 @@ class Crew {
    * Only process === "sequential" is supported here.
    *
    * TODO: implement.
-   *   1. let context = "";  // no prior work before the first task
-   *   2. for (const task of this.tasks):
-   *        a. const output = task.agent.execute(task, context);
-   *        b. this.transcript.push({
-   *             agent: task.agent.role,
-   *             task: task.description,
-   *             contextIn: context,
-   *             output,
-   *           });
-   *        c. context = output;  // thread into the NEXT task
-   *   3. return the LAST task's output (or "" if there are no tasks).
+   *   - Start with an empty context (nothing done before the first task).
+   *   - Walk this.tasks in order. For each task: run its agent with the current
+   *     context (task.agent.execute(task, context)), then thread that output
+   *     into the NEXT task by making it the new context.
+   *   - Push one transcript entry per task with fields `agent` (task.agent.role),
+   *     `task` (task.description), `contextIn` (the context that went IN, before
+   *     this task ran), and `output` — the tests read these to prove threading.
+   *   - Return the last task's output (return "" if there are no tasks).
    */
   kickoff(): string {
     // TODO: implement Crew.kickoff (sequential threading of outputs)
