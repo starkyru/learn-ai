@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "chroma": "uvx --from chromadb chroma run --path ./.chroma-data --port 8000"
+  },
   "dependencies": {
     "@learn-ai/llm-core": "workspace:*",
     "chromadb": "^1.9.0"
