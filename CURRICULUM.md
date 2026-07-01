@@ -478,7 +478,7 @@ This module is that depth. Reference: [`docs/LANGGRAPH.md`](docs/LANGGRAPH.md).
 
 ---
 
-## Module 06c — Agent Frameworks: LangChain, CrewAI, AutoGen
+## Module 06c — Agent Frameworks: LangChain, CrewAI, AutoGen, LlamaIndex, Semantic Kernel
 
 **Prerequisites:** Module 06 (Tasks 1 & 4). No new deps. A chat model is needed
 **only** on the non-`--stub` path (`get_provider()` / `getProvider()`, default
@@ -486,11 +486,12 @@ This module is that depth. Reference: [`docs/LANGGRAPH.md`](docs/LANGGRAPH.md).
 exact assertions. Reference: the module README's "Framework cheat-sheet".
 
 **Why:** Module 06 built an agent loop from scratch and 06b went deep on
-LangGraph, but interviews and real teams also ask about LangChain, CrewAI, and
-AutoGen. Rather than teach three APIs by rote, you reimplement each framework's
-core abstraction (~60–100 lines) through a plain `model(messages) -> text`
-function, then map each class back to the real library's API. The lesson: a
-"framework" is mostly orchestration around one model call.
+LangGraph, but interviews and real teams also ask about LangChain, CrewAI,
+AutoGen, LlamaIndex, and Semantic Kernel. Rather than teach five APIs by rote,
+you reimplement each framework's core abstraction (~60–100 lines) through a plain
+`model(messages) -> text` function, then map each class back to the real
+library's API. The lesson: a "framework" is mostly orchestration around one model
+call.
 
 **Learning objectives**
 
@@ -502,17 +503,23 @@ function, then map each class back to the real library's API. The lesson: a
   through role-grounded model calls.
 - Reimplement AutoGen's group chat as a bounded round-robin loop over a shared
   transcript with a termination signal.
+- Reimplement LlamaIndex's `VectorStoreIndex` → query engine as
+  retrieve-then-synthesize over Nodes (offline bag-of-words cosine).
+- Reimplement Semantic Kernel's `Kernel` as a registry of named semantic/native
+  functions you invoke by name and chain into a pipeline.
 
 **Tasks**
 
-| #   | Task                                        | Depth | What you do                                                                                                        |
-| --- | ------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------ |
-| 1   | LCEL runnable (`prompt \| model \| parser`) | 🟢    | Implement `Runnable.pipe` (flatten sequences), `RunnableSequence.invoke` (fold left), and `PromptTemplate.format`. |
-| 2   | Memory + retriever (a tiny RAG chain)       | 🟡    | Implement buffer memory, `cosine` over count vectors, top-k `get_relevant`, and the RAG prompt builder.            |
-| 3   | CrewAI crew (roles → tasks → crew)          | 🟡    | Implement `Agent.execute` (role-grounded prompt) and `Crew.kickoff` (sequential fold threading each output).       |
-| 4   | AutoGen group chat                          | 🟡    | Implement `ConversableAgent.generate_reply` and the round-robin `GroupChatManager.run` with `max_round`/TERMINATE. |
+| #   | Task                                                       | Depth | What you do                                                                                                                       |
+| --- | ---------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | LCEL runnable (`prompt \| model \| parser`)                | 🟢    | Implement `Runnable.pipe` (flatten sequences), `RunnableSequence.invoke` (fold left), and `PromptTemplate.format`.                |
+| 2   | Memory + retriever (a tiny RAG chain)                      | 🟡    | Implement buffer memory, `cosine` over count vectors, top-k `get_relevant`, and the RAG prompt builder.                           |
+| 3   | CrewAI crew (roles → tasks → crew)                         | 🟡    | Implement `Agent.execute` (role-grounded prompt) and `Crew.kickoff` (sequential fold threading each output).                      |
+| 4   | AutoGen group chat                                         | 🟡    | Implement `ConversableAgent.generate_reply` and the round-robin `GroupChatManager.run` with `max_round`/TERMINATE.                |
+| 5   | LlamaIndex query engine (Documents → index → query engine) | 🟡    | Implement `VectorStoreIndex.retrieve` (top-k by cosine over Nodes) and `QueryEngine.query` (retrieve → synthesis prompt → model). |
+| 6   | Semantic Kernel (named functions + chaining)               | 🟡    | Implement a `Kernel` that registers a semantic function + a native function, invokes them by name, and chains them sequentially.  |
 
-**Estimated time:** 4–6 hours
+**Estimated time:** 5–7 hours
 
 **Done when**
 
@@ -520,6 +527,8 @@ function, then map each class back to the real library's API. The lesson: a
 - [ ] Task 2: retriever returns the right doc, both turns are in memory, and the last prompt contains the retrieved context + prior turn.
 - [ ] Task 3: the crew returns the writer's output, and the writer's `context_in` is exactly the researcher's output.
 - [ ] Task 4: the transcript is correctly labelled, terminates early on `"TERMINATE"` (3 messages), and never exceeds `max_round`.
+- [ ] Task 5: the index chunks 3 documents into 6 nodes, the top node for the Eiffel-Tower query is correct, and the synthesis prompt contains the retrieved node text.
+- [ ] Task 6: the kernel invokes a native and a semantic function by name and chains them into a sequential pipeline.
 - [ ] You can name the real library API each of your classes maps to.
 
 ---

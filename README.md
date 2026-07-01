@@ -72,11 +72,12 @@ they're where the real understanding lives.
 > sinusoidal positional encoding, LayerNorm/GELU/FFN pre-LN blocks, and a KV cache.
 
 > **Deep dive — [`modules/06c-agent-frameworks/`](modules/06c-agent-frameworks/):**
-> extends modules 06/06b with the three framework names interviews drop —
+> extends modules 06/06b with the five framework names interviews drop —
 > **LangChain** (LCEL `prompt | model | parser`, buffer memory, retrievers/RAG),
-> **CrewAI** (role → task → sequential crew), and **AutoGen** (round-robin group chat) —
-> each reimplemented through `llm_core` then mapped back to the real library's API. Every
-> task runs offline via a `--stub` deterministic model.
+> **CrewAI** (role → task → sequential crew), **AutoGen** (round-robin group chat),
+> **LlamaIndex** (Documents → index → query engine for RAG), and **Semantic Kernel**
+> (skills/functions + a planner) — each reimplemented through `llm_core` then mapped
+> back to the real library's API. Every task runs offline via a `--stub` deterministic model.
 
 **Hosted-first** (default to APIs, optional local heavy path documented): modules **09, 10** (vision/diffusion), **13** (fine-tuning), **19** (audio). Nothing multi-GB downloads unless you opt in.
 

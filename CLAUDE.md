@@ -55,6 +55,12 @@ truth** for what the learner is studying — read it before tutoring or quizzing
 (Some module READMEs may not be written yet; if one is missing, fall back to the root
 `README.md` / `CURRICULUM.md` and say so rather than inventing content.)
 
+> **Keep the docs in sync.** Whenever you add or remove a lesson (a new module,
+> companion, or task), update **both** the root `README.md` (module table + deep-dive
+> callouts) **and** `CURRICULUM.md` (the module section: title, learning objectives,
+> tasks table, "Done when"). Don't leave a lesson that exists on disk but is missing or
+> stale in these two docs.
+
 ## Depth-level convention (🟢 / 🟡 / 🔴)
 
 Every module weaves three depth lanes; the learner picks a lane per module:
