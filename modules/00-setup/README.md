@@ -17,8 +17,8 @@ happening when you "call an LLM".
 
 A large language model (LLM) is a big neural network that, given some text,
 predicts what text should come next. You almost never run that network
-yourself — it's tens of gigabytes and wants a GPU. Instead a **provider** hosts
-it behind an HTTP API: you POST some messages, they stream back tokens.
+yourself — it's tens of gigabytes and wants a GPU (Graphics Processing Unit). Instead a **provider** hosts
+it behind an HTTP (HyperText Transfer Protocol) API (Application Programming Interface): you POST some messages, they stream back tokens.
 
 In this course a _provider_ is any service that can answer the same three
 questions:
@@ -27,24 +27,25 @@ questions:
 2. **chat (streaming)** — same, but emit the reply token-by-token as it's generated.
 3. **embed** — turn text into a vector of numbers (used from module 04 on).
 
-`llm-core` (in `packages/`) wraps four of them — OpenAI, Anthropic (Claude),
-Ollama, and NVIDIA NIM — behind one interface so your exercise code never hard-codes
-a vendor. You'll see _why_ that abstraction is possible below, and _where it
-leaks_ in module 02.
+`llm-core` (in `packages/`) wraps six of them — OpenAI, Anthropic (Claude),
+Ollama, NVIDIA NIM (NVIDIA Inference Microservices), LM Studio, and Google Gemini — behind one interface so your
+exercise code never hard-codes a vendor. You'll see _why_ that abstraction is
+possible below, and _where it leaks_ in module 02.
 
 ### Why the OpenAI HTTP shape is a de-facto standard
 
-When OpenAI shipped `/v1/chat/completions`, the request/response JSON shape was
+When OpenAI shipped `/v1/chat/completions`, the request/response JSON (JavaScript Object Notation) shape was
 simple and good enough that everyone copied it. Today **Ollama, NVIDIA NIM,
-vLLM, LM Studio, Together, Groq** and many more expose the _exact same_ endpoint
-shape. That's huge: a single client class — change only the `base_url`, the API
-key, and the model id — talks to all of them.
+vLLM, LM Studio, Together, Groq, Google Gemini** and many more expose the _exact
+same_ endpoint shape. That's huge: a single client class — change only the
+`base_url`, the API key, and the model id — talks to all of them.
 
 That's exactly what `OpenAICompatibleProvider` does in `llm-core`. One class
-covers **four of our five providers** (OpenAI, Ollama, NVIDIA, LM Studio). You
-point it at `http://localhost:11434/v1` for Ollama, `http://localhost:1234/v1`
-for LM Studio, or `https://integrate.api.nvidia.com/v1` for NVIDIA, and the rest
-of the code is identical.
+covers **five of our six providers** (OpenAI, Ollama, NVIDIA, LM Studio, Gemini).
+You point it at `http://localhost:11434/v1` for Ollama, `http://localhost:1234/v1`
+for LM Studio, `https://integrate.api.nvidia.com/v1` for NVIDIA, or
+`https://generativelanguage.googleapis.com/v1beta/openai/` for Gemini, and the
+rest of the code is identical.
 
 ```text
             same request/response shape
@@ -52,7 +53,8 @@ of the code is identical.
                                               ├─ api.openai.com      (OpenAI)
                                               ├─ localhost:11434     (Ollama)
                                               ├─ localhost:1234      (LM Studio)
-                                              └─ integrate.api.nvidia.com (NVIDIA)
+                                              ├─ integrate.api.nvidia.com (NVIDIA)
+                                              └─ generativelanguage.googleapis.com (Gemini)
 ```
 
 ### Why Anthropic is different
@@ -63,7 +65,7 @@ JSON structure for the response, `input_tokens`/`output_tokens` instead of
 `prompt_tokens`/`completion_tokens`, and **no embeddings endpoint at all**. So
 `llm-core` has a separate `AnthropicProvider` that adapts Claude's API to the
 same interface. When you ask Claude for an embedding it errors — use OpenAI,
-Ollama, NVIDIA, or LM Studio for embeddings.
+Ollama, NVIDIA, LM Studio, or Gemini for embeddings.
 
 This split (one shared OpenAI-compatible class + one bespoke Anthropic class) is
 itself a lesson: abstractions hold until a vendor does something genuinely
@@ -91,6 +93,7 @@ and LM Studio (both run models locally, no key).
 | **Ollama** (recommended) | free                         | [Install Ollama](https://ollama.com), then `ollama pull llama3.2 && ollama pull nomic-embed-text`. Leave `LLM_PROVIDER=ollama`.                                       |
 | **LM Studio**            | free                         | [Install LM Studio](https://lmstudio.ai), load a model, **Start Server** (port 1234). Set `LLM_PROVIDER=lmstudio` and `LMSTUDIO_CHAT_MODEL` to the loaded model's id. |
 | **NVIDIA NIM**           | free tier                    | Get a key at [build.nvidia.com](https://build.nvidia.com), put it in `NVIDIA_API_KEY`.                                                                                |
+| **Google Gemini**        | free tier                    | Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → `GEMINI_API_KEY`. Set `LLM_PROVIDER=gemini` (OpenAI-compatible endpoint).             |
 | **OpenAI**               | paid (~$5 covers the course) | Key at [platform.openai.com](https://platform.openai.com/api-keys) → `OPENAI_API_KEY`.                                                                                |
 | **Anthropic**            | paid                         | Key at [console.anthropic.com](https://console.anthropic.com) → `ANTHROPIC_API_KEY`. Set `ANTHROPIC_MODEL=claude-haiku-4-5` for cheap iteration.                      |
 
@@ -147,7 +150,7 @@ count, against **at least two** providers.
 
 ### Task 2 — Compare providers side by side 🟢
 
-**Goal:** send the _same_ prompt to all five providers and print the answers
+**Goal:** send the _same_ prompt to all six providers and print the answers
 together — skipping any provider whose key/server is missing, without crashing.
 
 **Steps**
@@ -182,7 +185,7 @@ configured, clearly labelling which providers ran and which were skipped.
 - [ ] You ran `hello` against **at least two** providers and saw answer + model + tokens.
 - [ ] `compare_providers` runs cleanly with missing providers skipped, not crashing.
 - [ ] You watched `streaming` print tokens incrementally.
-- [ ] You can explain, in a sentence, why one client class covers OpenAI + Ollama + NVIDIA but Anthropic needs its own.
+- [ ] You can explain, in a sentence, why one client class covers OpenAI + Ollama + NVIDIA + LM Studio + Gemini but Anthropic needs its own.
 
 ---
 
@@ -192,4 +195,5 @@ configured, clearly labelling which providers ran and which were skipped.
 - [Ollama OpenAI-compatibility docs](https://github.com/ollama/ollama/blob/main/docs/openai.md) — same endpoints, locally.
 - [Anthropic Messages API](https://docs.anthropic.com/en/api/messages) — see how it differs (top-level `system`, `input_tokens`).
 - [NVIDIA NIM](https://build.nvidia.com) — free-tier OpenAI-compatible hosting.
+- [Gemini OpenAI-compatibility docs](https://ai.google.dev/gemini-api/docs/openai) — Google's `/v1beta/openai/` endpoint; free tier at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 - Read `packages/ts/llm-core/src/providers/` and `packages/py/llm_core/llm_core/providers/` — the actual adapters you're using.

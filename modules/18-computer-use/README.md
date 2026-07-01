@@ -3,18 +3,18 @@
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand · 🔴 from-scratch
 
 An agent that can click, type, and navigate a browser is fundamentally different
-from one that only calls APIs. It can interact with any web interface — login
+from one that only calls APIs (Application Programming Interfaces). It can interact with any web interface — login
 forms, dashboards, shopping carts, search results — not just programmatic APIs.
 That power comes with serious risks.
 
 This module builds two kinds of browser agents and teaches you when to use each:
 
-**Vision-grounded agents** (Task 2) use screenshots. The LLM sees what a human
+**Vision-grounded agents** (Task 2) use screenshots. The LLM (Large Language Model) sees what a human
 would see — pixels — and decides where to click based on the visual layout.
-This works on any page, including canvas-based UIs. It's the approach Anthropic
+This works on any page, including canvas-based UIs (User Interfaces). It's the approach Anthropic
 uses for computer-use.
 
-**DOM/accessibility agents** (Task 3) use the accessibility tree — a structured,
+**DOM (Document Object Model)/accessibility agents** (Task 3) use the accessibility tree — a structured,
 semantic representation of the page. The LLM picks actions by role and label,
 not coordinates. This is cheaper, more reliable, and works well on modern
 web apps, but fails on canvas-based UIs.
@@ -38,15 +38,17 @@ take screenshot
 ```
 
 The multimodal LLM is the "vision" component. Its output is a structured action
-(a JSON object with coordinates or text to type). You execute the action with
+(a JSON (JavaScript Object Notation) object with coordinates or text to type). You execute the action with
 Playwright.
 
 Advantages:
-- Works on any page, including canvas, PDF viewers, and legacy sites.
+
+- Works on any page, including canvas, PDF (Portable Document Format) viewers, and legacy sites.
 - No DOM parsing — the LLM understands visual layout naturally.
-- This is what Anthropic's computer-use model does at OS level.
+- This is what Anthropic's computer-use model does at OS (Operating System) level.
 
 Disadvantages:
+
 - Expensive: a 1280×720 screenshot encodes as many tokens.
 - Pixel-coordinate clicks break when the layout shifts slightly.
 - Slower per step: each iteration needs a screenshot + multimodal LLM call.
@@ -55,7 +57,7 @@ Disadvantages:
 
 The accessibility tree (a11y tree) is what screen readers consume: a hierarchical
 structure where each node has a role (`button`, `link`, `heading`), a name
-(visible or aria label), and optional properties (href, value).
+(visible or ARIA (Accessible Rich Internet Applications) label), and optional properties (href, value).
 
 ```python
 snapshot = page.accessibility.snapshot()
@@ -76,27 +78,29 @@ extract a11y tree
 ```
 
 Advantages:
+
 - 10-100x cheaper than vision (text tokens vs. image tokens).
 - Actions survive layout changes (clicking by role/label, not pixel position).
 - Works with any text-based LLM — no multimodal required.
 
 Disadvantages:
+
 - Canvas-based UIs have no a11y tree.
 - Some sites have poor or empty a11y trees.
 - Cannot use visual cues (colour, spatial proximity).
 
 ### When to use which
 
-| Situation | Recommended approach |
-|-----------|---------------------|
-| Canvas, games, PDF viewers | Vision |
-| Legacy sites without ARIA | Vision |
-| Modern web apps and forms | DOM/a11y |
-| Cost-sensitive production | DOM/a11y |
-| Anthropic computer-use | Vision (OS-level screenshots) |
-| Sites with rich ARIA | DOM/a11y |
-| Debugging agent behaviour | DOM/a11y (easier to trace) |
-| Unknown site structure | Try DOM/a11y first, fall back to vision |
+| Situation                  | Recommended approach                    |
+| -------------------------- | --------------------------------------- |
+| Canvas, games, PDF viewers | Vision                                  |
+| Legacy sites without ARIA  | Vision                                  |
+| Modern web apps and forms  | DOM/a11y                                |
+| Cost-sensitive production  | DOM/a11y                                |
+| Anthropic computer-use     | Vision (OS-level screenshots)           |
+| Sites with rich ARIA       | DOM/a11y                                |
+| Debugging agent behaviour  | DOM/a11y (easier to trace)              |
+| Unknown site structure     | Try DOM/a11y first, fall back to vision |
 
 ### Anthropic computer-use
 
@@ -115,6 +119,7 @@ rather than a sandboxed browser.
 
 **Why this matters:** an agent that can navigate, fill forms, and click buttons
 can also:
+
 - Delete files or accounts (irreversible)
 - Submit payment forms
 - Send emails or messages
@@ -224,20 +229,23 @@ pnpm tsx modules/18-computer-use/ts/04-safety.ts
 read its title and text content, count links, and take a screenshot.
 
 **Steps (Python `01_browser_basics.py`):**
+
 1. Implement `navigate_and_read()` — navigate and return title, URL, text,
    link count (TODOs 1–3).
-2. Implement `take_screenshot()` — save a full-page PNG (TODO 4).
+2. Implement `take_screenshot()` — save a full-page PNG (Portable Network Graphics) (TODO 4).
 3. Implement `search_on_page()` — fill a search input and press Enter (TODO 5).
 4. Implement the async version `navigate_async()` (TODO 6).
 5. Run the script and verify the screenshot was saved to `assets/`.
 
 **Steps (TypeScript `01-browser-basics.ts`):**
+
 1. Implement `navigateAndRead()` (TODO 1).
 2. Implement `takeScreenshot()` (TODO 2).
 3. Implement `searchOnPage()` (TODO 3).
 4. Wire into `main()` (TODOs 4–6).
 
 **Acceptance:**
+
 - `navigate_and_read("https://example.com")` returns title "Example Domain" and
   at least one link.
 - `assets/screenshot.png` is created and visually shows the page.
@@ -251,6 +259,7 @@ read its title and text content, count links, and take a screenshot.
 LLM to decide actions, and completes a simple goal on a real website.
 
 **Steps (Python `02_vision_agent.py`):**
+
 1. Implement `page_screenshot_b64()` (TODO 1).
 2. Implement `decide_action_openai()` — multimodal message + JSON parse (TODO 2).
 3. Implement `decide_action_anthropic()` — same for Claude (TODO 3).
@@ -260,12 +269,14 @@ LLM to decide actions, and completes a simple goal on a real website.
 7. Set `AGENT_GOAL` and run. Trace each step in the output.
 
 **Steps (TypeScript `02-vision-agent.ts`):**
+
 1. Implement `pageScreenshotBase64()` (TODO 1).
 2. Implement `decideActionOpenAI()` (TODO 2) and `decideActionAnthropic()` (TODO 3).
 3. Implement `parseAction()` (TODO 4) and `executeAction()` (TODO 5).
 4. Implement `runVisionAgent()` (TODO 6).
 
 **Acceptance:**
+
 - Agent completes a 2-3 step goal on `example.com` (e.g., "find the More
   information link and navigate to it").
 - Step screenshots are saved to `assets/step_NN.png`.
@@ -279,6 +290,7 @@ LLM to decide actions, and completes a simple goal on a real website.
 of screenshots to decide actions. Compare cost and reliability to task 2.
 
 **Steps (Python `03_dom_agent.py`):**
+
 1. Implement `extract_a11y_tree()` — snapshot and format as text (TODOs 1–2).
 2. Implement `decide_action()` — use `llm_core.get_provider().chat()` with the
    text tree (TODO 4).
@@ -287,12 +299,14 @@ of screenshots to decide actions. Compare cost and reliability to task 2.
 5. (Stretch) Implement `extract_dom_summary()` as a fallback (TODO 3).
 
 **Steps (TypeScript `03-dom-agent.ts`):**
+
 1. Implement `extractA11yTree()` (TODO 1).
 2. Implement `decideAction()` using `getProvider().chat()` (TODO 2).
 3. Implement `parseAction()` (TODO 3) and `executeAction()` (TODO 4).
 4. Implement `runDomAgent()` (TODO 5).
 
 **Acceptance:**
+
 - Agent completes the same goal as task 2 without taking any screenshots.
 - (Stretch) Measurably cheaper: log token counts for both agents on the same goal.
 - You can explain: when would you choose DOM/a11y over vision and vice versa?
@@ -305,6 +319,7 @@ of screenshots to decide actions. Compare cost and reliability to task 2.
 classification, human confirmation gate, and prompt-injection sanitisation.
 
 **Steps (Python `04_safety.py`):**
+
 1. Implement `classify_action()` — return safe/medium/high/blocked (TODO 1).
 2. Implement `request_human_confirmation()` — console prompt with auto-mode (TODO 2).
 3. Implement `safe_execute()` — gate on risk before calling execute (TODO 3).
@@ -313,6 +328,7 @@ classification, human confirmation gate, and prompt-injection sanitisation.
 6. Read `print_computer_use_notes()` — understand Anthropic's safety guidance.
 
 **Steps (TypeScript `04-safety.ts`):**
+
 1. Implement `classifyAction()` (TODO 1).
 2. Implement `requestHumanConfirmation()` (TODO 2).
 3. Implement `safeExecute()` (TODO 3).
@@ -321,6 +337,7 @@ classification, human confirmation gate, and prompt-injection sanitisation.
 6. Call `sanitisePageContent` in `main()` (TODO 6).
 
 **Acceptance:**
+
 - `classify_action("navigate", {"url": "https://evil.com"})` returns "blocked".
 - `classify_action("click", {"description": "delete account"})` returns "high".
 - `classify_action("navigate", {"url": "https://example.com"})` returns "safe".
@@ -334,13 +351,13 @@ classification, human confirmation gate, and prompt-injection sanitisation.
 
 - [ ] Task 1: can navigate to any URL, read its content, and take a screenshot.
 - [ ] Task 2: a vision agent completes a 2-3 step task using screenshots +
-       a multimodal LLM; step screenshots are saved.
+      a multimodal LLM; step screenshots are saved.
 - [ ] Task 3: a DOM/a11y agent completes the same task without screenshots; you
-       measured or estimated the token cost difference.
+      measured or estimated the token cost difference.
 - [ ] Task 4: the safety layer correctly blocks untrusted domains, classifies
-       high-risk actions, and strips injection patterns from page content.
+      high-risk actions, and strips injection patterns from page content.
 - [ ] You can explain: when would you choose vision vs. DOM/a11y, and what
-       Anthropic computer-use adds over a browser-only agent.
+      Anthropic computer-use adds over a browser-only agent.
 
 ---
 
@@ -351,7 +368,7 @@ classification, human confirmation gate, and prompt-injection sanitisation.
 - **Retry logic**: add a retry wrapper around `execute_action` — some clicks fail
   because elements are not yet in the DOM after navigation.
 - **Wait strategies**: `page.wait_for_selector()` is more reliable than
-  `wait_for_load_state("domcontentloaded")` for SPA frameworks.
+  `wait_for_load_state("domcontentloaded")` for SPA (Single-Page Application) frameworks.
 - **Playwright's codegen**: `npx playwright codegen https://example.com` records
   your manual browsing session and generates the equivalent Playwright code —
   useful for bootstrapping a fixed automation.
@@ -360,13 +377,14 @@ classification, human confirmation gate, and prompt-injection sanitisation.
 
 Browser automation sits in a legal and ethical grey zone:
 
-- Most websites' ToS prohibit scraping and automated access.
+- Most websites' ToS (Terms of Service) prohibit scraping and automated access.
 - Logging in as a user with automation may violate the site's terms.
 - Rate-limiting matters: an agent that clicks 100 times per second can
   cause real load on a server.
-- GDPR and similar laws restrict automated collection of personal data.
+- GDPR (General Data Protection Regulation) and similar laws restrict automated collection of personal data.
 
 Safe defaults:
+
 - Only automate sites you own or have permission to automate.
 - Rate-limit your agent: add `time.sleep(1)` / `page.wait_for_timeout(1000)`
   between actions.

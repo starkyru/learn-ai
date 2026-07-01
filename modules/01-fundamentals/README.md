@@ -1,7 +1,7 @@
 # Module 01 — LLM Fundamentals
 
 This is the load-bearing module. It's the least immediately "useful" — you won't
-ship anything — but everything later (embeddings, RAG, agents) rests on the
+ship anything — but everything later (embeddings, RAG (Retrieval-Augmented Generation), agents) rests on the
 intuitions you build here. Don't skip it.
 
 By the end you'll have, **by hand**, a byte-pair-encoding tokenizer, cosine
@@ -18,8 +18,8 @@ samplers. The point isn't to reinvent these — it's that once you've written
 Models don't read characters or words. They read **tokens** — integer ids drawn
 from a fixed vocabulary, where each id stands for a chunk of text (often a
 sub-word). `" tokenization"` might be one token; `" antidisestablishmentarianism"`
-might be five. Before anything reaches the network, your text is *tokenized*
-into ids; afterwards the predicted ids are *decoded* back to text.
+might be five. Before anything reaches the network, your text is _tokenized_
+into ids; afterwards the predicted ids are _decoded_ back to text.
 
 Why sub-words and not whole words? A whole-word vocabulary can't spell anything
 it never saw (every typo, every new name = unknown). A character vocabulary
@@ -39,7 +39,7 @@ This matters in practice: token count = cost and = context-window budget.
 ### 2. Embeddings & vector similarity
 
 An **embedding** is a fixed-length vector of floats that represents a piece of
-text's *meaning*. The model is trained so that texts with similar meaning land
+text's _meaning_. The model is trained so that texts with similar meaning land
 near each other in this high-dimensional space. "How do I reset my password?"
 and "I forgot my login" end up close; "the cat sat on the mat" ends up far away.
 
@@ -55,12 +55,12 @@ cos(a, b) = (a · b) / (‖a‖ · ‖b‖)
 - Result is in `[-1, 1]`: **1** = same direction (very similar), **0** =
   orthogonal (unrelated), **-1** = opposite.
 
-We divide out the magnitudes because we care about *direction* (meaning), not
+We divide out the magnitudes because we care about _direction_ (meaning), not
 how long the vector happens to be. This single function is the engine of
 semantic search and RAG (modules 04–05).
 
 > **Task 2 implements cosine by hand** and ranks ~6 real sentences embedded via
-> `provider.embed()`, so you *see* semantically close sentences score higher.
+> `provider.embed()`, so you _see_ semantically close sentences score higher.
 
 ### 3. Attention (scaled dot-product)
 
@@ -72,7 +72,7 @@ projections:
 - **K** (key): what each token offers.
 - **V** (value): the actual content each token contributes.
 
-The output for a token is a *weighted average of all the V vectors*, where the
+The output for a token is a _weighted average of all the V vectors_, where the
 weights come from how well this token's Q matches each token's K:
 
 ```
@@ -81,18 +81,18 @@ Attention(Q, K, V) = softmax( (Q · Kᵀ) / √dₖ ) · V
 
 Step by step, for sequence length `n` and head dim `dₖ`:
 
-1. `scores = Q @ Kᵀ` → an `n × n` matrix; `scores[i][j]` is how much token *i*
-   attends to token *j* (a raw dot product).
+1. `scores = Q @ Kᵀ` → an `n × n` matrix; `scores[i][j]` is how much token _i_
+   attends to token _j_ (a raw dot product).
 2. **Scale** by `1/√dₖ`. Without this, large `dₖ` makes dot products huge, which
    pushes softmax into a near one-hot regime with vanishing gradients. The √dₖ
    keeps the variance sane.
-3. **softmax** each row → the weights for row *i* are non-negative and sum to 1.
+3. **softmax** each row → the weights for row _i_ are non-negative and sum to 1.
    `softmax(x)ᵢ = exp(xᵢ) / Σⱼ exp(xⱼ)`. (Subtract the row max before `exp` for
    numerical stability — same result, no overflow.)
 4. `output = weights @ V` → each token's output is the attention-weighted mix of
    all value vectors.
 
-That's *one head*. Real models run many heads in parallel (each can specialise:
+That's _one head_. Real models run many heads in parallel (each can specialise:
 syntax, coreference, etc.) and stack many layers. But the core is the four steps
 above, and they're just matrix multiplies plus a softmax.
 
@@ -103,7 +103,7 @@ above, and they're just matrix multiplies plus a softmax.
 
 The model's final layer outputs a **logit** per vocabulary token — an
 unnormalised score. To pick the next token you first turn logits into a
-probability distribution with softmax, then *sample* from it. How you sample
+probability distribution with softmax, then _sample_ from it. How you sample
 controls how "creative" vs. "focused" the output is:
 
 - **Greedy** (argmax): always take the highest-probability token. Deterministic,
@@ -119,11 +119,11 @@ controls how "creative" vs. "focused" the output is:
   keeps many).
 
 In practice you combine them (e.g. temperature + top-p). Understanding them
-demystifies the `temperature` / `top_p` knobs you'll set on every API call.
+demystifies the `temperature` / `top_p` knobs you'll set on every API (Application Programming Interface) call.
 
 > **Task 4 is a stub.** Implement all four in `sampling.py` / `sampling.ts`.
 
-### 5. What *is* a "language model"?
+### 5. What _is_ a "language model"?
 
 Strip away the hype and a language model is one thing: **a next-token
 predictor**. Given a sequence of tokens, it outputs a probability distribution
@@ -135,7 +135,7 @@ vocabulary and context.
 The simplest possible version is a **bigram model**: count how often each token
 follows each other token in a corpus, and predict the next token from those
 counts alone (no neural network, no attention). It's a terrible language model —
-but it's a *real* one, and writing it makes "prediction from context" concrete.
+but it's a _real_ one, and writing it makes "prediction from context" concrete.
 
 > **Task 5** is a README exercise + an optional `bigram.py` stub. From there the
 > ladder to a real transformer is just: bigger context (attention instead of
@@ -179,7 +179,7 @@ pnpm jest modules/01-fundamentals/ts/bpe.test.ts
 **Steps**
 
 1. Read `bpe.py` / `bpe.ts`. Start from the **byte** level (256 base tokens) so
-   *any* input is representable — no unknown tokens, ever.
+   _any_ input is representable — no unknown tokens, ever.
 2. Follow `train`: count adjacent pairs, merge the most frequent into a new
    token id, repeat `num_merges` times, recording the merge order.
 3. Trace `encode`: it applies the learned merges in the order they were learned;
@@ -254,7 +254,7 @@ model.
 1. Open `bigram.py`. Fill in the TODOs: count token→next-token frequencies in a
    small corpus, then generate by sampling the next token from those counts.
 2. Observe that it produces locally-plausible, globally-nonsense text — and that
-   this *is* a (bad) language model. A transformer is this idea with a much
+   this _is_ a (bad) language model. A transformer is this idea with a much
    longer memory and learned representations.
 
 **Acceptance:** it generates a short sequence by repeatedly predicting the next

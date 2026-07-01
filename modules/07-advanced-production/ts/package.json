@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@learn-ai/llm-core": "workspace:*"
+    "@learn-ai/llm-core": "workspace:*",
+    "langfuse": "^3.0.0"
   },
   "devDependencies": {
     "tsx": "^4.19.0",

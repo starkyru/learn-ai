@@ -37,6 +37,7 @@ agents = [
 production = [
     "fastapi>=0.115",
     "uvicorn>=0.30",
+    "langfuse>=3.0",   # module 07 Task 6 — hosted LLM observability
 ]
 # `uv sync --extra telegram`  (projects/news-agent — the Telegram news bot)
 telegram = [

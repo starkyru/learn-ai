@@ -5,10 +5,10 @@
 Running a model is only half the story. Running it EFFICIENTLY — maximising
 tokens per second, minimising time-to-first-token, fitting it in memory — is
 what separates a toy demo from a usable system. This module teaches the core
-techniques: quantization, KV caching, batching, and the tradeoffs between
+techniques: quantization, KV (Key-Value) caching, batching, and the tradeoffs between
 different serving engines.
 
-The default path uses Ollama (already set up from module 00) and hosted APIs, so
+The default path uses Ollama (already set up from module 00) and hosted APIs (Application Programming Interfaces), so
 nothing large downloads unless you explicitly opt in. Optional paths for
 llama.cpp and vLLM are documented for each task.
 
@@ -22,13 +22,13 @@ Neural network weights are stored as floating-point numbers. The default is
 fp32 (32-bit, 4 bytes per weight). Quantization reduces precision to save
 memory and speed up computation:
 
-| Format | Bits/weight | Relative size | Quality loss |
-| --- | --- | --- | --- |
-| fp32 | 32 | 1× | baseline |
-| fp16 / bf16 | 16 | 0.5× | negligible |
-| int8 | 8 | 0.25× | small |
-| int4 (GGUF Q4) | ~4.5 | ~0.14× | moderate |
-| int2 | 2 | 0.0625× | significant |
+| Format         | Bits/weight | Relative size | Quality loss |
+| -------------- | ----------- | ------------- | ------------ |
+| fp32           | 32          | 1×            | baseline     |
+| fp16 / bf16    | 16          | 0.5×          | negligible   |
+| int8           | 8           | 0.25×         | small        |
+| int4 (GGUF Q4) | ~4.5        | ~0.14×        | moderate     |
+| int2           | 2           | 0.0625×       | significant  |
 
 The key insight: for inference (not training), we can tolerate slightly lower
 precision because we're not accumulating gradients. A Q4 model often performs
@@ -50,6 +50,7 @@ need to be computed at each step. This reduces the cost of each new token from
 O(n) to O(1) in the attention layer.
 
 Why context length is quadratic without caching:
+
 ```
 Without KV cache:  step t costs O(t) attention ops → total O(n²)
 With KV cache:     step t costs O(1) new K/V + O(t) attention read → total O(n)
@@ -65,6 +66,7 @@ inference is expensive even though the model weights are fixed.
 - **Throughput**: tokens per second across ALL concurrent requests
 
 These are in tension:
+
 - A single request gets the lowest latency when it monopolises the GPU.
 - Throughput is maximised by **batching**: processing multiple requests at once,
   amortising the fixed cost of loading weights.
@@ -74,12 +76,12 @@ the batching benefit — total time grows much slower than N×single.
 
 ### Serving engines
 
-| Engine | Best for | Key feature |
-| --- | --- | --- |
-| **Ollama** | Single-user local dev | One command, cross-platform, GGUF |
-| **llama.cpp** | Embedded / edge | Minimal deps, CPU inference |
-| **vLLM** | High-throughput server | PagedAttention, OpenAI-compatible API |
-| **TGI** (HuggingFace) | HF model hub integration | Streaming, Rust, quantization |
+| Engine                | Best for                 | Key feature                           |
+| --------------------- | ------------------------ | ------------------------------------- |
+| **Ollama**            | Single-user local dev    | One command, cross-platform, GGUF     |
+| **llama.cpp**         | Embedded / edge          | Minimal deps, CPU inference           |
+| **vLLM**              | High-throughput server   | PagedAttention, OpenAI-compatible API |
+| **TGI** (HuggingFace) | HF model hub integration | Streaming, Rust, quantization         |
 
 Rule of thumb: Ollama for local experiments, vLLM for serving at scale.
 
@@ -93,6 +95,7 @@ Rule of thumb: Ollama for local experiments, vLLM for serving at scale.
 the llama.cpp/GGUF + vLLM paths.
 
 **Files:**
+
 - `py/01_run_local.py`
 - `ts/01-run-local.ts`
 
@@ -109,6 +112,7 @@ the llama.cpp/GGUF + vLLM paths.
    table comparing Ollama / llama.cpp / vLLM / TGI use cases.
 
 **Acceptance:**
+
 - The script runs with Ollama and prints tokens/sec.
 - The engine guide table prints correctly.
 - No errors if Ollama is not running (handle gracefully with try/except).
@@ -121,6 +125,7 @@ the llama.cpp/GGUF + vLLM paths.
 size/speed/quality differences, and print a comparison table.
 
 **Files:**
+
 - `py/02_quantization.py`
 - `ts/02-quantization.ts`
 
@@ -134,7 +139,7 @@ size/speed/quality differences, and print a comparison table.
    via the Ollama API (using an `OpenAICompatibleProvider` with `chat_model`
    overridden, or a raw `openai` SDK call) and return `(text, tokens, elapsed_s)`.
 
-3. Implement `score_quality()` / `scoreQuality()` — ask a judge LLM to score the
+3. Implement `score_quality()` / `scoreQuality()` — ask a judge LLM (Large Language Model) to score the
    two outputs for coherence and factual plausibility (1–5 scale each).
 
 4. Implement `print_comparison_table()` / `printComparisonTable()` — format a
@@ -144,6 +149,7 @@ size/speed/quality differences, and print a comparison table.
 levels — adjust if you have Q4/Q8 variants of the same model via `ollama pull`).
 
 **Acceptance:**
+
 - The table prints with at least 2 rows (2 different models/quant levels).
 - Tokens/sec is measured, not estimated.
 - Quality scores are LLM-judge-derived (or clearly marked as manual).
@@ -156,6 +162,7 @@ levels — adjust if you have Q4/Q8 variants of the same model via `ollama pull`
 fire N concurrent requests and measure aggregate throughput.
 
 **Files:**
+
 - `py/03_throughput_latency.py`
 - `ts/03-throughput-latency.ts`
 
@@ -177,6 +184,7 @@ fire N concurrent requests and measure aggregate throughput.
    - N concurrent requests (N = 2, 4, 8)
 
 **Acceptance:**
+
 - TTFT is measured via streaming (not estimated).
 - Concurrent requests run in parallel (wall-clock time < N × single-request time).
 - A table prints showing latency vs concurrency.
@@ -190,6 +198,7 @@ Write a `recommend_engine()` function that returns the best engine for a given
 use case description.
 
 **Files:**
+
 - `py/04_serving_engines.py`
 - `ts/04-serving-engines.ts`
 
@@ -207,6 +216,7 @@ use case description.
    table summarising all four engines.
 
 **Acceptance:**
+
 - `recommend_engine("I need to serve 1000 users concurrently")` returns vLLM.
 - `recommend_engine("I want to run a model on my laptop with no setup")` returns Ollama.
 - The engine table prints correctly.
@@ -220,12 +230,14 @@ mock "attention" step) that demonstrates WHY caching K/V matrices avoids
 redundant recomputation. Measure the speedup.
 
 **Files:**
+
 - `py/05_kv_cache.py`
 - `ts/05-kv-cache.ts`
 
 **The harness is runnable. You implement the TODO sections.**
 
 The toy model:
+
 - Uses a fixed "embedding" (a random vector per token id).
 - At each step, "attention" over all past tokens is simulated by computing
   dot products of the new token's query with all past keys.
@@ -253,7 +265,8 @@ The toy model:
    speedup and total key computations avoided.
 
 **Acceptance:**
-- Uncached total key computations = 1 + 2 + 3 + ... + N = N*(N+1)/2.
+
+- Uncached total key computations = 1 + 2 + 3 + ... + N = N\*(N+1)/2.
 - Cached total key computations = N (one per step).
 - Cached time is measurably faster for N >= 50 (even with the toy computation).
 - Results print in a clear table.
@@ -268,10 +281,12 @@ retries on failure or timeout, and run a small load test to measure throughput,
 p50/p95 latency, and error rate.
 
 **Files:**
+
 - `py/06_routing_fallbacks.py`
 - `ts/06-routing-fallbacks.ts`
 
 **Steps:**
+
 1. Implement `classify_difficulty()` / `classifyDifficulty()` — heuristic
    keyword-based classifier; rules: hard if contains HARD_KEYWORDS, word count
    > 20, or multiple `?`; easy otherwise.
@@ -287,6 +302,7 @@ p50/p95 latency, and error rate.
    two load-test runs (concurrency=1 vs concurrency=3).
 
 **Acceptance:**
+
 - `classify_difficulty()` classifies at least 3 of the 4 hard examples in the
   harness as "hard" and at least 4 of the 6 easy examples as "easy".
 - `route()` returns `HARD_MODEL` for hard queries and `EASY_MODEL` for easy ones.

@@ -3,13 +3,13 @@
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand
 
 Not all enterprise data lives in documents. Sales figures, customer records,
-inventory, and event logs live in relational databases — and an LLM can query
+inventory, and event logs live in relational databases — and an LLM (Large Language Model) can query
 them in plain English if you give it the right schema context.
 
-This module teaches you to build a NL→SQL pipeline that is both useful and safe:
+This module teaches you to build a NL (Natural Language)→SQL (Structured Query Language) pipeline that is both useful and safe:
 generate SQL from questions, ground generation with schema metadata and sample
 rows, guard against destructive queries, self-repair on errors, and route
-between SQL and RAG based on question intent.
+between SQL and RAG (Retrieval-Augmented Generation) based on question intent.
 
 ---
 
@@ -20,13 +20,13 @@ between SQL and RAG based on question intent.
 The core idea is simple: give the LLM your table definitions and ask it to write
 SQL. The quality gap between a naive prompt and a careful one is enormous.
 
-| Prompt quality | Typical failure modes |
-| --- | --- |
-| "Write SQL to answer: {question}" | Invented column names, wrong tables, no JOIN |
-| + table names | Better table names, still wrong columns |
-| + column names and types | Mostly correct for single-table queries |
-| + sample rows and JOIN hints | Handles multi-table, picks right column values |
-| + few-shot examples | Handles aggregations and edge cases reliably |
+| Prompt quality                    | Typical failure modes                          |
+| --------------------------------- | ---------------------------------------------- |
+| "Write SQL to answer: {question}" | Invented column names, wrong tables, no JOIN   |
+| + table names                     | Better table names, still wrong columns        |
+| + column names and types          | Mostly correct for single-table queries        |
+| + sample rows and JOIN hints      | Handles multi-table, picks right column values |
+| + few-shot examples               | Handles aggregations and edge cases reliably   |
 
 The lesson: schema grounding is not optional. A model with no schema will
 hallucinate column names confidently.
@@ -34,6 +34,7 @@ hallucinate column names confidently.
 ### Schema grounding
 
 A good schema prompt includes:
+
 1. **Table name and column names with types** — `orders(id INTEGER, customer_id INTEGER, ...)`.
 2. **Enum values** — `status: 'pending' | 'shipped' | 'delivered' | 'cancelled'`.
 3. **Foreign key relationships** — `orders.customer_id → customers.id`.
@@ -79,13 +80,13 @@ the model can't fix it in 3 tries, surface the error.
 
 Not every user question should go to SQL:
 
-| Question | Best backend |
-| --- | --- |
-| "How many orders did Alice place last month?" | SQL — exact count from database |
-| "What is the average order value by region?" | SQL — aggregation over table |
-| "What is RAG and how does it work?" | RAG — conceptual knowledge |
-| "Why might customers in the West region churn?" | RAG — analysis / reasoning |
-| "Show me Alice's orders and explain why RAG helps personalise them." | Both |
+| Question                                                             | Best backend                    |
+| -------------------------------------------------------------------- | ------------------------------- |
+| "How many orders did Alice place last month?"                        | SQL — exact count from database |
+| "What is the average order value by region?"                         | SQL — aggregation over table    |
+| "What is RAG and how does it work?"                                  | RAG — conceptual knowledge      |
+| "Why might customers in the West region churn?"                      | RAG — analysis / reasoning      |
+| "Show me Alice's orders and explain why RAG helps personalise them." | Both                            |
 
 A router classifies intent and dispatches. The LLM is well-suited to classify
 because it understands both natural language and the difference between a data
@@ -106,10 +107,12 @@ that requires reasoning over text rather than summing numbers.
 **Goal:** Generate SQL from a question, execute it, print the rows.
 
 **Files:**
+
 - `py/01_nl_to_sql.py`
 - `ts/01-nl-to-sql.ts`
 
 **Steps:**
+
 1. Implement `generate_sql()` / `generateSql()` — build a schema-grounded
    prompt, call the LLM, return the SQL string.
 2. Implement `extract_sql()` / `extractSql()` — strip markdown fences and
@@ -120,6 +123,7 @@ that requires reasoning over text rather than summing numbers.
 5. Run the harness; it answers 4 questions.
 
 **Acceptance:**
+
 - All 4 questions return rows (not an exception).
 - The SQL generated is valid SQLite (check by reading the `sql` field in output).
 - "Total revenue from delivered orders" returns a single number.
@@ -128,14 +132,16 @@ that requires reasoning over text rather than summing numbers.
 
 ### Task 2 🟡 — Schema-aware prompting
 
-**Goal:** Auto-generate the schema description from the live DB, add sample
+**Goal:** Auto-generate the schema description from the live DB (Database), add sample
 rows and JOIN hints, handle multi-table questions.
 
 **Files:**
+
 - `py/02_schema_aware_prompting.py`
 - `ts/02-schema-aware-prompting.ts`
 
 **Steps:**
+
 1. Implement `get_schema_description()` / `getSchemaDescription()` — query
    `sqlite_master` and `PRAGMA table_info`, fetch 3 sample rows per table,
    format as a readable schema string.
@@ -145,6 +151,7 @@ rows and JOIN hints, handle multi-table questions.
 4. Run the harness on 4 multi-table questions (JOINs required for all of them).
 
 **Acceptance:**
+
 - Schema description includes COLUMNS and SAMPLE ROWS for all 3 tables.
 - All 4 multi-table questions return results without errors.
 - "Total spend per customer" returns a list ordered highest → lowest.
@@ -157,10 +164,12 @@ rows and JOIN hints, handle multi-table questions.
 self-repair on DB errors.
 
 **Files:**
+
 - `py/03_safety_repair.py`
 - `ts/03-safety-repair.ts`
 
 **Steps:**
+
 1. Implement `validate_read_only()` / `validateReadOnly()` — check first keyword
    and scan for forbidden words; raise `UnsafeSQLError` / `UnsafeSqlError` on fail.
 2. Implement `validate_no_stacked_queries()` / `validateNoStackedQueries()` —
@@ -172,6 +181,7 @@ self-repair on DB errors.
 5. Run the harness: 2 safe questions and 2 adversarial inputs.
 
 **Acceptance:**
+
 - Normal questions execute successfully (retries=0 on a good model).
 - "DROP TABLE customers" is blocked before any DB execution.
 - "DELETE FROM orders WHERE 1=1" is blocked.
@@ -185,13 +195,15 @@ self-repair on DB errors.
 **Goal:** Classify question intent and dispatch to SQL or RAG accordingly.
 
 **Files:**
+
 - `py/04_hybrid_routing.py`
 - `ts/04-hybrid-routing.ts`
 
 **Steps:**
+
 1. Implement `classify_intent()` / `classifyIntent()` — build an intent-
-   classification prompt; parse JSON response `{"route": "sql|vector|both|unknown",
-   "reasoning": "..."}`.
+   classification prompt; parse JSON (JavaScript Object Notation) response `{"route": "sql|vector|both|unknown",
+"reasoning": "..."}`.
 2. Implement `rag_answer()` / `ragAnswer()` — answer from the inline knowledge
    base using the LLM (simulated RAG context stuffing).
 3. Implement `route_and_answer()` / `routeAndAnswer()` — classify, dispatch to
@@ -199,6 +211,7 @@ self-repair on DB errors.
 4. Run the harness on 5 questions (2 SQL, 2 RAG, 1 ambiguous).
 
 **Acceptance:**
+
 - Pure database questions (`route="sql"`) produce rows.
 - Knowledge questions (`route="vector"`) produce text answers, not SQL.
 - Routing classification is printed so you can inspect the LLM's reasoning.
@@ -249,12 +262,14 @@ No new env vars beyond module 00.
 ## Python dependencies
 
 All dependencies are in stdlib:
+
 - `sqlite3` — built into Python (no install needed)
 - `llm_core` — the course package
 
 ## TypeScript dependencies
 
 Added to `ts/package.json`:
+
 - `better-sqlite3` — synchronous SQLite bindings for Node.js (native addon)
 - `@types/better-sqlite3` — TypeScript types
 
@@ -263,6 +278,7 @@ Install: `pnpm install` from `modules/12-text-to-sql/ts/` or `pnpm -r install` f
 ## Sample database
 
 `sales.db` is created by the seed script and contains:
+
 - 8 customers across 4 regions
 - 10 products across 3 categories
 - 20 orders spanning 2024

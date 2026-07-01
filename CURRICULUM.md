@@ -46,18 +46,19 @@ provider key or a local Ollama install.
 - Understand what an LLM provider is and what the three core operations
   (`chat`, `chat_stream`, `embed`) look like over HTTP.
 - Understand why the OpenAI `/v1/chat/completions` shape became a de-facto
-  standard, and why Anthropic needs its own adapter.
+  standard (OpenAI, Ollama, NVIDIA, LM Studio, and Gemini all speak it), and why
+  Anthropic needs its own adapter.
 - Run a prompt against two different providers using the shared `get_provider()`
   abstraction.
 - Watch streaming tokens arrive and understand time-to-first-token (TTFT).
 
 **Tasks**
 
-| #   | Task              | Depth | What you do                                                                                                       |
-| --- | ----------------- | ----- | ----------------------------------------------------------------------------------------------------------------- |
-| 1   | Hello, LLM        | 🟢    | Run `hello.py` / `hello.ts` against two providers; see answer, model id, and token count.                         |
-| 2   | Compare providers | 🟢    | Run `compare_providers` to send the same prompt to all five providers simultaneously; skips missing ones cleanly. |
-| 3   | Streaming         | 🟢    | Watch `streaming.py` / `streaming.ts` emit tokens progressively via `chat_stream()`.                              |
+| #   | Task              | Depth | What you do                                                                                                      |
+| --- | ----------------- | ----- | ---------------------------------------------------------------------------------------------------------------- |
+| 1   | Hello, LLM        | 🟢    | Run `hello.py` / `hello.ts` against two providers; see answer, model id, and token count.                        |
+| 2   | Compare providers | 🟢    | Run `compare_providers` to send the same prompt to all six providers simultaneously; skips missing ones cleanly. |
+| 3   | Streaming         | 🟢    | Watch `streaming.py` / `streaming.ts` emit tokens progressively via `chat_stream()`.                             |
 
 **Estimated time:** 1–2 hours
 
@@ -66,7 +67,7 @@ provider key or a local Ollama install.
 - [ ] `hello` ran against at least two providers; you saw answer + model + tokens.
 - [ ] `compare_providers` runs cleanly even with some providers missing.
 - [ ] `streaming` printed tokens incrementally.
-- [ ] You can explain why one `OpenAICompatibleProvider` covers three vendors.
+- [ ] You can explain why one `OpenAICompatibleProvider` covers five vendors (OpenAI, Ollama, NVIDIA, LM Studio, Gemini) and only Anthropic needs its own.
 
 ---
 
@@ -103,6 +104,127 @@ provider key or a local Ollama install.
 - [ ] Greedy/temperature/top-k/top-p behave as described.
 - [ ] You can explain in one sentence each: token, embedding, attention, sampling.
 - [ ] `pytest test_fundamentals.py` and `jest bpe.test.ts` pass.
+
+---
+
+## Module 01b — Classic ML Foundations
+
+**Prerequisites:** Module 01. NumPy (a base dependency — no extra needed). Pure
+numpy (Python) / plain TypeScript, fully offline, deterministic — no provider,
+no network, no LLM.
+
+**Why:** The course jumps almost straight to LLMs, but every AI interview and a
+lot of real debugging still leans on the classic-ML theory underneath. This
+companion fills that gap without duplicating Module 08 (softmax, cross-entropy,
+F1, confusion matrix); it focuses on regression, bias–variance & cross-validation,
+regularisation, ROC/AUC, and k-means.
+
+**Learning objectives**
+
+- Fit linear regression two ways — the normal equation and gradient descent —
+  and confirm they converge to the same weights.
+- Reproduce the bias–variance U-curve, estimate test error with k-fold
+  cross-validation, and tame overfitting with ridge (L2) regularisation.
+- Train logistic regression with gradient descent and watch L2 shrink the weight norm.
+- Build ROC/AUC ranking metrics and k-means clustering from scratch.
+
+**Tasks**
+
+| #   | Task                                   | Depth | What you do                                                                                                        |
+| --- | -------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------ |
+| 1   | Linear regression (normal eq + GD)     | 🟡    | Implement `normal_equation` (solve, never invert), `predict`, `mse_loss`, `gradient_step`; GD matches closed form. |
+| 2   | Bias–variance, cross-validation, ridge | 🔴    | Implement `kfold_indices`, `ridge_fit` (don't regularise the intercept), `cv_score`; find the CV-optimal degree.   |
+| 3   | Logistic regression + L2               | 🟡    | Implement `sigmoid`, `bce_loss`, `predict_proba`, `gradient_step` with a bias-exempt L2 term.                      |
+| 4   | ROC/AUC + k-means                      | 🟢    | Implement `roc_curve`, `auc` (trapezoid), and k-means `assign`/`update`/`inertia` from scratch.                    |
+
+**Estimated time:** 4–6 hours
+
+**Done when**
+
+- [ ] Task 1: normal-equation and GD weights match, MSE is monotone, `R² > 0.9`.
+- [ ] Task 2: CV-optimal degree is in [2, 6]; degree-12 shows the train ≪ CV gap; ridge lowers both `||w||` and CV MSE.
+- [ ] Task 3: ≥ 95% train accuracy with monotone BCE loss; larger `λ` gives a smaller `||w||`.
+- [ ] Task 4: AUC = 1.0 / 0.0 / ≈0.5 for perfect / reversed / random rankers; k-means recovers 3 distinct clusters with non-increasing inertia.
+
+---
+
+## Module 01c — Deep Learning Essentials
+
+**Prerequisites:** Module 01 (and Module 01b helps). NumPy (a base dependency).
+Pure numpy (Python) / plain arrays (TypeScript), offline, seeded and deterministic
+— no ML framework, no network, no LLM.
+
+**Why:** Modern LLM work sits on a stack of ideas that predate transformers:
+backprop, optimizers, initialisation, regularisation, and the recurrent network.
+This companion makes each concrete. It deliberately does not re-teach 2-D
+convolution (module 09), a single attention head (module 01), or plain
+softmax/GD (module 08).
+
+**Learning objectives**
+
+- Build a scalar autograd engine (micrograd-style) and train an MLP by
+  backprop, verified against finite differences.
+- Implement SGD / Momentum / Adam and He / Xavier init; demonstrate why ReLU
+  beats sigmoid on vanishing gradients.
+- Implement inverted dropout, batchnorm-forward, and the L2 gradient term, and
+  show they close the generalisation gap.
+- Implement a vanilla RNN cell and backprop-through-time (BPTT) on a char-level task.
+
+**Tasks**
+
+| #   | Task                  | Depth | What you do                                                                                                        |
+| --- | --------------------- | ----- | ------------------------------------------------------------------------------------------------------------------ |
+| 1   | Autograd engine + MLP | 🔴    | Implement the `Value` op backward closures, reverse-topological `backward()`, and the SGD update; train XOR.       |
+| 2   | Optimizers + init     | 🟡    | Implement `sgd`/`momentum`/`adam` updates and `he_init`/`xavier_init`; race them and run the vanishing-grad demo.  |
+| 3   | Regularisation        | 🟡    | Implement `dropout_forward`, `batchnorm_forward`, and `l2_grad`; shrink the (train − test) accuracy gap.           |
+| 4   | Vanilla RNN + BPTT    | 🔴    | Implement `rnn_step`, `forward` (unroll + store), and the BPTT `backward` (tanh grad + through-time accumulation). |
+
+**Estimated time:** 5–7 hours
+
+**Done when**
+
+- [ ] Task 1: XOR trains to loss < 0.05 with all 4 signs correct; `grad_check` matches within 1e-4.
+- [ ] Task 2: Adam reaches the target loss in fewer epochs than SGD; ReLU first-layer grad norm > 5× sigmoid's.
+- [ ] Task 3: batchnorm output has per-feature mean ≈ 0 / var ≈ 1; dropout + L2 give a smaller generalisation gap.
+- [ ] Task 4: cross-entropy loss drops substantially and next-char accuracy ≥ 0.90 on the repeating pattern.
+
+---
+
+## Module 01d — Transformer Architecture
+
+**Prerequisites:** Module 01 (the toy attention head) and Module 01c help.
+NumPy (a base dependency). Pure numpy (Python) / plain arrays (TypeScript),
+offline and deterministic — no provider, no network, no ML framework.
+
+**Why:** Module 01 gave you a single toy attention head; this companion builds
+the whole GPT-style decoder — multi-head self-attention with causal masking,
+sinusoidal positional encoding, a pre-LN block, and the KV cache. This is the
+course's most-asked interview material.
+
+**Learning objectives**
+
+- Implement scaled dot-product attention, a causal mask, and multi-head attention from scratch.
+- Build the sinusoidal positional-encoding table and demonstrate why order matters.
+- Assemble LayerNorm, GELU, an FFN, and residuals into a pre-LN decoder block and stack N of them.
+- Implement incremental decoding with a KV cache and prove it equals the naive recompute.
+
+**Tasks**
+
+| #   | Task                                  | Depth | What you do                                                                                               |
+| --- | ------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------- |
+| 1   | Multi-head attention + causal masking | 🔴    | Implement `scaled_dot_product_attention` (stable softmax), `causal_mask`, and `multi_head_attention`.     |
+| 2   | Sinusoidal positional encoding        | 🟡    | Implement `sinusoidal_encoding`; study the permutation-equivariance and locality checks the harness runs. |
+| 3   | Pre-LN decoder block                  | 🔴    | Implement `layer_norm`, `gelu`, `ffn`, and the pre-LN residual `TransformerBlock.forward`; stack N = 3.   |
+| 4   | KV cache                              | 🟡    | Implement `decode_with_cache` (one key projection per step) and match the provided naive recompute.       |
+
+**Estimated time:** 4–6 hours
+
+**Done when**
+
+- [ ] Task 1: weight rows sum to 1, the causal mask zeroes future positions, and `h=1` MHA matches single-head SDPA.
+- [ ] Task 2: PE shape/range correct; permutation-equivariance passes without PE and fails with PE; adjacent PE dot-product exceeds the endpoint pair.
+- [ ] Task 3: LayerNorm rows have mean ≈ 0 / var ≈ 1; one block preserves shape; a 3-block stack produces finite output.
+- [ ] Task 4: cached logits equal naive logits at every step; key-projection counts are `n` (cached) vs `n(n+1)/2` (naive).
 
 ---
 
@@ -356,6 +478,52 @@ This module is that depth. Reference: [`docs/LANGGRAPH.md`](docs/LANGGRAPH.md).
 
 ---
 
+## Module 06c — Agent Frameworks: LangChain, CrewAI, AutoGen
+
+**Prerequisites:** Module 06 (Tasks 1 & 4). No new deps. A chat model is needed
+**only** on the non-`--stub` path (`get_provider()` / `getProvider()`, default
+`ollama`); every task runs offline via a `--stub` deterministic fake model with
+exact assertions. Reference: the module README's "Framework cheat-sheet".
+
+**Why:** Module 06 built an agent loop from scratch and 06b went deep on
+LangGraph, but interviews and real teams also ask about LangChain, CrewAI, and
+AutoGen. Rather than teach three APIs by rote, you reimplement each framework's
+core abstraction (~60–100 lines) through a plain `model(messages) -> text`
+function, then map each class back to the real library's API. The lesson: a
+"framework" is mostly orchestration around one model call.
+
+**Learning objectives**
+
+- Reimplement LangChain's LCEL (`prompt | model | parser`) as function
+  composition over `Runnable`s.
+- Reimplement `ConversationBufferMemory` and a bag-of-words cosine retriever, and
+  wire them into a tiny RAG chain.
+- Reimplement CrewAI's `Agent` / `Task` / `Crew` as a fold that threads context
+  through role-grounded model calls.
+- Reimplement AutoGen's group chat as a bounded round-robin loop over a shared
+  transcript with a termination signal.
+
+**Tasks**
+
+| #   | Task                                        | Depth | What you do                                                                                                        |
+| --- | ------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------ |
+| 1   | LCEL runnable (`prompt \| model \| parser`) | 🟢    | Implement `Runnable.pipe` (flatten sequences), `RunnableSequence.invoke` (fold left), and `PromptTemplate.format`. |
+| 2   | Memory + retriever (a tiny RAG chain)       | 🟡    | Implement buffer memory, `cosine` over count vectors, top-k `get_relevant`, and the RAG prompt builder.            |
+| 3   | CrewAI crew (roles → tasks → crew)          | 🟡    | Implement `Agent.execute` (role-grounded prompt) and `Crew.kickoff` (sequential fold threading each output).       |
+| 4   | AutoGen group chat                          | 🟡    | Implement `ConversableAgent.generate_reply` and the round-robin `GroupChatManager.run` with `max_round`/TERMINATE. |
+
+**Estimated time:** 4–6 hours
+
+**Done when**
+
+- [ ] Task 1: `--stub` chain returns the parsed reply for the formatted prompt, and the 3-step ordering assertions pass.
+- [ ] Task 2: retriever returns the right doc, both turns are in memory, and the last prompt contains the retrieved context + prior turn.
+- [ ] Task 3: the crew returns the writer's output, and the writer's `context_in` is exactly the researcher's output.
+- [ ] Task 4: the transcript is correctly labelled, terminates early on `"TERMINATE"` (3 messages), and never exceeds `max_round`.
+- [ ] You can name the real library API each of your classes maps to.
+
+---
+
 ## Module 07 — Advanced & Production
 
 **Prerequisites:** Modules 05–06. `uv sync --extra production`.
@@ -370,15 +538,16 @@ This module is that depth. Reference: [`docs/LANGGRAPH.md`](docs/LANGGRAPH.md).
 
 **Tasks**
 
-| #   | Task                    | Depth | What you do                                                                                                                                               |
-| --- | ----------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | LLM-as-judge eval       | 🟡    | Write a judge prompt; score responses for faithfulness and relevance; calibrate against human labels.                                                     |
-| 2   | Observability / tracing | 🟢    | Wrap every LLM call to log model, tokens, latency, and cost to JSONL; display a per-request cost breakdown.                                               |
-| 3   | Caching & cost control  | 🟡    | Cache responses by SHA-256 hash; hit the cache on repeated queries; print actual vs. saved cost.                                                          |
-| 4   | Guardrails & safety     | 🟢    | Add prompt-injection detection, PII scrubbing, and refusal detection; block or scrub before/after the model.                                              |
-| 5   | Serving                 | 🟢    | Expose the agent via FastAPI (Python) or Node http (TypeScript); return `answer`, `citations`, `latency_ms`; add a streaming `/chat/stream` SSE endpoint. |
+| #   | Task                         | Depth | What you do                                                                                                                                                        |
+| --- | ---------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | LLM-as-judge eval            | 🟡    | Write a judge prompt; score responses for faithfulness and relevance; calibrate against human labels.                                                              |
+| 2   | Observability / tracing      | 🟢    | Wrap every LLM call to log model, tokens, latency, and cost to JSONL; display a per-request cost breakdown.                                                        |
+| 3   | Caching & cost control       | 🟡    | Cache responses by SHA-256 hash; hit the cache on repeated queries; print actual vs. saved cost.                                                                   |
+| 4   | Guardrails & safety          | 🟢    | Add prompt-injection detection, PII scrubbing, and refusal detection; block or scrub before/after the model.                                                       |
+| 5   | Serving                      | 🟢    | Expose the agent via FastAPI (Python) or Node http (TypeScript); return `answer`, `citations`, `latency_ms`; add a streaming `/chat/stream` SSE endpoint.          |
+| 6   | Langfuse: production tracing | 🟡    | Swap Task 2's hand-rolled JSONL tracer for Langfuse behind a tracer-agnostic interface; group all calls under one trace/session; runs offline via a `LocalTracer`. |
 
-**Estimated time:** 5–6 hours
+**Estimated time:** 5–7 hours
 
 **Done when**
 
@@ -386,6 +555,7 @@ This module is that depth. Reference: [`docs/LANGGRAPH.md`](docs/LANGGRAPH.md).
 - [ ] Every LLM call logs latency and token cost; total cost is summed per session.
 - [ ] Cache hits skip the model call; savings are quantified.
 - [ ] API returns a valid JSON response on `POST /chat`; streaming works with `curl -N`.
+- [ ] Task 6 runs offline (prints a trace tree, one trace/session); adding Langfuse keys sends the same data to the hosted UI with no code change.
 
 ---
 

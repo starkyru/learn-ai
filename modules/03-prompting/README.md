@@ -1,6 +1,6 @@
 # Module 03 — Prompting & Patterns
 
-The biggest leverage point in LLM applications isn't the model — it's the prompt.
+The biggest leverage point in LLM (Large Language Model) applications isn't the model — it's the prompt.
 But "prompt engineering" sounds like voodoo until you treat it empirically:
 form a hypothesis, test it on a small labelled dataset, measure accuracy, pick the winner.
 
@@ -19,10 +19,11 @@ A tiny `render_template("Hello {{name}}", {"name": "Alice"})` helper makes the t
 explicit and raises early on missing keys.
 
 Roles:
+
 - **system** — highest-trust instructions. Sets persona, constraints, output format.
   Users can't easily override this.
 - **user** — the request. This is what the model "answers".
-- **assistant** — the model's reply. In few-shot prompts, you inject *example* assistant replies here.
+- **assistant** — the model's reply. In few-shot prompts, you inject _example_ assistant replies here.
 
 ### Few-shot vs zero-shot
 
@@ -31,6 +32,7 @@ Roles:
 The model reads the pattern from the examples.
 
 Trade-offs:
+
 - More examples → usually better accuracy.
 - More examples → more tokens → more cost.
 - Diminishing returns beyond 5-10 examples.
@@ -55,6 +57,7 @@ Cost: N × CoT tokens. Use when accuracy matters more than speed/cost.
 ### Output parsing & guardrails
 
 The repair loop:
+
 1. Send prompt.
 2. Try to parse the output into the required format.
 3. On failure: append the bad response + a correction message to the history.
@@ -66,6 +69,7 @@ This pattern appears in every production LLM feature.
 ### Prompt eval harness
 
 Without measurement, prompt engineering is guessing. The eval harness:
+
 1. Load a labelled dataset (10 examples in `eval_dataset.json`).
 2. Define prompt variants.
 3. Run each variant on every example.
@@ -84,6 +88,7 @@ run locally in minutes.
 **Goal:** Build a reusable prompt-template helper and test it with two tasks.
 
 **Steps:**
+
 1. Open `py/01_templates.py` and `ts/01-templates.ts`.
 2. Implement `render_template` / `renderTemplate` — replace `{{key}}` placeholders.
    Raise on missing keys.
@@ -92,6 +97,7 @@ run locally in minutes.
 5. Use `TEMPLATES["classify"]` to classify three texts. Print the raw output — note any noise.
 
 **Acceptance:**
+
 - `render_template("Hello {{name}}", {"name": "Alice"})` → `"Hello Alice"`.
 - Missing key raises a clear error.
 - The summarise and classify calls return real model output.
@@ -103,6 +109,7 @@ run locally in minutes.
 **Goal:** Compare classification accuracy with 0, 1, and 3 examples; print a table.
 
 **Steps:**
+
 1. Open `py/02_few_shot.py` and `ts/02-few-shot.ts`.
 2. Define 3 `FEW_SHOT_EXAMPLES` (one per class).
 3. Implement `build_zero_shot_messages` and `build_few_shot_messages`.
@@ -110,6 +117,7 @@ run locally in minutes.
 5. Observe: do the labels improve? Does the model follow the format more strictly?
 
 **Acceptance:**
+
 - The table prints with 0-shot, 1-shot, and 3-shot results for each input.
 - You can articulate why (or why not) few-shot helped for this task.
 
@@ -120,6 +128,7 @@ run locally in minutes.
 **Goal:** Implement CoT prompting and self-consistency voting on math/logic problems.
 
 **Steps:**
+
 1. Open `py/03_cot.py` and `ts/03-cot.ts`.
 2. Implement `build_direct_prompt` (answer only, no reasoning).
 3. Implement `build_cot_prompt` (think step by step, then "Final answer: X").
@@ -128,6 +137,7 @@ run locally in minutes.
 6. For each problem: run direct, single CoT, and self-consistency (N=3). Print results.
 
 **Acceptance:**
+
 - CoT responses contain visible reasoning steps.
 - `extract_final_answer` correctly extracts the answer from the CoT text.
 - `majority_vote` returns the most common answer from N samples.
@@ -139,6 +149,7 @@ run locally in minutes.
 **Goal:** Implement the repair loop for constrained output.
 
 **Steps:**
+
 1. Open `py/04_guardrails.py` and `ts/04-guardrails.ts`.
 2. Implement `parse_label` / `parseLabel` — normalise and validate against VALID_LABELS.
 3. Implement `classify_with_guardrails`:
@@ -148,6 +159,7 @@ run locally in minutes.
 4. Run on the demo inputs. Observe when the model misbehaves and whether the repair works.
 
 **Acceptance:**
+
 - On a bad output the retry loop fires (you see the "Attempt N: parse failed" log).
 - After correction the model usually returns a valid label.
 - The function raises cleanly after 3 failures.
@@ -161,6 +173,7 @@ run locally in minutes.
 **Dataset:** `eval_dataset.json` — 10 labelled sentiment examples (positive/negative/neutral).
 
 **Steps:**
+
 1. Open `py/05_eval_harness.py` and `ts/05-eval-harness.ts`.
 2. Define `variant_b_messages` / `VARIANTS[1].buildPrompt` — a different instruction style.
 3. Implement `parse_output` — normalise the model's label to a clean string.
@@ -169,6 +182,7 @@ run locally in minutes.
 6. Compare variants. Which scores higher? Does the result match your hypothesis?
 
 **Acceptance:**
+
 - Both variants run on all 10 examples.
 - The comparison table shows accuracy per variant.
 - You can explain (one sentence) why the higher-scoring variant works better.

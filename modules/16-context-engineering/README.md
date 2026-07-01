@@ -2,7 +2,7 @@
 
 The context window is not unlimited — it is a scarce, metered budget.
 Every token you put in costs money and time; every token you leave out is information
-the model cannot use. *Context engineering* is the art of spending that budget wisely.
+the model cannot use. _Context engineering_ is the art of spending that budget wisely.
 
 By the end of this module you will have measured token counts precisely, cached a large
 repeated prefix to save cost, compacted long conversations so they don't overflow, applied
@@ -18,12 +18,12 @@ at a discount.
 The context window is the maximum number of tokens (input + output combined) that a model
 can process in a single call. Typical sizes in 2025:
 
-| Model | Context |
-|---|---|
-| gpt-4o-mini | 128 K |
-| claude-haiku-4-5 | 200 K |
-| claude-opus-4-8 | 200 K |
-| gemini-1.5-pro | 1 M |
+| Model            | Context |
+| ---------------- | ------- |
+| gpt-4o-mini      | 128 K   |
+| claude-haiku-4-5 | 200 K   |
+| claude-opus-4-8  | 200 K   |
+| gemini-1.5-pro   | 1 M     |
 
 Exceeding the limit produces an error or silent truncation. You are responsible for managing it.
 The limit is input + output, so a longer system prompt leaves less room for the user's document.
@@ -32,6 +32,7 @@ The limit is input + output, so a longer system prompt leaves less room for the 
 
 Tokens are sub-word units produced by the tokeniser. A rule of thumb: 1 token ≈ 3–4 English
 characters. To count precisely:
+
 - Python: `tiktoken` (for OpenAI models); the Anthropic SDK's `client.beta.messages.count_tokens()`.
 - TypeScript: `@dqbd/tiktoken` (WASM port of tiktoken); Anthropic SDK `.beta.messages.countTokens()`.
 
@@ -48,7 +49,7 @@ tool definitions) normally re-charges the full input cost on every call. Prompt 
   Cache reads appear in `usage.prompt_tokens_details.cached_tokens`.
 
 Both providers charge a fraction of the normal input price for cache hits (often 10–20 % of
-the full rate). This is a *beyond-the-abstraction* feature: you must use the provider SDKs directly.
+the full rate). This is a _beyond-the-abstraction_ feature: you must use the provider SDKs (Software Development Kits) directly.
 
 ### Conversation memory / compaction
 
@@ -66,25 +67,27 @@ A hybrid ("keep the last K turns AND a running summary of everything older") is 
 Even with a 200 K context window, fitting an entire corpus is wasteful and often degrades quality.
 
 **Map-reduce:**
-1. *Map*: process each chunk independently (extract, summarise, answer).
-2. *Reduce*: combine the chunk results into a final answer.
+
+1. _Map_: process each chunk independently (extract, summarise, answer).
+2. _Reduce_: combine the chunk results into a final answer.
 
 **Refine:**
+
 1. Process chunk 1 → interim answer.
 2. Process chunk 2 + interim answer → updated answer.
 3. Repeat for all chunks.
 
-**Lost in the middle:** LLMs recall information near the beginning and end of context better than
+**Lost in the middle:** LLMs (Large Language Models) recall information near the beginning and end of context better than
 in the middle. Placing the most important content first (or last) outperforms putting it in the middle.
 
 ### Batch API
 
-The Batch API lets you submit hundreds of requests in one API call, processed asynchronously
+The Batch API (Application Programming Interface) lets you submit hundreds of requests in one API call, processed asynchronously
 (typically within 24 hours). In return, providers typically charge 50 % of the live price.
 Best for: eval runs, data extraction pipelines, bulk summarisation — any workload that is
 not latency-sensitive.
 
-- **OpenAI**: `client.batches.create(...)` with a JSONL file of requests. Poll `client.batches.retrieve(id)`.
+- **OpenAI**: `client.batches.create(...)` with a JSONL (JSON Lines) file of requests. Poll `client.batches.retrieve(id)`.
 - **Anthropic**: `client.beta.messages.batches.create(...)`. Poll `client.beta.messages.batches.retrieve(id)`.
 
 This is beyond `llm_core`'s abstraction — use the SDKs directly.
@@ -93,13 +96,13 @@ This is beyond `llm_core`'s abstraction — use the SDKs directly.
 
 ## Environment variables
 
-| Var | Default | Purpose |
-|---|---|---|
-| `OPENAI_API_KEY` | — | OpenAI token counting, caching, and batch |
-| `OPENAI_CHAT_MODEL` | `gpt-4o-mini` | Model for OpenAI tasks |
-| `ANTHROPIC_API_KEY` | — | Anthropic prompt caching and batch |
-| `ANTHROPIC_MODEL` | `claude-opus-4-8` | Model for Anthropic tasks |
-| `LLM_PROVIDER` | `ollama` | Default provider for tasks using `get_provider()` |
+| Var                 | Default           | Purpose                                           |
+| ------------------- | ----------------- | ------------------------------------------------- |
+| `OPENAI_API_KEY`    | —                 | OpenAI token counting, caching, and batch         |
+| `OPENAI_CHAT_MODEL` | `gpt-4o-mini`     | Model for OpenAI tasks                            |
+| `ANTHROPIC_API_KEY` | —                 | Anthropic prompt caching and batch                |
+| `ANTHROPIC_MODEL`   | `claude-opus-4-8` | Model for Anthropic tasks                         |
+| `LLM_PROVIDER`      | `ollama`          | Default provider for tasks using `get_provider()` |
 
 No changes to `.env.example` are needed — add values to your local `.env`.
 
@@ -123,6 +126,7 @@ For TypeScript, `@dqbd/tiktoken` is included in `ts/package.json`.
 **Goal:** Count tokens precisely; fit a prompt to a token budget; compare truncation strategies.
 
 **Steps:**
+
 1. Open `py/01_token_budgeting.py` / `ts/01-token-budgeting.ts`.
 2. Implement `count_tokens(text)` using tiktoken (`cl100k_base` encoding).
 3. Implement `truncate_head(text, max_tokens)` — keep the first `max_tokens` tokens (drop tail).
@@ -133,6 +137,7 @@ For TypeScript, `@dqbd/tiktoken` is included in `ts/package.json`.
    token count, and which part of the original was lost.
 
 **Acceptance:**
+
 - `count_tokens` uses tiktoken, not a word-count approximation.
 - Each truncation strategy stays at or below `max_tokens`.
 - The output table shows all three strategies and what was lost.
@@ -148,6 +153,7 @@ measure cache hits via the `usage` field.
 > Use the `anthropic` or `openai` SDK directly for this task.
 
 **Steps:**
+
 1. Open `py/02_prompt_caching.py` / `ts/02-prompt-caching.ts`.
 2. Build a large system prompt (> 1024 tokens) — include a long document or a lengthy instruction set.
 3. **Anthropic path**: add `cache_control: {"type": "ephemeral"}` to the system message block.
@@ -157,6 +163,7 @@ measure cache hits via the `usage` field.
 5. Print: call number, input tokens (uncached), cached tokens, output tokens, estimated cost.
 
 **Acceptance:**
+
 - The second call shows a non-zero cache hit.
 - Estimated cost of the second call is lower than the first.
 - You can explain (one sentence) why the cache TTL matters for real workloads.
@@ -168,6 +175,7 @@ measure cache hits via the `usage` field.
 **Goal:** Summarise old turns when a chat grows past a token budget; keep answers coherent.
 
 **Steps:**
+
 1. Open `py/03_memory_compaction.py` / `ts/03-memory-compaction.ts`.
 2. Implement `count_history_tokens(messages)` — sum `count_tokens` across all messages.
 3. Implement `summarise_turns(turns, llm)` — ask the model to produce a 2–3 sentence
@@ -180,6 +188,7 @@ measure cache hits via the `usage` field.
    After each compaction, ask a question about an early turn — observe whether the model still knows it.
 
 **Acceptance:**
+
 - Compaction fires when the budget is exceeded.
 - After compaction the context fits within the budget.
 - The model can still answer questions about summarised turns (loosely — it may paraphrase).
@@ -192,13 +201,14 @@ measure cache hits via the `usage` field.
 observe the "lost in the middle" effect.
 
 **Steps:**
+
 1. Open `py/04_long_context.py` / `ts/04-long-context.ts`.
 2. Generate or load a long document (at least 4 chunks of ≥ 500 tokens each).
    The `LONG_DOCUMENT` constant in the starter is sufficient.
 3. Implement `split_into_chunks(text, max_tokens_per_chunk)` — split by `count_tokens`.
 4. Implement `map_reduce(chunks, question, llm)`:
-   - *Map*: for each chunk, ask "Based on this excerpt, answer: {question}" — collect mini-answers.
-   - *Reduce*: combine all mini-answers into a final answer with one more LLM call.
+   - _Map_: for each chunk, ask "Based on this excerpt, answer: {question}" — collect mini-answers.
+   - _Reduce_: combine all mini-answers into a final answer with one more LLM call.
 5. Implement `refine(chunks, question, llm)`:
    - Start with an empty interim answer.
    - For each chunk, send: interim + chunk + question → updated interim.
@@ -207,6 +217,7 @@ observe the "lost in the middle" effect.
    the middle chunk, and the last chunk. Ask the model about all three. Print recall accuracy.
 
 **Acceptance:**
+
 - `split_into_chunks` produces chunks at or below `max_tokens_per_chunk`.
 - `map_reduce` and `refine` both return a coherent final answer.
 - The lost-in-the-middle demo shows which placement (first/middle/last) is recalled most reliably.
@@ -220,6 +231,7 @@ observe the "lost in the middle" effect.
 > **Beyond the abstraction** — use the `anthropic` or `openai` SDK directly.
 
 **Steps:**
+
 1. Open `py/05_batch_api.py` / `ts/05-batch-api.ts`.
 2. Prepare a list of 5 classification or summarisation requests.
 3. **OpenAI path**: write a JSONL file of requests; call `client.batches.create()`;
@@ -232,6 +244,7 @@ observe the "lost in the middle" effect.
 6. Estimate the cost saving vs making the same calls live.
 
 **Acceptance:**
+
 - Batch is submitted, polled, and results are printed without manual intervention.
 - Cost savings (50 % discount) are printed.
 - You can articulate when batching beats live calls and when it doesn't.

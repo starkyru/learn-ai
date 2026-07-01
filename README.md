@@ -22,7 +22,7 @@ they're where the real understanding lives.
 
 | #   | Module                                                                     | You'll build                                                                                       | Core ideas                                                      |
 | --- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| 00  | [Setup & Providers](modules/00-setup/)                                     | "Hello LLM" across 5 providers                                                                     | API keys, the provider abstraction, OpenAI-compatible APIs      |
+| 00  | [Setup & Providers](modules/00-setup/)                                     | "Hello LLM" across 6 providers                                                                     | API keys, the provider abstraction, OpenAI-compatible APIs      |
 | 01  | [LLM Fundamentals](modules/01-fundamentals/)                               | A BPE tokenizer, cosine similarity, a toy attention head, samplers                                 | tokens, embeddings, attention, sampling, what a "model" even is |
 | 02  | [LLM Integration](modules/02-llm-integration/)                             | Streaming chat, JSON/structured output, tool calling, retries                                      | the request/response loop, function calling, cost & tokens      |
 | 03  | [Prompting & Patterns](modules/03-prompting/)                              | A prompt library + evaluator                                                                       | few-shot, chain-of-thought, self-consistency, prompt eval       |
@@ -61,7 +61,26 @@ they're where the real understanding lives.
 > features interviewers ask about. [`docs/LANGGRAPH.md`](docs/LANGGRAPH.md) is the
 > reference + interview cheat-sheet.
 
+> **Foundations companions — [`modules/01b-ml-foundations/`](modules/01b-ml-foundations/),
+> [`modules/01c-deep-learning/`](modules/01c-deep-learning/),
+> [`modules/01d-transformer/`](modules/01d-transformer/):** extend module 01 with the
+> classic-ML / deep-learning / transformer theory interviews probe — pure from-scratch
+> numpy + TS, no provider needed. **01b** covers regression, bias–variance, ridge,
+> cross-validation, ROC/AUC, and k-means; **01c** builds a scalar autograd engine + MLP,
+> optimizers (SGD/Momentum/Adam), initialisation, regularisation, and an RNN with BPTT;
+> **01d** assembles a GPT-style decoder — multi-head attention with causal masking,
+> sinusoidal positional encoding, LayerNorm/GELU/FFN pre-LN blocks, and a KV cache.
+
+> **Deep dive — [`modules/06c-agent-frameworks/`](modules/06c-agent-frameworks/):**
+> extends modules 06/06b with the three framework names interviews drop —
+> **LangChain** (LCEL `prompt | model | parser`, buffer memory, retrievers/RAG),
+> **CrewAI** (role → task → sequential crew), and **AutoGen** (round-robin group chat) —
+> each reimplemented through `llm_core` then mapped back to the real library's API. Every
+> task runs offline via a `--stub` deterministic model.
+
 **Hosted-first** (default to APIs, optional local heavy path documented): modules **09, 10** (vision/diffusion), **13** (fine-tuning), **19** (audio). Nothing multi-GB downloads unless you opt in.
+
+**Lost in the acronyms?** Every abbreviation used in the course (BM25, RAG, HNSW, KV cache, LoRA, …) is expanded on first use in each lesson and collected in [`docs/GLOSSARY.md`](docs/GLOSSARY.md).
 
 **Applied projects** (in [`projects/`](projects/)):
 
@@ -104,7 +123,7 @@ learn-ai/
 
 The two `llm-core` packages are the spine of the course: you write exercises
 against one small interface and swap OpenAI ↔ Claude ↔ Ollama ↔ LM Studio ↔
-NVIDIA by changing a single env var. Understanding _why_ that abstraction is possible (and
+NVIDIA ↔ Gemini by changing a single env var. Understanding _why_ that abstraction is possible (and
 where it leaks) is module 00–02.
 
 ---
@@ -126,6 +145,7 @@ cp .env.example .env
 | **Ollama** (recommended to start) | free                         | [Install Ollama](https://ollama.com), then `ollama pull llama3.2 && ollama pull nomic-embed-text`                                  |
 | **LM Studio**                     | free                         | [Install LM Studio](https://lmstudio.ai), load a model, Start Server (port 1234) → `LLM_PROVIDER=lmstudio` + `LMSTUDIO_CHAT_MODEL` |
 | **NVIDIA NIM**                    | free tier                    | get a key at [build.nvidia.com](https://build.nvidia.com) → `NVIDIA_API_KEY` in `.env`                                             |
+| **Google Gemini**                 | free tier                    | key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey) → `GEMINI_API_KEY` in `.env`, `LLM_PROVIDER=gemini`        |
 | **OpenAI**                        | paid (~$5 covers the course) | key at [platform.openai.com](https://platform.openai.com/api-keys)                                                                 |
 | **Anthropic**                     | paid                         | key at [console.anthropic.com](https://console.anthropic.com); set `ANTHROPIC_MODEL=claude-haiku-4-5` for cheap iteration          |
 

@@ -2,7 +2,7 @@
 
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand
 
-Document ingestion is the data front-end for every RAG pipeline. This module
+Document ingestion is the data front-end for every RAG (Retrieval-Augmented Generation) pipeline. This module
 teaches you the engineering that makes or breaks retrieval quality: parsing
 real document formats, cleaning noise, chunking by structure (not arbitrary
 character counts), and keeping an index fresh incrementally.
@@ -18,7 +18,7 @@ real world.
 ### Why ingestion is 80% of a RAG project
 
 A RAG demo works beautifully on a tidy text file. A production system works on
-PDFs scanned from paper, HTML pages full of nav menus and cookie banners, Word
+PDFs (Portable Document Format) scanned from paper, HTML (HyperText Markup Language) pages full of nav menus and cookie banners, Word
 documents with embedded images, and Markdown wikis with inconsistent heading
 levels. Every format adds noise, and noise degrades retrieval. An answer can
 only be as good as the chunks that are retrieved, and chunks can only be as good
@@ -29,12 +29,12 @@ generation; ~80% is building robust ingestion that handles edge cases.
 
 ### Parsing formats
 
-| Format | Key challenge | Library |
-| --- | --- | --- |
-| **PDF** | Multi-column layout, headers/footers on every page, scanned PDFs (need OCR) | pypdf / pdfplumber (Python); pdf-parse (TypeScript) |
-| **HTML** | Navigation, ads, cookie banners, `<script>` noise swamps body text | beautifulsoup4 (Python); cheerio (TypeScript) |
-| **Markdown** | Clean text but heading syntax (`#`, `**`, `` ` ``) confuses embeddings | stdlib regex |
-| **DOCX / EPUB** | Proprietary binary formats; python-docx / ebooklib needed | out of scope here |
+| Format          | Key challenge                                                                                               | Library                                             |
+| --------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| **PDF**         | Multi-column layout, headers/footers on every page, scanned PDFs (need OCR — Optical Character Recognition) | pypdf / pdfplumber (Python); pdf-parse (TypeScript) |
+| **HTML**        | Navigation, ads, cookie banners, `<script>` noise swamps body text                                          | beautifulsoup4 (Python); cheerio (TypeScript)       |
+| **Markdown**    | Clean text but heading syntax (`#`, `**`, `` ` ``) confuses embeddings                                      | stdlib regex                                        |
+| **DOCX / EPUB** | Proprietary binary formats; python-docx / ebooklib needed                                                   | out of scope here                                   |
 
 Rule of thumb: parse to plain text first, then clean, then chunk. Keep
 parsing and cleaning in separate stages so each is testable.
@@ -42,12 +42,14 @@ parsing and cleaning in separate stages so each is testable.
 ### Cleaning
 
 Raw text from parsers contains:
+
 - **Boilerplate**: navigation links, cookie notices, footers, page numbers.
 - **Whitespace noise**: multiple consecutive blank lines, mixed indentation.
 - **Formatting artifacts**: Markdown `##`, `**bold**`, HTML `&amp;` entities.
 - **Near-duplicates**: the same paragraph quoted in multiple places.
 
 Cleaning heuristics to know:
+
 - **Line-length filter**: single short lines that look like nav items
   ("HOME", "Contact Us") can be dropped.
 - **Boilerplate keywords**: "Cookie Policy", "Terms of Service", etc.
@@ -60,6 +62,7 @@ Naive fixed-size chunking from module 04 treats the document as a flat stream
 of words. This can split a heading from its body, or a question from its answer.
 
 **Section-aware chunking** instead:
+
 1. Detects heading boundaries (Markdown `#`, `##`, `###`; HTML `<h1>` – `<h3>`).
 2. Keeps each section as one logical unit.
 3. Only sub-chunks if the section exceeds the embedding model's token limit.
@@ -78,13 +81,13 @@ Document
 
 Every chunk should carry:
 
-| Key | Why |
-| --- | --- |
-| `source` | File path or URL — for attribution and freshness tracking |
-| `section` | Heading text — for filtering and display |
-| `page` | PDF page number — for PDF citations |
-| `ingested_at` | ISO timestamp — for staleness detection |
-| `estimated_tokens` | For context-window budget planning |
+| Key                | Why                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `source`           | File path or URL (Uniform Resource Locator) — for attribution and freshness tracking     |
+| `section`          | Heading text — for filtering and display                                                 |
+| `page`             | PDF page number — for PDF citations                                                      |
+| `ingested_at`      | ISO (International Organization for Standardization) timestamp — for staleness detection |
+| `estimated_tokens` | For context-window budget planning                                                       |
 
 ### Incremental indexing
 
@@ -97,16 +100,17 @@ hash(current text)  ==  hash(stored in manifest)
    skip (no API call)      re-embed + update manifest
 ```
 
-The manifest is a small JSON file mapping `source → {hash, timestamp, model}`.
+The manifest is a small JSON (JavaScript Object Notation) file mapping `source → {hash, timestamp, model}`.
 On each run: hash each file, compare to manifest, embed only the diff.
 
-At production scale this becomes an upsert pattern in a vector DB (e.g.
+At production scale this becomes an upsert pattern in a vector DB (Database) (e.g.
 Qdrant's `upsert` with `id = hash(chunk_text)` — existing vectors are left
 alone; new/changed ones replace the old).
 
 ### Web scraping ethics
 
 If you extend task 1 to fetch HTML from the web:
+
 - Always check `robots.txt` before scraping: `https://example.com/robots.txt`.
 - Respect `Crawl-delay` directives.
 - Identify your bot with a descriptive `User-Agent`.
@@ -123,10 +127,12 @@ If you extend task 1 to fetch HTML from the web:
 `Document` record.
 
 **Files:**
+
 - `py/01_parse_documents.py`
 - `ts/01-parse-documents.ts`
 
 **Steps:**
+
 1. Implement `parse_markdown()` / `parseMarkdown()` — read file, extract title
    from first H1, return Document.
 2. Implement `parse_html_bs4()` / `parseHtml()` — fetch/read HTML, strip nav/
@@ -140,6 +146,7 @@ If you extend task 1 to fetch HTML from the web:
    `sample_docs/vector_databases.html`.
 
 **Acceptance:**
+
 - Both sample files parse without error.
 - HTML output contains body text but not nav/footer text.
 - Markdown output contains the raw Markdown (cleaning is task 2).
@@ -153,10 +160,12 @@ If you extend task 1 to fetch HTML from the web:
 paragraphs from parsed text.
 
 **Files:**
+
 - `py/02_clean_normalize.py`
 - `ts/02-clean-normalize.ts`
 
 **Steps:**
+
 1. Implement `strip_markdown_syntax()` / `stripMarkdownSyntax()` — remove `#`,
    `**`, `` ` ``, fenced code blocks, table pipes, link syntax.
 2. Implement `collapse_whitespace()` / `collapseWhitespace()` — normalise line
@@ -169,6 +178,7 @@ paragraphs from parsed text.
 6. Implement `clean()` — chain all of the above in the right order.
 
 **Acceptance:**
+
 - Markdown output has no `#`, `**`, or `` ` `` characters.
 - HTML output has no nav/footer text (from task 1) and no duplicate paragraphs.
 - Cleaning reduces total character count vs. raw text (typically 10–30%).
@@ -182,19 +192,22 @@ paragraphs from parsed text.
 count, and carry section metadata into every chunk.
 
 **Files:**
+
 - `py/03_structure_chunking.py`
 - `ts/03-structure-chunking.ts`
 
 **Steps:**
+
 1. Implement `naive_fixed_size_chunks()` / `naiveFixedSizeChunks()` —
    word-based fixed-size with overlap (from module 04, reproduced here for
    side-by-side comparison).
-2. Implement `section_chunks()` / `sectionChunks()` — detect ATX heading
+2. Implement `section_chunks()` / `sectionChunks()` — detect ATX (a Markdown heading style using `#` prefixes) heading
    boundaries, emit one chunk per section (sub-chunk if too large, always
    prepend the heading).
 3. Run the harness on `sample_docs/intro_to_rag.md` and print both chunk lists.
 
 **Acceptance:**
+
 - Section-aware chunks each start with (or contain) a Markdown heading.
 - `chunk.metadata.section` is populated for every section chunk.
 - A section longer than `max_tokens` is split into sub-chunks, each containing
@@ -210,11 +223,13 @@ count, and carry section metadata into every chunk.
 prune stale entries.
 
 **Files:**
+
 - `py/04_incremental_indexing.py`
 - `ts/04-incremental-indexing.ts`
 
 **Steps:**
-1. Implement `content_hash()` / `contentHash()` — SHA-256, first 16 hex chars.
+
+1. Implement `content_hash()` / `contentHash()` — SHA-256 (Secure Hash Algorithm 256-bit), first 16 hex chars.
 2. Implement `load_manifest()` / `loadManifest()` — JSON file → dict.
 3. Implement `save_manifest()` / `saveManifest()` — dict → JSON file.
 4. Implement `ingest_documents()` / `ingestDocuments()` — per-doc: hash, compare
@@ -224,6 +239,7 @@ prune stale entries.
 6. Run the harness twice; confirm second run skips both files.
 
 **Acceptance:**
+
 - First run: new=2, changed=0, skipped=0 (or whichever files exist).
 - Second run (same files, no edits): new=0, changed=0, skipped=2.
 - Manifest JSON is written to `modules/11-document-ingestion/.index_manifest.json`.
@@ -239,10 +255,12 @@ returns chunks they are allowed to see. Reinforce page/section-level citations
 by carrying `source`, `section`, and `page` in chunk metadata.
 
 **Files:**
+
 - `py/05_permissions_aware.py`
 - `ts/05-permissions-aware.ts`
 
 **Steps:**
+
 1. Implement `tag_access()` / `tagAccess()` — create a `PermissionedChunk`
    with the chunk text, embedding vector, ACL (owner/groups/visibility), and
    citation fields (`source`, `section`, `page`).
@@ -262,6 +280,7 @@ by carrying `source`, `section`, and `page` in chunk metadata.
    `source`, `section`, and (where relevant) `page`.
 
 **Acceptance:**
+
 - `guest` (member of `["all"]`) sees only `public` and `all`-group documents.
 - `bob` (member of `["finance", "exec", "all"]`) sees finance/exec docs but not
   the ops or `private` board document.
@@ -277,7 +296,7 @@ by carrying `source`, `section`, and `page` in chunk metadata.
 - [ ] Cleaned HTML has no nav/footer text; cleaned Markdown has no `#`/`**` chars.
 - [ ] Section-aware chunks carry `metadata.section` and respect heading boundaries.
 - [ ] Second incremental-indexing run shows 0 new / 0 changed / N skipped.
-- [ ] `retrieve_for_user()` enforces ACLs: guest cannot see private/group docs.
+- [ ] `retrieve_for_user()` enforces ACLs (Access Control Lists): guest cannot see private/group docs.
 - [ ] Pre-filter and post-filter return the same results.
 - [ ] Every retrieval result includes a citation with source + section (+ page for PDFs).
 - [ ] Both py and ts harnesses print output without crashing.
@@ -289,7 +308,7 @@ by carrying `source`, `section`, and `page` in chunk metadata.
 - **PDF OCR:** pypdf extracts digital text only. For scanned PDFs, try
   [pytesseract](https://github.com/madmaze/pytesseract) or the
   [Azure Document Intelligence](https://azure.microsoft.com/en-us/products/ai-services/ai-document-intelligence)
-  API. What changes when the source is image-based?
+  API (Application Programming Interface). What changes when the source is image-based?
 - **DOCX / EPUB:** Add `python-docx` or `ebooklib` support to task 1's
   dispatcher. The cleaning and chunking stages should work unchanged.
 - **Heading hierarchy:** Extend `section_chunks()` to respect heading level —
@@ -303,7 +322,7 @@ by carrying `source`, `section`, and `page` in chunk metadata.
   and measure whether retrieval quality improves.
 - **Deduplication at scale:** The shingle Jaccard approach is O(n²) in the
   number of paragraphs. For large corpora, look at
-  [MinHash LSH](https://en.wikipedia.org/wiki/MinHash) (available in
+  [MinHash LSH (Locality-Sensitive Hashing)](https://en.wikipedia.org/wiki/MinHash) (available in
   `datasketch`), which finds near-duplicates in O(n).
 - **Web crawling:** Extend task 1 to accept a URL, fetch it, follow links one
   level deep, and build a small corpus. Remember to check `robots.txt`.
@@ -334,6 +353,7 @@ root `pyproject.toml` is updated.
 ## TypeScript dependencies
 
 Added to `ts/package.json`:
+
 - `pdf-parse` — PDF text extraction
 - `cheerio` — jQuery-like HTML parser for Node.js
 
@@ -342,6 +362,7 @@ Install: `pnpm install` from `modules/11-document-ingestion/ts/` or `pnpm -r ins
 ## Sample files
 
 `sample_docs/` contains two files for offline use:
+
 - `intro_to_rag.md` — Markdown article about RAG (covers headings, tables, lists)
 - `vector_databases.html` — HTML page with nav/header/footer boilerplate to strip
 

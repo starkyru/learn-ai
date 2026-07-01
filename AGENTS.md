@@ -37,12 +37,16 @@ The module map:
 ```text
 00 Setup & Providers
 01 LLM Fundamentals
+01b Classic ML Foundations (companion — extends 01; from-scratch numpy/TS, no provider)
+01c Deep Learning Essentials (companion — extends 01; from-scratch numpy/TS, no provider)
+01d Transformer Architecture (companion — extends 01; from-scratch numpy/TS, no provider)
 02 LLM Integration
 03 Prompting & Patterns
 04 Embeddings & Vectors
 05 RAG
 06 Agents
 06b LangGraph (deep dive — extends 06; see docs/LANGGRAPH.md)
+06c Agent Frameworks (companion — LangChain/CrewAI/AutoGen, extends 06/06b; offline via --stub)
 07 Advanced & Production
 08 Classification
 09 Computer Vision
@@ -92,11 +96,14 @@ client by default:
   `provider.chat_stream(...)`, `provider.embed(...)`.
 - TypeScript: `getProvider()` from `@learn-ai/llm-core`.
 
-The provider swaps between OpenAI / Anthropic / Ollama / NVIDIA / LM Studio
-(local, OpenAI-compatible) via one env var. Note: **Anthropic has no embeddings
-endpoint** — `embed()` raises there; use `LLM_PROVIDER=openai` (or
-`ollama`/`nvidia`/`lmstudio`) for embedding/RAG exercises. The
-zero-cost path is Ollama (`ollama pull llama3.2 && ollama pull nomic-embed-text`).
+The provider swaps between OpenAI / Anthropic / Ollama / NVIDIA / LM Studio /
+Gemini (six providers) via one env var — `OpenAICompatibleProvider` covers five
+of them (OpenAI, Ollama, NVIDIA, LM Studio, Gemini); only Anthropic needs its own
+adapter. Note: **Anthropic has no embeddings endpoint** — `embed()` raises there;
+use `LLM_PROVIDER=openai` (or `ollama`/`nvidia`/`lmstudio`/`gemini`) for
+embedding/RAG exercises. The zero-cost path is Ollama
+(`ollama pull llama3.2 && ollama pull nomic-embed-text`); Gemini
+(`LLM_PROVIDER=gemini`, `GEMINI_API_KEY`) is a free-tier hosted option.
 
 Important exception: some modules explicitly teach where this abstraction leaks.
 When a README says to go **beyond the abstraction**, use the raw provider SDK or

@@ -2,15 +2,15 @@
 
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand · 🔴 from-scratch
 
-RAG is the most widely deployed pattern in production LLM applications. Instead
-of fine-tuning a model with your private data (expensive, slow, requires ML
+RAG is the most widely deployed pattern in production LLM (Large Language Model) applications. Instead
+of fine-tuning a model with your private data (expensive, slow, requires ML (Machine Learning)
 expertise), you keep the data in a retrieval store and inject the relevant
 passages into the prompt at query time. The model stays generic; the knowledge
 stays fresh and auditable.
 
 This module builds a full RAG pipeline from scratch: chunk, embed, retrieve,
 generate, cite, and evaluate. Then it improves on the naive version with
-reranking and HyDE, and measures quality with LLM-as-judge.
+reranking and HyDE (Hypothetical Document Embeddings), and measures quality with LLM-as-judge.
 
 Prereq: complete module 04 first (the VectorStore, chunking, and hybrid-search
 concepts are used here).
@@ -57,7 +57,7 @@ task 3's evaluation matters.
 
 ### Retrieval quality is the bottleneck
 
-The most common failure mode: *the right chunk wasn't retrieved*. If the answer
+The most common failure mode: _the right chunk wasn't retrieved_. If the answer
 doesn't exist in the context window, the model cannot produce it correctly. This
 is why module 04's chunking strategy, hybrid search, and this module's reranking
 all matter: they're all about getting the right chunks into the prompt.
@@ -67,7 +67,7 @@ is retrieval, not generation.
 
 ### Reranking
 
-The first-stage retriever (bi-encoder) encodes query and passage *separately*,
+The first-stage retriever (bi-encoder) encodes query and passage _separately_,
 then computes cosine in embedding space. This is fast but imprecise — it can't
 model the interaction between a specific query phrase and a specific passage
 phrase. A cross-encoder (or LLM reranker) sees both together and does much
@@ -78,11 +78,11 @@ then rerank with the LLM or a cross-encoder, keep top-5 for generation.
 
 ### HyDE — Hypothetical Document Embeddings
 
-Problem: the question "What is HNSW?" lives in question-space; corpus chunks
+Problem: the question "What is HNSW (Hierarchical Navigable Small World)?" lives in question-space; corpus chunks
 live in answer-space. The embedding gap causes retrieval misses.
 
-Solution: ask the LLM to write a *hypothetical* answer, embed that, and use the
-hypothesis embedding to retrieve. A hypothesis like "HNSW is a graph-based ANN
+Solution: ask the LLM to write a _hypothetical_ answer, embed that, and use the
+hypothesis embedding to retrieve. A hypothesis like "HNSW is a graph-based ANN (Approximate Nearest Neighbor)
 index..." will match corpus chunks about HNSW far better than the original
 question would.
 
@@ -93,11 +93,11 @@ forms diverge (technical Q&A, foreign-language queries against English docs).
 
 Three metrics, inspired by [RAGAS](https://docs.ragas.io/):
 
-| Metric | Question | How to score |
-| --- | --- | --- |
-| **Faithfulness** | Is every claim grounded in context? | Decompose answer into claims; check each against context. Score = % supported. |
-| **Context relevance** | Are the retrieved chunks relevant? | Rate 0–10 how useful the context is for answering. |
-| **Answer relevance** | Does the answer address the question? | Rate 0–10 how well the answer addresses the question. |
+| Metric                | Question                              | How to score                                                                   |
+| --------------------- | ------------------------------------- | ------------------------------------------------------------------------------ |
+| **Faithfulness**      | Is every claim grounded in context?   | Decompose answer into claims; check each against context. Score = % supported. |
+| **Context relevance** | Are the retrieved chunks relevant?    | Rate 0–10 how useful the context is for answering.                             |
+| **Answer relevance**  | Does the answer address the question? | Rate 0–10 how well the answer addresses the question.                          |
 
 All three use the LLM to judge — which means the judge can be fooled by
 plausible-sounding but wrong text. Treat scores as signal, not ground truth.
@@ -106,9 +106,10 @@ plausible-sounding but wrong text. Treat scores as signal, not ground truth.
 
 Citations make RAG auditable. Instead of one opaque answer, you get a list of
 claims, each linked to the source chunk. This lets you:
+
 - Detect hallucinations (claim with no valid citation)
 - Trace where each fact came from
-- Build UI that highlights cited passages
+- Build UI (User Interface) that highlights cited passages
 
 ---
 
@@ -119,10 +120,12 @@ claims, each linked to the source chunk. This lets you:
 **Goal:** Build the complete RAG pipeline in one file.
 
 **Files:**
+
 - `py/01_naive_rag.py`
 - `ts/01-naive-rag.ts`
 
 **Steps:**
+
 1. Implement `chunk_documents()` — word-based fixed-size chunker.
 2. Implement `build_index()` — batch-embed all chunks.
 3. Implement `retrieve()` — brute-force cosine top-k.
@@ -131,6 +134,7 @@ claims, each linked to the source chunk. This lets you:
 5. Run the harness; it answers 4 questions and prints retrieved chunk ids.
 
 **Acceptance:**
+
 - Answers reference content from the inline corpus.
 - Each answer includes at least one chunk id citation.
 - The system doesn't crash on any of the 4 questions.
@@ -142,10 +146,12 @@ claims, each linked to the source chunk. This lets you:
 **Goal:** Add LLM reranking and HyDE to improve retrieval precision.
 
 **Files:**
+
 - `py/02_better_retrieval.py`
 - `ts/02-better-retrieval.ts`
 
 **Steps:**
+
 1. Implement `llm_rerank()` — score each candidate 0–10 using the LLM,
    return top-k. Run scoring in parallel for speed.
 2. Implement `hyde_query_vector()` — generate a hypothetical answer, embed
@@ -153,11 +159,12 @@ claims, each linked to the source chunk. This lets you:
 3. The harness compares standard retrieval vs. HyDE side by side.
 
 **Acceptance:**
+
 - `llm_rerank` returns k items sorted by LLM relevance score.
 - `hyde_query_vector` returns a vector of the same dimension as the index.
 - For the HNSW question, HyDE retrieves the HNSW chunk in top-3 even if the
   raw question embedding doesn't (this may or may not happen — the
-  interesting thing is *observing* whether it does).
+  interesting thing is _observing_ whether it does).
 
 ---
 
@@ -167,18 +174,21 @@ claims, each linked to the source chunk. This lets you:
 answer relevance.
 
 **Files:**
+
 - `py/03_rag_evaluation.py`
 - `ts/03-rag-evaluation.ts`
 
 **Steps:**
+
 1. Implement `score_faithfulness()` — decompose the answer into claims, check
    each against context, return fraction supported.
 2. Implement `score_context_relevance()` — 0–10 LLM score / 10.
 3. Implement `score_answer_relevance()` — 0–10 LLM score / 10.
 4. Run the harness over the 3 eval cases (one has an intentional hallucination
-   about GPU support for HNSW — check if faithfulness catches it).
+   about GPU (Graphics Processing Unit) support for HNSW — check if faithfulness catches it).
 
 **Acceptance:**
+
 - All three functions return a float in [0, 1].
 - The HNSW case scores faithfulness < 1.0 (the hallucination should be detected).
 - The harness prints per-case and aggregate scores without crashing.
@@ -191,17 +201,20 @@ answer relevance.
 validate those citations.
 
 **Files:**
+
 - `py/04_citations.py`
 - `ts/04-citations.ts`
 
 **Steps:**
+
 1. Implement `build_citation_prompt()` — prompt the LLM to output structured
-   JSON: `{"claims": [{"text": "...", "citation": "chunk-id-or-null"}]}`.
+   JSON (JavaScript Object Notation): `{"claims": [{"text": "...", "citation": "chunk-id-or-null"}]}`.
 2. Implement `cited_rag()` — call the LLM, parse the JSON, classify citations
    as valid / invalid / missing.
 3. Run the harness over 3 questions; print any invalid or uncited claims.
 
 **Acceptance:**
+
 - The LLM's JSON is parsed correctly (or fails gracefully).
 - Valid citations reference chunk ids that were actually retrieved.
 - Invalid citations (hallucinated ids) are reported separately.

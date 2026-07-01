@@ -1,8 +1,8 @@
 # Module 10 — Generative Images & Diffusion Models
 
 Stable Diffusion, DALL-E, and friends are not magic filters — they are
-probabilistic models that learn to *reverse a noise process*. By the end of
-this module you will have generated images from text via a hosted API,
+probabilistic models that learn to _reverse a noise process_. By the end of
+this module you will have generated images from text via a hosted API (Application Programming Interface),
 explored every major generation knob, and built a minimal diffusion sampler
 from scratch in NumPy so the maths clicks.
 
@@ -31,13 +31,13 @@ Because the noise compounds, a closed-form exists:
 x_t = √ᾱₜ · x₀  +  √(1−ᾱₜ) · ε,   ε ~ N(0,I)
 ```
 
-where ᾱₜ = ∏_{s=1}^{t} (1−βₛ). This lets you jump to *any* noise level
+where ᾱₜ = ∏\_{s=1}^{t} (1−βₛ). This lets you jump to _any_ noise level
 without simulating each step individually.
 
 **Reverse process (learned):**  
-A neural network ε_θ(x_t, t) is trained to *predict the noise* that was
-added to get x_t from x₀. Given the prediction, you can recover x_{t−1} via
-the DDPM update rule (Ho et al. 2020):
+A neural network ε*θ(x_t, t) is trained to *predict the noise* that was
+added to get x_t from x₀. Given the prediction, you can recover x*{t−1} via
+the DDPM (Denoising Diffusion Probabilistic Model) update rule (Ho et al. 2020):
 
 ```
 x_{t−1} = 1/√αₜ · (x_t − β_t/√(1−ᾱₜ) · ε_θ(x_t,t))  +  σₜ·z,  z~N(0,I)
@@ -49,7 +49,7 @@ yields a new sample that looks like the training data.
 ### 2. Latent diffusion (why Stable Diffusion is fast)
 
 Running diffusion on raw pixels (512×512×3 = 786 432 numbers) is slow. Stable
-Diffusion runs diffusion in a *compressed latent space* produced by a VAE
+Diffusion runs diffusion in a _compressed latent space_ produced by a VAE
 (Variational Autoencoder):
 
 ```
@@ -85,7 +85,7 @@ The text encoder part is reused as a semantic compressor for the denoiser.
 ### 5. Classifier-free guidance (CFG / guidance scale)
 
 To make the model follow the prompt more strongly, the denoiser is run
-*twice* per step: once conditioned on the prompt, once on an empty prompt:
+_twice_ per step: once conditioned on the prompt, once on an empty prompt:
 
 ```
 ε_guided = ε_uncond  +  guidance_scale · (ε_cond − ε_uncond)
@@ -102,17 +102,17 @@ The DDPM (Denoising Diffusion Probabilistic Models) reverse loop is slow —
 LCM) can produce good images in 20–50 steps by taking bigger, smarter steps.
 More steps = more detail but diminishing returns past ~40 for DPM++.
 
-| Sampler | Steps needed | Speed | Notes |
-|---|---|---|---|
-| DDPM | 1000 | slow | training sampler; rarely used at inference |
-| DDIM | 50 | medium | deterministic if eta=0; good for img2img |
-| DPM++ 2M | 20–30 | fast | strong default for SD 1.5 / SDXL |
-| LCM | 4–8 | very fast | distilled consistency model; slight quality trade-off |
-| SDXL-Turbo | 1–4 | instant | adversarial distillation; best local fast option |
+| Sampler    | Steps needed | Speed     | Notes                                                 |
+| ---------- | ------------ | --------- | ----------------------------------------------------- |
+| DDPM       | 1000         | slow      | training sampler; rarely used at inference            |
+| DDIM       | 50           | medium    | deterministic if eta=0; good for img2img              |
+| DPM++ 2M   | 20–30        | fast      | strong default for SD 1.5 / SDXL                      |
+| LCM        | 4–8          | very fast | distilled consistency model; slight quality trade-off |
+| SDXL-Turbo | 1–4          | instant   | adversarial distillation; best local fast option      |
 
 ### 7. img2img and inpainting
 
-**img2img:** Start from a *real image* noised to a partial timestep (not all
+**img2img:** Start from a _real image_ noised to a partial timestep (not all
 the way to T). The denoiser reverse-processes from there, guided by the
 prompt. The `strength` parameter controls how noisy the starting point is:
 `strength = 1` ≈ text-to-image; `strength = 0.3` keeps most of the original.
@@ -127,7 +127,7 @@ ControlNet (Zhang et al. 2023) adds an extra input to the U-Net: a spatial
 conditioning map — an edge map (Canny), a depth map, a human pose skeleton,
 a scribble drawing, etc. The denoiser copies its encoder weights into a
 trainable "control" branch that processes the spatial input, injecting
-feature maps at each U-Net scale. This lets you control the *composition* of
+feature maps at each U-Net scale. This lets you control the _composition_ of
 the image precisely while still following a text prompt.
 
 ### 9. LoRA and DreamBooth fine-tuning
@@ -135,7 +135,7 @@ the image precisely while still following a text prompt.
 **LoRA (Low-Rank Adaptation):** Instead of fine-tuning all 900M+ parameters
 of SD, you add small rank-decomposed matrices (W = W₀ + AB, rank ≈ 4–64)
 to the attention and feed-forward layers. Training LoRA for a new style or
-concept takes minutes on a consumer GPU. At inference you "merge" the LoRA
+concept takes minutes on a consumer GPU (Graphics Processing Unit). At inference you "merge" the LoRA
 weights at a specified strength.
 
 **DreamBooth:** A fine-tuning technique (Ruiz et al. 2022) that binds a new
@@ -155,10 +155,10 @@ temporally consistent. Inference costs scale with frame count.
 Generated images are subject to misuse risks (deepfakes, CSAM, deceptive
 content). Practical safeguards include:
 
-- **NSFW classifier:** a post-generation image classifier blacks out unsafe
+- **NSFW (Not Safe For Work) classifier:** a post-generation image classifier blacks out unsafe
   outputs (used in SD's default pipeline).
 - **Invisible watermarking:** C2PA/SynthID embed invisible signals in pixel or
-  DCT domain so downstream detectors can flag AI-generated images.
+  DCT (Discrete Cosine Transform) domain so downstream detectors can flag AI-generated images.
 - **Prompt filtering:** a text classifier blocks harmful prompts before inference.
 
 ---
@@ -185,13 +185,14 @@ Do **not** edit `.env.example` — document your keys only in `.env`.
 
 ### Task 1 — Text-to-image 🟢
 
-Generate an image from a text prompt via the hosted API; save it as a PNG;
+Generate an image from a text prompt via the hosted API; save it as a PNG (Portable Network Graphics);
 vary the seed to see how stochasticity works.
 
 **Python:** `py/text_to_image.py`  
 **TypeScript:** `ts/text_to_image.ts`
 
 Steps:
+
 1. Set `REPLICATE_API_TOKEN` in `.env` (or pick another provider — see the
    "Hosted provider options" section below).
 2. Run the script:
@@ -213,6 +214,7 @@ understand the effect of negative prompts.
 **Python:** `py/param_sweep.py`
 
 Steps:
+
 1. Run the sweep (sends ~6 API calls — each takes a few seconds):
    ```bash
    uv run python modules/10-image-generation/py/param_sweep.py
@@ -224,11 +226,12 @@ Steps:
 Acceptance: a `sweep_grid.png` with a visible difference across columns.
 
 What each knob does:
+
 - **guidance_scale (CFG):** controls how strongly the model follows the text
   prompt (see Concept 5 above). ~7 is a balanced default.
 - **num_inference_steps:** more steps = more detail and coherence, but slower
   and with diminishing returns past 40 for DPM++ samplers.
-- **negative_prompt:** runs the same CFG steering but *away from* the
+- **negative_prompt:** runs the same CFG steering but _away from_ the
   described features. Effectively a second CLIP encoding subtracted during
   guidance. "blurry, low quality, watermark" is a common boilerplate.
 - **seed:** controls the random noise starting point. Same seed = same image.
@@ -240,6 +243,7 @@ Transform an input image with img2img; edit a masked region with inpainting.
 **Python:** `py/img2img.py`
 
 Steps:
+
 1. The script downloads a sample input image automatically on first run.
 2. Run:
    ```bash
@@ -267,24 +271,26 @@ the math before any framework hides it.
 **Python:** `py/toy_diffusion.py`
 
 Steps:
+
 1. Run the skeleton as-is to see the forward noising process and the reverse
    sampler structure:
    ```bash
    uv run python modules/10-image-generation/py/toy_diffusion.py
    ```
    The script will run the forward process (visualisable) and attempt the
-   reverse loop — but the denoiser MLP is a stub. Fill in the TODOs.
+   reverse loop — but the denoiser MLP (Multi-Layer Perceptron) is a stub. Fill in the TODOs.
 2. **TODO A — Training loop:** implement `train_denoiser()`. Sample random
    timesteps, add noise via the closed-form formula, run the MLP, compute
-   MSE loss, backprop with tiny NumPy autograd (or switch to PyTorch — the
+   MSE (Mean Squared Error) loss, backprop with tiny NumPy autograd (or switch to PyTorch — the
    MLP class is compatible).
 3. **TODO B — Reverse sampler:** implement `ddpm_reverse_step()`. Given
-   x_t and the model's noise prediction, compute x_{t−1} using the DDPM
+   x*t and the model's noise prediction, compute x*{t−1} using the DDPM
    formula from Concept 1.
 4. After both TODOs are filled, a 2D spiral point-cloud should emerge from
    random noise in under a minute on CPU.
 
 Math to keep in mind:
+
 ```
 Forward:  q(x_t | x₀) = N(x_t; √ᾱₜ x₀, (1−ᾱₜ)I)
 Reverse:  x_{t-1} = 1/√αₜ · (x_t − βₜ/√(1−ᾱₜ) · ε_θ(x_t,t)) + σₜ z
@@ -298,15 +304,15 @@ Acceptance: after filling the TODOs, generated 2D points that form a spiral
 
 ## Hosted provider options
 
-The exercises default to **Replicate** (reliable, cheap, simple REST API).
+The exercises default to **Replicate** (reliable, cheap, simple REST (Representational State Transfer) API).
 All functions are isolated so swapping is one line:
 
-| Provider | Token env var | Model used | Notes |
-|---|---|---|---|
-| **Replicate** ✓ default | `REPLICATE_API_TOKEN` | `stability-ai/sdxl` | Poll-based API; ~$0.004/image |
-| **HuggingFace Inference API** | `HF_TOKEN` | `stabilityai/stable-diffusion-xl-base-1.0` | POST image directly; free tier limited |
-| **Stability AI** | `STABILITY_API_KEY` | SDXL via `stable-image/generate/core` | Direct PNG return |
-| **NVIDIA NIM** | `NVIDIA_API_KEY` | `stability/stable-diffusion-xl` | Same key as LLM modules |
+| Provider                                        | Token env var         | Model used                                 | Notes                                          |
+| ----------------------------------------------- | --------------------- | ------------------------------------------ | ---------------------------------------------- |
+| **Replicate** ✓ default                         | `REPLICATE_API_TOKEN` | `stability-ai/sdxl`                        | Poll-based API; ~$0.004/image                  |
+| **HuggingFace Inference API**                   | `HF_TOKEN`            | `stabilityai/stable-diffusion-xl-base-1.0` | POST image directly; free tier limited         |
+| **Stability AI**                                | `STABILITY_API_KEY`   | SDXL via `stable-image/generate/core`      | Direct PNG return                              |
+| **NVIDIA NIM (NVIDIA Inference Microservices)** | `NVIDIA_API_KEY`      | `stability/stable-diffusion-xl`            | Same key as LLM (Large Language Model) modules |
 
 To switch, edit `IMAGE_PROVIDER` at the top of any script or set the env var.
 
@@ -327,6 +333,7 @@ To switch, edit `IMAGE_PROVIDER` at the top of any script or set the env var.
 ## Going deeper
 
 **Papers:**
+
 - [DDPM — Ho et al. 2020](https://arxiv.org/abs/2006.11239) — the original
   denoising diffusion probabilistic models paper.
 - [Latent Diffusion / Stable Diffusion — Rombach et al. 2022](https://arxiv.org/abs/2112.10752)
@@ -338,6 +345,7 @@ To switch, edit `IMAGE_PROVIDER` at the top of any script or set the env var.
 - [DreamBooth — Ruiz et al. 2022](https://arxiv.org/abs/2208.12242)
 
 **Courses and tutorials:**
+
 - [Lilian Weng — "What are Diffusion Models?"](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
   — the best single blog post on the math, clearly written.
 - [HuggingFace Diffusers Course](https://huggingface.co/learn/diffusers-course/)
@@ -348,6 +356,7 @@ To switch, edit `IMAGE_PROVIDER` at the top of any script or set the env var.
   — not diffusion-specific, but the mindset of building from scratch applies.
 
 **Code:**
+
 - [HuggingFace diffusers](https://github.com/huggingface/diffusers) — the
   reference library; read `StableDiffusionPipeline.__call__` to see the
   full inference loop.

@@ -41,6 +41,15 @@ The module map (24 modules): 00 Setup & Providers · 01 LLM Fundamentals ·
 (`modules/05b-advanced-rag/`, extends module 05 — Contextual Retrieval, CRAG,
 Self-RAG, GraphRAG; reference: `docs/ADVANCED_RAG.md`) and **06b LangGraph**
 (`modules/06b-langgraph/`, extends module 06; reference: `docs/LANGGRAPH.md`).
+Four more companions extend module 01 and 06: **01b Classic ML Foundations**
+(`modules/01b-ml-foundations/` — regression, bias–variance, regularisation,
+ROC/AUC, k-means), **01c Deep Learning Essentials** (`modules/01c-deep-learning/`
+— autograd/backprop, optimizers, initialisation, regularisation, RNN+BPTT), and
+**01d Transformer Architecture** (`modules/01d-transformer/` — multi-head
+attention, masking, positional encoding, LayerNorm/residuals, KV cache) are all
+pure-from-scratch (numpy + TS, no provider); **06c Agent Frameworks**
+(`modules/06c-agent-frameworks/` — LangChain/CrewAI/AutoGen, extends 06/06b) is
+offline via a `--stub` model.
 **Each module's `README.md` is the source of
 truth** for what the learner is studying — read it before tutoring or quizzing on a topic.
 (Some module READMEs may not be written yet; if one is missing, fall back to the root
@@ -69,12 +78,15 @@ provider or an SDK call in exercise code:
   `provider.chat_stream(...)`, `provider.embed(...)`.
 - TypeScript: `getProvider()` from `@learn-ai/llm-core`.
 
-The provider swaps between OpenAI / Anthropic / Ollama / NVIDIA / LM Studio
-(local, OpenAI-compatible) via one env var. Note: **Anthropic has no embeddings
-endpoint** — `embed()` raises there; use `LLM_PROVIDER=openai` (or
-`ollama`/`nvidia`/`lmstudio`) for embedding/RAG exercises. The
+The provider swaps between OpenAI / Anthropic / Ollama / NVIDIA / LM Studio /
+Gemini (six providers) via one env var — `OpenAICompatibleProvider` now covers
+five of them (OpenAI, Ollama, NVIDIA, LM Studio, Gemini, all via the OpenAI-compatible
+endpoint shape); only Anthropic needs its own adapter. Note: **Anthropic has no
+embeddings endpoint** — `embed()` raises there; use `LLM_PROVIDER=openai` (or
+`ollama`/`nvidia`/`lmstudio`/`gemini`) for embedding/RAG exercises. The
 zero-cost path is Ollama (`ollama pull llama3.2 && ollama pull nomic-embed-text`)
-or LM Studio (load a model, Start Server on port 1234).
+or LM Studio (load a model, Start Server on port 1234). Gemini
+(`LLM_PROVIDER=gemini`, `GEMINI_API_KEY`) has a free tier and does support embeddings.
 
 ## How to run things
 
