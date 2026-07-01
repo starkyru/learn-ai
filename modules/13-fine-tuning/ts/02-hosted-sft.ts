@@ -81,13 +81,14 @@ const SYSTEM_PROMPT =
 /**
  * Convert TRAINING_PAIRS into OpenAI fine-tuning JSONL format and write to disk.
  *
- * Each line:
- *   {"messages": [{"role":"system",...},{"role":"user",...},{"role":"assistant",...}]}
+ * Each line is a JSON object with a single "messages" key holding three chat
+ * messages: a system message (use SYSTEM_PROMPT), a user message (the informal
+ * email), and an assistant message (the formal rewrite).
  *
  * TODO:
- *   1. Create DATA_DIR if it doesn't exist (fs.mkdirSync with recursive:true).
- *   2. For each [informal, formal] pair build the messages array.
- *   3. Write each example as a JSON line to TRAIN_FILE.
+ *   1. Ensure DATA_DIR exists (fs.mkdirSync with recursive: true).
+ *   2. For each [informal, formal] pair, assemble the three-message array above.
+ *   3. Write TRAIN_FILE as JSONL — one JSON.stringify'd object per line.
  *   4. Print how many examples were written and the path.
  *   5. Return TRAIN_FILE.
  */
@@ -107,17 +108,11 @@ function buildDataset(): string {
  *
  * TODO:
  *   1. Create an OpenAI client (reads OPENAI_API_KEY from process.env).
- *   2. Upload the file:
- *        const file = await client.files.create({
- *          file: fs.createReadStream(trainPath),
- *          purpose: "fine-tune",
- *        });
- *   3. Start the job:
- *        const job = await client.fineTuning.jobs.create({
- *          training_file: file.id,
- *          model: BASE_MODEL,
- *        });
- *   4. Print the job id. Return it.
+ *   2. Upload the training file with client.files.create(...), passing a read
+ *      stream of trainPath and purpose: "fine-tune". Keep the returned file id.
+ *   3. Start a fine-tune job with client.fineTuning.jobs.create(...), passing
+ *      that file id as training_file and BASE_MODEL as model.
+ *   4. Print the job id and return it.
  */
 async function uploadAndFinetune(trainPath: string): Promise<string> {
   // TODO: implement uploadAndFinetune

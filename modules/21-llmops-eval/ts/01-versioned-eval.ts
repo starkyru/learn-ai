@@ -96,8 +96,9 @@ async function runSystem(
 /**
  * Exact-match grader: passes if reference_answer appears verbatim in output.
  *
- * TODO 3a: Check output.toLowerCase().includes(reference_answer.toLowerCase()).
- * Return a GraderResult.
+ * TODO 3a: Decide whether reference_answer appears inside output, ignoring
+ *          letter case (normalise both sides before comparing).
+ * Return a GraderResult (score 1.0/0.0, passed to match).
  */
 function gradeExact(output: string, evalCase: EvalCase): GraderResult {
   // TODO: implement gradeExact
@@ -120,11 +121,13 @@ function gradeContains(output: string, evalCase: EvalCase): GraderResult {
 /**
  * LLM-as-judge grader: ask a second LLM to score 0–10.
  *
- * TODO 3c: Build a judge prompt with question, rubric, output.
- *          Ask for JSON: {"score": <0-10>, "reason": "<string>"}.
- * TODO 3d: Call provider.chat() with temperature 0.
- * TODO 3e: Parse JSON. normalizedScore = score / 10. passed = score >= 7.
- *          Handle parse errors gracefully.
+ * TODO 3c: Build a `ChatMessage[]` for a judge that sees the question, the
+ *          rubric, and the output to evaluate, and is told to reply with ONLY a
+ *          JSON object carrying an integer score (0–10) and a short reason.
+ * TODO 3d: Call provider.chat() with temperature 0 (deterministic grading).
+ * TODO 3e: Parse the JSON, normalise the score into 0–1 (divide by the 0–10
+ *          range), and treat a score of 7+ as a pass. Handle parse errors
+ *          gracefully (fall back to score 0, not passed).
  * Return a GraderResult.
  */
 async function gradeLlmJudge(

@@ -55,12 +55,9 @@ const REVISE_SYSTEM =
 //         Return the text of the draft.
 // ---------------------------------------------------------------------------
 async function draft(taskPrompt: string): Promise<string> {
-  // const llm = getProvider();
-  // const result = await llm.chat(
-  //   [{ role: "user", content: taskPrompt }],
-  //   { temperature: 0.7 },
-  // );
-  // return result.text;
+  // Get the default provider, make one chat call with a ChatMessage[] holding
+  // just the taskPrompt as a "user" message, using { temperature: 0.7 }, and
+  // return the reply text.
   throw new Error("TODO: implement draft()");
 }
 
@@ -71,15 +68,10 @@ async function draft(taskPrompt: string): Promise<string> {
 //         Use temperature=0 to keep the critique factual and repeatable.
 // ---------------------------------------------------------------------------
 async function critique(taskPrompt: string, draftText: string): Promise<string> {
-  // const llm = getProvider();
-  // const result = await llm.chat(
-  //   [
-  //     { role: "system", content: CRITIQUE_SYSTEM },
-  //     { role: "user", content: `Task: ${taskPrompt}\n\nDraft answer:\n${draftText}` },
-  //   ],
-  //   { temperature: 0 },
-  // );
-  // return result.text;
+  // Build a ChatMessage[]: the CRITIQUE_SYSTEM constant as the "system" message,
+  // and a "user" message that presents both the task and the draft answer (label
+  // each so the model can tell them apart). Call llm.chat with { temperature: 0 }
+  // and return the reply text.
   throw new Error("TODO: implement critique()");
 }
 
@@ -93,21 +85,10 @@ async function revise(
   draftText: string,
   critiqueText: string,
 ): Promise<string> {
-  // const llm = getProvider();
-  // const result = await llm.chat(
-  //   [
-  //     { role: "system", content: REVISE_SYSTEM },
-  //     {
-  //       role: "user",
-  //       content:
-  //         `Task: ${taskPrompt}\n\n` +
-  //         `Draft answer:\n${draftText}\n\n` +
-  //         `Critique:\n${critiqueText}`,
-  //     },
-  //   ],
-  //   { temperature: 0.3 },
-  // );
-  // return result.text;
+  // Build a ChatMessage[]: the REVISE_SYSTEM constant as the "system" message,
+  // and a "user" message that supplies all three pieces the reviser needs — the
+  // task, the draft answer, and the critique (label each). Call llm.chat with a
+  // low-but-nonzero temperature (e.g. { temperature: 0.3 }) and return the reply text.
   throw new Error("TODO: implement revise()");
 }
 

@@ -72,32 +72,24 @@ async def serve_http() -> None:
     This wraps the same tool logic from task 3 (search_docs, read_module,
     run_exam_question) but serves them over HTTP instead of stdio.
     """
-    # TODO 1: Import the HTTP server transport from the MCP SDK.
-    #   The exact import depends on mcp version:
-    #   from mcp.server.sse import SseServerTransport
-    #   (or check: from mcp.server.http import create_http_app)
+    # TODO 1: Import the HTTP/SSE server transport from the MCP SDK. The exact
+    #   module moves between versions — look under mcp.server.sse (e.g.
+    #   SseServerTransport) or mcp.server.http; check what your installed
+    #   version exposes.
     #
-    # TODO 2: Re-use the server object from task 3.
-    #   from modules_17_mcp_py.task3 import build_server  (or inline the tool defs)
-    #   For a self-contained file, copy the tool handlers from task 3 here
-    #   and build a fresh Server("learn-ai-course-http").
+    # TODO 2: Get a server object exposing the same tools as task 3. Either
+    #   import build_server from the task-3 module, or inline the tool handlers
+    #   here and build a fresh Server (give it a distinct name like
+    #   "learn-ai-course-http") to keep this file self-contained.
     #
-    # TODO 3: Wrap the server in an ASGI/WSGI app and serve it.
-    #   Option A (starlette):
-    #     from starlette.applications import Starlette
-    #     from starlette.routing import Route, Mount
-    #     transport = SseServerTransport("/messages")
-    #     app = Starlette(routes=[Mount("/", transport.router)])
-    #     import uvicorn
-    #     await uvicorn.Server(uvicorn.Config(app, host="0.0.0.0", port=MCP_PORT)).serve()
+    # TODO 3: Mount the transport in an ASGI app and serve it. A common shape:
+    #   build the SSE transport with its message path, wrap it in a Starlette
+    #   app (mounting the transport's routes), then run it with uvicorn bound to
+    #   host 0.0.0.0 and MCP_PORT. (aiohttp is an alternative — see the SDK docs.)
     #
-    #   Option B (aiohttp):
-    #     Check the mcp SDK docs for the aiohttp integration.
-    #
-    # TODO 4 (security): Add a simple bearer-token middleware.
-    #   If MCP_AUTH_TOKEN is set, reject requests that don't carry:
-    #   Authorization: Bearer <MCP_AUTH_TOKEN>
-    #   Return HTTP 401 for missing/wrong tokens.
+    # TODO 4 (security): Add bearer-token auth. When MCP_AUTH_TOKEN is set,
+    #   check each request's Authorization header for "Bearer <MCP_AUTH_TOKEN>"
+    #   and return HTTP 401 on a missing or wrong token.
     raise NotImplementedError("TODO 1-4: implement HTTP/SSE MCP server")
 
 
@@ -107,24 +99,16 @@ async def serve_http() -> None:
 
 async def connect_http_client() -> None:
     """Connect to a remote MCP server via HTTP/SSE, list tools, call one."""
-    # TODO 5: Import the SSE client transport.
-    #   from mcp.client.sse import sse_client
-    #   from mcp import ClientSession
+    # TODO 5: Import the SSE client transport: sse_client from mcp.client.sse
+    #   and ClientSession from mcp.
     #
-    # TODO 6: Connect and run the same discovery + call demo as task 2:
-    #   headers = {}
-    #   if MCP_AUTH_TOKEN:
-    #       headers["Authorization"] = f"Bearer {MCP_AUTH_TOKEN}"
-    #
-    #   async with sse_client(MCP_SERVER_URL, headers=headers) as (read, write):
-    #       async with ClientSession(read, write) as session:
-    #           await session.initialize()
-    #           tools = (await session.list_tools()).tools
-    #           print(f"Tools available: {[t.name for t in tools]}")
-    #
-    #           result = await session.call_tool("search_docs", {"query": "RAG pipeline"})
-    #           text = " ".join(b.text for b in result.content if b.type == "text")
-    #           print(f"\nsearch_docs('RAG pipeline'):\n{text[:400]}")
+    # TODO 6: Connect and run the same discovery + call demo as task 2, but over
+    #   SSE instead of stdio. Build a headers dict, adding an "Authorization"
+    #   "Bearer ..." entry when MCP_AUTH_TOKEN is set. Open sse_client(
+    #   MCP_SERVER_URL, headers=...) to get a (read, write) pair, wrap it in a
+    #   ClientSession, initialize(), then list_tools() (print the tool names)
+    #   and call_tool("search_docs", ...) with a sample query — join and print
+    #   the text blocks of the result.
     raise NotImplementedError("TODO 5-6: implement HTTP MCP client")
 
 

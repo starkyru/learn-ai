@@ -28,8 +28,9 @@ def build_bigram_counts(tokens: list[str]) -> dict[str, dict[str, int]]:
     """Build {token -> {next_token -> count}} from a token sequence.
 
     TODO:
-      For each adjacent pair (tokens[i], tokens[i+1]), increment
-      counts[tokens[i]][tokens[i+1]]. Return the nested dict.
+      Walk every adjacent pair (a token and the one right after it) and tally how
+      often each follower appears after each token, into the nested
+      `dict[str, dict[str, int]]`. Return it.
     """
     raise NotImplementedError("Count token -> next-token frequencies — see the TODO.")
 
@@ -42,8 +43,9 @@ def predict_next(
     TODO:
       1. Look up the follower counts for `token`. If none exist (unseen token),
          fall back to picking a random known token.
-      2. Sample a follower with probability proportional to its count.
-         (Hint: rng.choices(list(followers), weights=list(counts), k=1)[0].)
+      2. Sample a follower with probability proportional to its count — the
+         counts act as the weights. (`rng.choices(...)` takes a `weights=`
+         argument, or walk a cumulative sum yourself.)
     """
     raise NotImplementedError("Sample the next token from the counts — see the TODOs.")
 

@@ -77,18 +77,17 @@ async function buildHandwired() {
     messages: [await model.invoke(state.messages)],
   });
 
-  // TODO 1: write the router — "tools" if the last message has tool_calls, else END.
-  // const route = (state: typeof MessagesAnnotation.State) => {
-  //   const last = state.messages.at(-1) as AIMessage;
-  //   return last.tool_calls?.length ? "tools" : END;
-  // };
+  // TODO 1: write the router `route(state)`. Grab the last message (cast to
+  //         AIMessage) and decide: if it carries any tool_calls, return "tools";
+  //         otherwise return END.
 
   return (
     new StateGraph(MessagesAnnotation)
       .addNode("agent", agentNode)
       .addNode("tools", new ToolNode(TOOLS))
       .addEdge(START, "agent")
-      // TODO 2: .addConditionalEdges("agent", route).addEdge("tools", "agent")
+      // TODO 2: register your router with `.addConditionalEdges("agent", route)`, and
+      //         close the ReAct cycle with an edge from "tools" back to "agent".
       .compile()
   );
 }
@@ -108,7 +107,8 @@ async function buildPrebuiltRouter() {
       .addNode("agent", agentNode)
       .addNode("tools", new ToolNode(TOOLS))
       .addEdge(START, "agent")
-      // TODO 3: .addConditionalEdges("agent", toolsCondition)
+      // TODO 3: same wiring as TODO 2, but pass the prebuilt `toolsCondition` to
+      //         `.addConditionalEdges` on "agent" instead of your own router.
       .addEdge("tools", "agent")
       .compile()
   );
@@ -119,7 +119,8 @@ async function buildPrebuiltRouter() {
 // ---------------------------------------------------------------------------
 
 async function buildFullyPrebuilt() {
-  // TODO 4: return createReactAgent({ llm: await getChatModel(), tools: TOOLS });
+  // TODO 4: collapse the whole graph into one call — `createReactAgent({ ... })`
+  //         takes an options object with the chat model (`llm`) and `tools`; return it.
   throw new Error("TODO 4");
 }
 

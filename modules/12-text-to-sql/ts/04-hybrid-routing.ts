@@ -59,10 +59,13 @@ export interface HybridAnswer {
  *                   not in the database (RAG, embeddings, AI, etc.).
  *        "both"   — the question has a structured AND a knowledge sub-question.
  *        "unknown"— intent unclear; needs rephrasing.
- *      Instruct: respond with JSON: {"route":"…","reasoning":"…"}
- *   2. Call provider.chat([systemMsg, userMsg], { temperature: 0 }).
- *   3. Strip ```json ... ``` fences from the response.
- *   4. JSON.parse and return RouterDecision.
+ *      Instruct the model to reply as a JSON object with two fields — a
+ *      "route" (one of the four categories) and a one-sentence "reasoning" —
+ *      and nothing else.
+ *   2. Call `provider.chat(messages, { temperature: ... })` with the
+ *      deterministic setting.
+ *   3. Strip any ```json ... ``` fence from the response, then `JSON.parse` it.
+ *   4. Return the parsed value as a `RouterDecision`.
  */
 export async function classifyIntent(
   question: string,
@@ -138,12 +141,13 @@ ingested and at what version.
  * vector store, and call the LLM with context. For this exercise:
  *
  * Steps:
- *   1. Build messages:
- *        system: "Answer ONLY using the provided context. If the context
- *                 does not contain the answer, say so."
- *        user:   `Context:\n${KNOWLEDGE_BASE}\n\nQuestion: ${question}`
- *   2. Call provider.chat(messages).
- *   3. Return result.text.
+ *   1. Build a `ChatMessage[]`:
+ *        - a system message constraining the model to answer ONLY from the
+ *          supplied context and to admit when the context lacks the answer;
+ *        - a user message that stitches together `KNOWLEDGE_BASE` (as the
+ *          context) and the `question`.
+ *   2. Call `provider.chat(messages)`.
+ *   3. Return the model's text.
  *
  * Reflection: what would change if you replaced KNOWLEDGE_BASE with live
  * vector retrieval from module 05?
@@ -166,11 +170,13 @@ export async function ragAnswer(
  * TODO: implement this function.
  *
  * Steps:
- *   1. decision = await classifyIntent(question, provider).
- *   2. Build: answer = { question, route: decision.route, reasoning: decision.reasoning }.
- *   3. If route is "sql" or "both": answer.sqlResult = await sqlAnswer(question, provider).
- *   4. If route is "vector" or "both": answer.ragResult = await ragAnswer(question, provider).
- *   5. Return answer.
+ *   1. Get a `RouterDecision` from `classifyIntent()` (await it).
+ *   2. Seed a `HybridAnswer` carrying the question plus the decision's route
+ *      and reasoning.
+ *   3. Dispatch based on the route: call `sqlAnswer()` when the route covers SQL
+ *      ("sql"/"both") and `ragAnswer()` when it covers knowledge
+ *      ("vector"/"both"), storing each into the matching field.
+ *   4. Return the answer (an "unknown" route leaves both result fields unset).
  */
 export async function routeAndAnswer(
   question: string,

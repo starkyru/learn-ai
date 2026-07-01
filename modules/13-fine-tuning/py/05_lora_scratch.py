@@ -68,9 +68,10 @@ def lora_init(
       - A is non-zero so gradients flow immediately from step 1.
 
     TODO:
-      1. Set numpy random seed to `seed`.
-      2. A = np.random.randn(r, d_in) * 0.01
-      3. B = np.zeros((d_out, r))
+      1. Seed numpy's RNG with `seed` for reproducibility.
+      2. Build A with shape [r, d_in] from a standard-normal draw scaled down to
+         small values (multiply by ~0.01).
+      3. Build B as an all-zeros array of shape [d_out, r].
       4. Return (A, B).
     """
     # TODO: implement lora_init
@@ -96,7 +97,9 @@ def lora_forward(
              = (W + B @ A) @ x       ← mathematically identical
 
     TODO:
-      Implement: return W @ x + B @ (A @ x)
+      Return the base projection W @ x plus the low-rank correction. Compute the
+      correction in the efficient order — first A @ x (a length-r vector), then
+      B @ that — rather than forming the full B @ A matrix.
 
     This is the heart of LoRA: the base weight W stays frozen; only B and A
     change during training, contributing a low-rank correction to the output.
@@ -145,9 +148,10 @@ def verify_equivalence(
     Returns True if the max absolute difference is < tol.
 
     TODO:
-      1. Compute out1 = (W + B @ A) @ x
-      2. Compute out2 = W @ x + B @ (A @ x)
-      3. Return np.max(np.abs(out1 - out2)) < tol
+      1. Compute the output the "merged" way: form (W + B @ A) once, then apply
+         it to x.
+      2. Compute the output the "factored" way: W @ x + B @ (A @ x).
+      3. Return whether the largest absolute element-wise difference is below tol.
     """
     # TODO: implement verify_equivalence
     raise NotImplementedError("TODO: implement verify_equivalence()")
@@ -174,8 +178,8 @@ def verify_zero_at_init(
     Returns True if the LoRA correction is exactly zero.
 
     TODO:
-      1. correction = B @ (A @ x)
-      2. Return np.allclose(correction, np.zeros_like(correction))
+      1. Compute just the LoRA correction term, B @ (A @ x).
+      2. Return whether that correction is (numerically) all zeros.
     """
     # TODO: implement verify_zero_at_init
     raise NotImplementedError("TODO: implement verify_zero_at_init()")

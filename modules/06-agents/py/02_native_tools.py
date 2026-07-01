@@ -35,8 +35,8 @@ load_dotenv()
 
 def run_calculator(expression: str) -> str:
     """Evaluate a math expression string and return the result."""
-    # TODO 1: Same implementation as Task 1's calculator.
-    #         eval() is acceptable here for educational purposes.
+    # TODO 1: Same behaviour as Task 1's calculator (eval() the expression inside
+    #         try/except). eval() is acceptable here for educational purposes.
     raise NotImplementedError("TODO: implement run_calculator")
 
 
@@ -48,9 +48,9 @@ def run_search(query: str) -> str:
 
 def dispatch_tool(name: str, args: dict) -> str:
     """Dispatch a tool call by name, using parsed args dict."""
-    # TODO 3: Map tool name to function call.
-    #         "calculator" -> run_calculator(args["expression"])
-    #         "search"     -> run_search(args["query"])
+    # TODO 3: Branch on `name` and call the matching function, pulling the argument
+    #         out of the `args` dict by the key you named in each tool's schema
+    #         ("calculator" reads the expression; "search" reads the query).
     raise NotImplementedError("TODO: implement dispatch_tool")
 
 
@@ -58,25 +58,15 @@ def dispatch_tool(name: str, args: dict) -> str:
 # OpenAI native tool-calling loop
 # ---------------------------------------------------------------------------
 
-# TODO 4: Define tool schemas in OpenAI's format.
-#         Each entry is a dict with: type="function", function={name, description, parameters}.
-#         The parameters field is a JSON Schema object.
+# TODO 4: Define the calculator and search tool schemas in OpenAI's format.
+#         Each entry is a dict with keys `type` ("function") and `function`.
+#         The `function` dict holds `name`, `description`, and `parameters` — where
+#         `parameters` is a JSON Schema object (`type` "object", a `properties` map
+#         declaring each argument's type/description, and a `required` list).
+#         Name the calculator's argument and the search's argument to match the
+#         keys dispatch_tool() reads.
 OPENAI_TOOLS: list[dict] = [
-    # {
-    #     "type": "function",
-    #     "function": {
-    #         "name": "calculator",
-    #         "description": "Evaluates a math expression and returns the result.",
-    #         "parameters": {
-    #             "type": "object",
-    #             "properties": {
-    #                 "expression": {"type": "string", "description": "The math expression to evaluate."}
-    #             },
-    #             "required": ["expression"],
-    #         },
-    #     },
-    # },
-    # ... add search tool
+    # one dict per tool — calculator, then search
 ]
 
 
@@ -112,18 +102,13 @@ def run_openai_agent(question: str) -> str:
 # Anthropic native tool-calling loop
 # ---------------------------------------------------------------------------
 
-# TODO 6: Define tool schemas in Anthropic's format.
-#         Each entry: {name, description, input_schema: {type: "object", properties: {...}}}
+# TODO 6: Define the same tools in Anthropic's format.
+#         Anthropic flattens the schema compared to OpenAI: each entry is a dict
+#         with `name`, `description`, and `input_schema` (the JSON Schema object
+#         itself — `type` "object", `properties`, `required`), with no outer
+#         "function" wrapper.
 ANTHROPIC_TOOLS: list[dict] = [
-    # {
-    #     "name": "calculator",
-    #     "description": "...",
-    #     "input_schema": {
-    #         "type": "object",
-    #         "properties": { "expression": {"type": "string"} },
-    #         "required": ["expression"],
-    #     },
-    # },
+    # one dict per tool — calculator, then search
 ]
 
 

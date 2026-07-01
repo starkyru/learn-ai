@@ -63,12 +63,13 @@ User request: ${request}`;
 
 // ---------------------------------------------------------------------------
 // TODO 3: Implement parseRecipe.
-//         a) Call JSON.parse on the raw text (wrap in try/catch — the model
-//            may output markdown fences or prose before the JSON).
-//         b) Strip markdown code fences if present: text.replace(/```json?\n?/g, "").replace(/```/g, "")
-//         c) Pass the parsed object to RecipeSchema.parse() for validation.
-//         d) Return the typed Recipe object.
-//         Throw a descriptive error if parsing or validation fails.
+//         a) The model often wraps JSON in ```json ... ``` fences or adds prose —
+//            strip any code-fence markers off `rawText` first (a regex replace works).
+//         b) JSON.parse the cleaned text inside a try/catch.
+//         c) Hand the parsed object to RecipeSchema.parse() so zod validates the
+//            shape and coerces to the typed Recipe.
+//         d) Return that typed object; throw a descriptive Error if either the
+//            JSON parse or the schema validation fails.
 // ---------------------------------------------------------------------------
 function parseRecipe(rawText: string): Recipe {
   // TODO: implement
@@ -87,15 +88,9 @@ async function main() {
   //         and lower temperature (use ChatOptions with temperature: 0.1) to
   //         make the output more deterministic and JSON-like.
   //         Then call parseRecipe on result.text and pretty-print the result.
+  //         Pass the options as a second arg to llm.chat(); keep temperature low
+  //         (~0.1) so the model sticks to the requested JSON shape.
   // ---------------------------------------------------------------------------
-
-  // const result = await llm.chat(
-  //   [{ role: "user", content: buildPrompt(request) }],
-  //   { temperature: 0.1 }
-  // );
-  // console.log("Raw response:\n", result.text, "\n");
-  // const recipe = parseRecipe(result.text);
-  // console.log("Parsed recipe:", JSON.stringify(recipe, null, 2));
 
   console.log("TODO: implement the chat call and parsing above.");
 

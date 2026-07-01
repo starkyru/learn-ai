@@ -78,13 +78,13 @@ def should_retrieve(query: str, provider: Any) -> bool:
     TODO: implement this.
 
     Steps:
-      1. messages:
-           system: "Decide if answering the question needs retrieving external
-                    documents. Closed-book facts, math, and general reasoning do
-                    NOT. Answer only 'yes' or 'no'."
-           user:   query
-      2. result = provider.chat(messages, ChatOptions(temperature=0, max_tokens=3))
-      3. return _yes(result.text)
+      1. Build a list[ChatMessage]: a system message telling the model to reply only
+         yes/no about whether answering needs retrieving external documents
+         (closed-book facts, math, and general reasoning do NOT), and a user message
+         with the query.
+      2. result = provider.chat(messages, ChatOptions(temperature=0, max_tokens=...))
+         — a tiny cap.
+      3. Convert the reply to a bool with the provided _yes() helper.
     """
     raise NotImplementedError("TODO: implement should_retrieve()")
 
@@ -101,12 +101,11 @@ def grade_relevance(query: str, chunks: list[Chunk], provider: Any) -> list[Chun
     TODO: implement this.
 
     Steps:
-      For each chunk, ask the LLM yes/no:
-        system: "Is the passage relevant to answering the question? Answer only
-                 'yes' or 'no'."
-        user:   f"Question: {query}\\nPassage: {chunk.text}"
-        options = ChatOptions(temperature=0, max_tokens=3)
-      Keep the chunk if _yes(result.text). Return the kept list.
+      For each chunk, ask the LLM one yes/no judgement. Build a list[ChatMessage]: a
+      system message asking only yes/no whether the passage is relevant to the
+      question, and a user message carrying the query plus that chunk's text. Use
+      ChatOptions(temperature=0, max_tokens=...) with a tiny cap.
+      Keep the chunk when _yes() of its reply, and return the surviving chunks.
     """
     raise NotImplementedError("TODO: implement grade_relevance()")
 
@@ -124,14 +123,13 @@ def grade_support(answer: str, chunks: list[Chunk], provider: Any) -> str:
     TODO: implement this.
 
     Steps:
-      1. context = "\\n".join(c.text for c in chunks)
-      2. messages:
-           system: "Judge how well the ANSWER is supported by the CONTEXT.
-                    Reply with exactly one word: fully, partially, or no."
-           user:   f"Context:\\n{context}\\n\\nAnswer:\\n{answer}"
-         options = ChatOptions(temperature=0, max_tokens=5)
-      3. Normalise result.text.strip().lower() to one of the three labels
-         (default "no" if it's something unexpected).
+      1. Join the kept chunk texts into one context string.
+      2. Build a list[ChatMessage]: a system message telling the model to judge how
+         well the ANSWER is supported by the CONTEXT and reply with exactly one word —
+         fully, partially, or no — and a user message carrying the context and answer.
+         Use ChatOptions(temperature=0, max_tokens=...) with a few tokens.
+      3. Normalise the reply to one of the three labels (default "no" for anything
+         unexpected).
     """
     raise NotImplementedError("TODO: implement grade_support()")
 
@@ -176,16 +174,14 @@ def self_rag(query: str, corpus: list[Chunk], provider: Any) -> SelfRagResult:
     TODO: implement this.
 
     Steps:
-      1. If not should_retrieve(query, provider):
-           answer = _generate(query, None, provider)
-           return SelfRagResult(answer, retrieved=False)
-      2. chunks = lexical_retrieve(query, corpus)
-      3. kept = grade_relevance(query, chunks, provider)
-      4. context = "\\n".join(c.text for c in kept)
-      5. answer = _generate(query, context, provider)
-      6. support = grade_support(answer, kept, provider)
-      7. return SelfRagResult(answer, retrieved=True,
-                              kept_chunk_ids=[c.id for c in kept], support=support)
+      1. If should_retrieve() says no: generate closed-book (pass None as context)
+         and return a SelfRagResult with retrieved=False (kept ids empty, support
+         defaults to "n/a").
+      2. Otherwise: retrieve with lexical_retrieve(), filter with grade_relevance(),
+         join the kept chunk texts as context, _generate() the answer over it, then
+         grade_support() the answer against the kept chunks.
+      3. Return a SelfRagResult with retrieved=True, the kept chunk ids, and the
+         support verdict.
     """
     raise NotImplementedError("TODO: implement self_rag()")
 

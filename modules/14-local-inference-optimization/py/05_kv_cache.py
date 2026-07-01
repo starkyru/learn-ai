@@ -65,7 +65,7 @@ def embed(token_id: int) -> np.ndarray:
 
     Shape: [DIM]
 
-    TODO: return EMBED_MATRIX[token_id].
+    TODO: index the fixed EMBED_MATRIX by token_id to get its row.
     """
     # TODO: implement embed
     raise NotImplementedError("TODO: implement embed()")
@@ -80,7 +80,7 @@ def compute_key(token_id: int) -> np.ndarray:
 
     This represents the "project token to key space" operation in real attention.
 
-    TODO: return W_K @ embed(token_id).
+    TODO: apply the formula above — matrix-multiply W_K by the token's embedding.
     """
     # TODO: implement compute_key
     raise NotImplementedError("TODO: implement compute_key()")
@@ -93,7 +93,7 @@ def compute_query(token_id: int) -> np.ndarray:
     Formula: q = W_Q @ embed(token_id)
     Shape: [DIM]
 
-    TODO: return W_Q @ embed(token_id).
+    TODO: apply the formula above — matrix-multiply W_Q by the token's embedding.
     """
     # TODO: implement compute_query
     raise NotImplementedError("TODO: implement compute_query()")
@@ -123,12 +123,13 @@ def attention_uncached(
 
     TODO:
       1. Compute the query for new_token_id.
-      2. For each token in tokens_so_far + [new_token_id], compute its key.
-         Keep count: key_computations = len(tokens_so_far) + 1
-      3. Stack keys into a matrix: K ∈ ℝ^{t × DIM}
-      4. Compute attention scores: scores = K @ query (shape [t])
-         Apply softmax: weights = exp(scores - max(scores)) / sum(...)
-      5. Compute output: attention_output = weights @ K (shape [DIM])
+      2. Recompute a key for EVERY token in tokens_so_far plus the new one — this
+         is the wasteful part. key_computations is that count (len + 1).
+      3. Stack those keys into a matrix K ∈ ℝ^{t × DIM}.
+      4. Score each key against the query (a matrix-vector product gives one
+         score per key, shape [t]), then normalise the scores with softmax
+         (subtract the max for numerical stability before exponentiating).
+      5. The output is the softmax-weighted sum of the keys (shape [DIM]).
       6. Return (attention_output, key_computations).
     """
     # TODO: implement attention_uncached
@@ -157,10 +158,12 @@ def attention_cached(
 
     TODO:
       1. Compute query for new_token_id.
-      2. Compute key for new_token_id (1 computation only).
-      3. Append it to a copy of kv_cache to get updated_cache.
-      4. Stack all keys: K = np.stack(updated_cache)  [t × DIM]
-      5. Compute attention scores, softmax weights, output — same as uncached.
+      2. Compute the key for new_token_id ONLY (1 computation) — the past keys
+         are already sitting in kv_cache.
+      3. Append the new key to a COPY of kv_cache (don't mutate the caller's list)
+         to get updated_cache.
+      4. Stack the cached keys (np.stack) into K [t × DIM].
+      5. Score, softmax, and weighted-sum exactly as in the uncached version.
       6. Return (attention_output, updated_cache, 1).
     """
     # TODO: implement attention_cached
@@ -182,12 +185,11 @@ def generate_uncached(tokens: list[int]) -> tuple[float, int]:
     Returns (elapsed_seconds, total_key_computations).
 
     TODO:
-      1. Start timer.
-      2. total_key_comps = 0
-      3. For t in range(1, len(tokens)):
-           _, comps = attention_uncached(tokens[:t], tokens[t])
-           total_key_comps += comps
-      4. Return (elapsed, total_key_comps).
+      1. Start a perf_counter timer and a running key-computation counter.
+      2. Walk the sequence from the second token onward. At each position, call
+         attention_uncached with the prior tokens as history and the current
+         token as the new one; accumulate the key-computation count it returns.
+      3. Return (elapsed_seconds, total_key_computations).
     """
     # TODO: implement generate_uncached
     raise NotImplementedError("TODO: implement generate_uncached()")
@@ -203,13 +205,11 @@ def generate_cached(tokens: list[int]) -> tuple[float, int]:
     Returns (elapsed_seconds, total_key_computations).
 
     TODO:
-      1. Start timer.
-      2. kv_cache = []
-         total_key_comps = 0
-      3. For t in range(len(tokens)):
-           _, kv_cache, comps = attention_cached(kv_cache, tokens[t])
-           total_key_comps += comps
-      4. Return (elapsed, total_key_comps).
+      1. Start a perf_counter timer, an empty kv_cache list, and a counter.
+      2. Walk EVERY token in order. At each step, call attention_cached with the
+         current cache; it hands back the grown cache (rebind kv_cache to it) and
+         the per-step key-computation count (always 1) to accumulate.
+      3. Return (elapsed_seconds, total_key_computations).
     """
     # TODO: implement generate_cached
     raise NotImplementedError("TODO: implement generate_cached()")

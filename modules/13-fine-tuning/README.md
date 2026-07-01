@@ -2,10 +2,10 @@
 
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand · 🔴 from-scratch
 
-Fine-tuning is what you do when prompting and RAG are not enough. This module
-teaches you WHEN that moment actually arrives, how to do it cheaply (LoRA), and
-what can go wrong (overfitting). By the end you will have prepared a real JSONL
-training dataset, launched a hosted fine-tune via the OpenAI API, and implemented
+Fine-tuning is what you do when prompting and RAG (Retrieval-Augmented Generation) are not enough. This module
+teaches you WHEN that moment actually arrives, how to do it cheaply (LoRA (Low-Rank Adaptation)), and
+what can go wrong (overfitting). By the end you will have prepared a real JSONL (JSON Lines)
+training dataset, launched a hosted fine-tune via the OpenAI API (Application Programming Interface), and implemented
 the LoRA low-rank update by hand so the math is no longer magic.
 
 ---
@@ -17,10 +17,10 @@ the LoRA low-rank update by hand so the math is no longer magic.
 Before writing a single line of fine-tuning code you need to ask: **is fine-tuning
 actually the right tool?** The three main strategies are:
 
-| Strategy | What it adds | When to reach for it |
-| --- | --- | --- |
-| **Prompting** | Nothing — uses the base model | New task, few/no examples, labels change often |
-| **RAG** | External knowledge at inference time | Need up-to-date or private facts, knowledge is large |
+| Strategy        | What it adds                               | When to reach for it                                          |
+| --------------- | ------------------------------------------ | ------------------------------------------------------------- |
+| **Prompting**   | Nothing — uses the base model              | New task, few/no examples, labels change often                |
+| **RAG**         | External knowledge at inference time       | Need up-to-date or private facts, knowledge is large          |
 | **Fine-tuning** | Persistent style/behaviour/task adaptation | Consistent tone, private schema, output format lock-in, speed |
 
 The rule of thumb: **start with prompting, add RAG for knowledge, consider fine-tuning
@@ -28,7 +28,7 @@ only when you have hundreds of clean examples and a stable task definition that 
 change monthly.** Fine-tuning is expensive to re-do; a bad dataset produces a model
 that confidently does the wrong thing.
 
-### Supervised fine-tuning (SFT / instruction tuning)
+### Supervised fine-tuning (SFT (Supervised Fine-Tuning) / instruction tuning)
 
 SFT means taking a pre-trained base model and continuing to train it on
 `(prompt, completion)` pairs that demonstrate the behaviour you want. This is
@@ -38,7 +38,22 @@ SFT teaches it to follow instructions.
 The JSONL format the OpenAI fine-tuning API expects:
 
 ```jsonl
-{"messages": [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]}
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "..."
+    },
+    {
+      "role": "user",
+      "content": "..."
+    },
+    {
+      "role": "assistant",
+      "content": "..."
+    }
+  ]
+}
 ```
 
 Each line is one training example. The model is trained to predict the `assistant`
@@ -50,7 +65,7 @@ your examples instead of the web.
 Fine-tuning all billions of parameters is expensive and slow. LoRA (Hu et al., 2021)
 is the big idea that made local fine-tuning practical:
 
-**The core insight:** During fine-tuning, the *change* in a weight matrix ΔW tends
+**The core insight:** During fine-tuning, the _change_ in a weight matrix ΔW tends
 to have low intrinsic rank. Instead of updating the full W (shape [d, d]), LoRA
 represents the update as a product of two small matrices:
 
@@ -66,14 +81,14 @@ output = W·x + B·A·x = (W + B·A)·x
 
 **Parameter count comparison** for a weight matrix of shape [d, d] with rank r:
 
-| Method | Parameters |
-| --- | --- |
-| Full fine-tune | d² |
-| LoRA | 2·d·r |
+| Method         | Parameters |
+| -------------- | ---------- |
+| Full fine-tune | d²         |
+| LoRA           | 2·d·r      |
 
 For d=4096, r=16: full = 16.7M params; LoRA = 131K params — **127× fewer**.
 
-**QLoRA** (Dettmers et al., 2023) adds quantization on top: the frozen base model
+**QLoRA** (Quantized Low-Rank Adaptation) (Dettmers et al., 2023) adds quantization on top: the frozen base model
 weights are stored in 4-bit precision to fit on a consumer GPU, while the LoRA
 adapters train in bfloat16. This makes fine-tuning a 7B-parameter model possible
 on a 16 GB GPU.
@@ -101,12 +116,13 @@ Signs of overfitting: training loss keeps falling but validation loss stops fall
 through a prompt-only baseline and a mock fine-tuned baseline, then comparing.
 
 **Files:**
+
 - `py/01_decide.py`
 - `ts/01-decide.ts`
 
 **Steps:**
 
-1. Implement `prompt_baseline()` / `promptBaseline()` — call the LLM with a
+1. Implement `prompt_baseline()` / `promptBaseline()` — call the LLM (Large Language Model) with a
    system prompt tailored to the narrow task (formal email rewriting).
 
 2. Implement `mock_finetuned()` / `mockFineTuned()` — simulate what a fine-tuned
@@ -121,6 +137,7 @@ through a prompt-only baseline and a mock fine-tuned baseline, then comparing.
 5. Discuss in comments: would a real fine-tuned model do better than few-shot? When?
 
 **Acceptance:**
+
 - Both approaches run without error.
 - A comparison table prints with formality scores for each input.
 - Code comments explain the decision logic.
@@ -133,6 +150,7 @@ through a prompt-only baseline and a mock fine-tuned baseline, then comparing.
 API, then call the resulting model and compare it to the base model.
 
 **Files:**
+
 - `py/02_hosted_sft.py`
 - `ts/02-hosted-sft.ts`
 
@@ -147,7 +165,7 @@ https://platform.openai.com/docs/guides/fine-tuning before running.
    for a "formal email rewriter" task. Each example is a
    `{"messages": [...]}` dict. Write the result to `data/emails_train.jsonl`.
 
-2. Implement `upload_and_finetune()` / `uploadAndFinetune()` — use the `openai` SDK
+2. Implement `upload_and_finetune()` / `uploadAndFinetune()` — use the `openai` SDK (Software Development Kit)
    directly (not llm-core) to:
    a. Upload the JSONL file via `client.files.create(purpose="fine-tune")`.
    b. Start a fine-tune job via `client.fine_tuning.jobs.create(...)`.
@@ -164,6 +182,7 @@ https://platform.openai.com/docs/guides/fine-tuning before running.
 `import OpenAI from "openai"`.
 
 **Acceptance:**
+
 - `build_dataset()` writes a valid JSONL file with 30 examples.
 - The upload + fine-tune submission works (even if you cancel the job to save cost).
 - Comparison table prints for at least 3 test inputs.
@@ -172,19 +191,22 @@ https://platform.openai.com/docs/guides/fine-tuning before running.
 
 ### Task 3 🟡 — LoRA / QLoRA locally (Python only)
 
-**Goal:** Fine-tune a small model locally using PEFT + transformers. Understand the
+**Goal:** Fine-tune a small model locally using PEFT (Parameter-Efficient Fine-Tuning) + transformers. Understand the
 mechanics of LoRA from the outside: which layers get adapters, how rank affects
 parameter count.
 
 **File:** `py/03_lora_local.py`
 
 **Optional extra — requires:**
+
 ```bash
 uv sync --extra finetune
 ```
+
 This installs: `transformers`, `peft`, `datasets`, `accelerate`, `torch`.
 
 **WARNING:** This task downloads model weights:
+
 - `facebook/opt-125m` — ~250 MB (used in the stub)
 - If you want to try a more capable model, `meta-llama/Llama-3.2-1B` needs ~2.5 GB
   and a HuggingFace account (`HF_TOKEN` in `.env`).
@@ -210,6 +232,7 @@ This installs: `transformers`, `peft`, `datasets`, `accelerate`, `torch`.
 (hosted SFT via the OpenAI API) — that's the practical equivalent for JS/TS engineers.
 
 **Acceptance:**
+
 - The script runs end-to-end with the `--extra finetune` deps.
 - Trainable parameter count is much smaller than total (should be < 1%).
 - Loss decreases over training steps.
@@ -223,6 +246,7 @@ mock-fine-tune), and watch for overfitting by tracking val loss separately from
 train loss.
 
 **Files:**
+
 - `py/04_dataset_eval.py`
 - `ts/04-dataset-eval.ts`
 
@@ -246,6 +270,7 @@ train loss.
 5. Run on the email dataset from Task 2.
 
 **Acceptance:**
+
 - `clean_example()` handles None, HTML, and whitespace correctly.
 - `split_dataset()` produces non-overlapping splits summing to 100%.
 - A table of train vs val scores prints with a clear overfitting signal (even if mocked).
@@ -259,6 +284,7 @@ numpy (Python) or plain arrays (TypeScript). No ML frameworks. Count how many
 parameters you save and verify the forward pass numerically.
 
 **Files:**
+
 - `py/05_lora_scratch.py`
 - `ts/05-lora-scratch.ts`
 
@@ -271,6 +297,7 @@ parameters you save and verify the forward pass numerically.
    - `B` : shape [d_out, r] — zeros (standard LoRA init: B=0 so ΔW starts at zero)
 
 2. Implement `lora_forward()` / `loraForward()` — compute the LoRA-adapted output:
+
    ```
    output = W @ x + (B @ A) @ x    # or equivalently (W + B@A) @ x
    ```
@@ -285,6 +312,7 @@ parameters you save and verify the forward pass numerically.
    full vs LoRA param counts and savings ratio for d=512/1024/4096, r=4/8/16/64.
 
 **Acceptance:**
+
 - The equivalence check passes (numpy `allclose` or a manual absolute-diff check).
 - The param table prints and shows the right counts.
 - No ML framework imports (numpy/plain arrays only).
@@ -300,17 +328,19 @@ the student's accuracy, latency, and cost-per-query against calling the teacher
 on every request.
 
 **Files:**
+
 - `py/06_distillation.py`
 - `ts/06-distillation.ts`
 
 **Steps:**
+
 1. Implement `llm_label()` / `llmLabel()` — call the teacher LLM with
    `max_tokens=5, temperature=0` to label each text as `positive`, `negative`,
    or `neutral`. Parse the response; default to `neutral` on unexpected output.
 2. Implement `train_student()` / `trainStudent()` — embed all teacher-labelled
    examples in one `provider.embed()` call; store embeddings + labels in a
    `StudentClassifier`.
-3. Implement `student_predict()` / `studentPredict()` — kNN over cosine
+3. Implement `student_predict()` / `studentPredict()` — kNN (k-Nearest Neighbors) over cosine
    similarities: find top-k nearest training embeddings, return the majority label.
 4. Implement `evaluate()` / `evaluate()` — time both the student and teacher on
    the hold-out test set; compute accuracy and per-query latency for each.
@@ -318,6 +348,7 @@ on every request.
    and latency. Discuss in comments when this tradeoff makes sense.
 
 **Acceptance:**
+
 - `llm_label()` returns one label per text; all labels are in `["positive", "negative", "neutral"]`.
 - `train_student()` produces a `StudentClassifier` with one embedding per labelled example.
 - `student_predict()` returns a valid label for every test input.

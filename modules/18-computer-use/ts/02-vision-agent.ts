@@ -72,10 +72,8 @@ type Action =
 /**
  * TODO 1: Implement pageScreenshotBase64.
  *
- * Take a PNG screenshot of the current page and return it as a base64 string.
- *
- *   const buf = await page.screenshot({ type: "png" });
- *   return buf.toString("base64");
+ * Take a PNG screenshot with `page.screenshot({ type: "png" })` — it resolves to a
+ * Buffer. Convert that Buffer to a base64 string and return it.
  */
 async function pageScreenshotBase64(page: any): Promise<string> {
   throw new Error("TODO 1: implement pageScreenshotBase64");
@@ -104,21 +102,15 @@ Rules:
 /**
  * TODO 2: Implement decideActionOpenAI.
  *
- * Send the screenshot to GPT-4o-mini and parse the JSON action.
- *
- * Build a multimodal message (same pattern as module 09 task 3):
- *   messages = [
- *     { role: "system", content: SYSTEM_PROMPT.replace("{goal}", goal) },
- *     { role: "user", content: [
- *         { type: "text", text: `Step ${step}. Goal: ${goal}` },
- *         { type: "image_url", image_url: { url: `data:image/png;base64,${b64}` } },
- *     ]},
- *   ]
- *   const response = await client.chat.completions.create({
- *       model, messages, max_tokens: 256,
- *       response_format: { type: "json_object" },
- *   });
- *   return parseAction(JSON.parse(response.choices[0].message.content!));
+ * Construct an `OpenAI` client, then build a multimodal message array (module 09
+ * task 3 pattern):
+ *   - a system message carrying `SYSTEM_PROMPT.replace("{goal}", goal)`,
+ *   - a user message whose `content` is a LIST mixing a text part (step + goal) and
+ *     an image part `{ type: "image_url", image_url: { url: ... } }`, where the url
+ *     is a `data:image/png;base64,<b64>` URI.
+ * Call `client.chat.completions.create({ model, messages, max_tokens: ...,
+ * response_format: { type: "json_object" } })`, then `JSON.parse` the first choice's
+ * message content and hand the object to `parseAction(...)`.
  */
 async function decideActionOpenAI(
   b64: string,
@@ -131,18 +123,15 @@ async function decideActionOpenAI(
 /**
  * TODO 3: Implement decideActionAnthropic.
  *
- * Send the screenshot to Claude and parse the JSON action.
- *
- *   const message = await client.messages.create({
- *       model, max_tokens: 256,
- *       system: SYSTEM_PROMPT.replace("{goal}", goal),
- *       messages: [{ role: "user", content: [
- *           { type: "image", source: { type: "base64", media_type: "image/png", data: b64 } },
- *           { type: "text", text: `Step ${step}. What is your next action?` },
- *       ]}],
- *   });
- *   const raw = (message.content[0] as any).text;
- *   return parseAction(JSON.parse(raw));
+ * Same idea as TODO 2 but with the `Anthropic` SDK. Call
+ * `client.messages.create({ model, max_tokens: ..., system, messages })` where:
+ *   - `system` is the prompt formatted with the goal (Anthropic takes it as a
+ *     top-level field, not a message),
+ *   - the single user message's `content` is a list with an image part
+ *     `{ type: "image", source: { type: "base64", media_type: "image/png", data: b64 } }`
+ *     plus a text part asking for the next action.
+ * Read the text off the first content block, `JSON.parse` it, and pass the object to
+ * `parseAction(...)`.
  */
 async function decideActionAnthropic(
   b64: string,
@@ -155,16 +144,10 @@ async function decideActionAnthropic(
 /**
  * TODO 4: Implement parseAction.
  *
- * Convert a raw JSON object from the LLM to a typed Action.
- *
- *   switch (data.action) {
- *     case "click":    return { type: "click", x: data.x, y: data.y, description: data.description };
- *     case "type":     return { type: "type", text: data.text };
- *     case "navigate": return { type: "navigate", url: data.url };
- *     case "scroll":   return { type: "scroll", direction: data.direction, amount: data.amount ?? 300 };
- *     case "done":     return { type: "done", answer: data.answer };
- *     default: throw new Error(`Unknown action: ${data.action}`);
- *   }
+ * Switch on `data.action` and return the matching typed `Action` variant, reading
+ * each field off `data` (default the scroll amount when it is missing). The five
+ * action strings map to the click / type / navigate / scroll / done variants of the
+ * `Action` union. Throw for an unknown action string.
  */
 function parseAction(data: Record<string, any>): Action {
   throw new Error("TODO 4: implement parseAction");
@@ -177,16 +160,13 @@ function parseAction(data: Record<string, any>): Action {
 /**
  * TODO 5: Implement executeAction.
  *
- * Execute an Action on the Playwright page. Return an observation string.
- *
- *   switch (action.type) {
- *     case "click":    await page.mouse.click(action.x, action.y); return `Clicked (${action.x},${action.y})`;
- *     case "type":     await page.keyboard.type(action.text); return `Typed: ${action.text}`;
- *     case "navigate": await page.goto(action.url, { waitUntil: "domcontentloaded" }); return `Navigated to ${action.url}`;
- *     case "scroll":   await page.mouse.wheel(0, action.direction === "down" ? (action.amount ?? 300) : -(action.amount ?? 300));
- *                      return `Scrolled ${action.direction}`;
- *     case "done":     return `Done: ${action.answer}`;
- *   }
+ * Switch on `action.type` and drive Playwright, returning a short observation string:
+ *   - "click"    -> `page.mouse.click(x, y)`
+ *   - "type"     -> `page.keyboard.type(text)`
+ *   - "navigate" -> `page.goto(url, { waitUntil: "domcontentloaded" })`
+ *   - "scroll"   -> `page.mouse.wheel(0, dy)` where dy is +amount for "down" and
+ *                   -amount for "up" (default the amount when absent)
+ *   - "done"     -> no browser call; just report the answer
  */
 async function executeAction(page: any, action: Action): Promise<string> {
   throw new Error("TODO 5: implement executeAction");
@@ -199,15 +179,14 @@ async function executeAction(page: any, action: Action): Promise<string> {
 /**
  * TODO 6: Implement runVisionAgent.
  *
- * Loop until ActionDone or MAX_STEPS:
- *   a) b64 = await pageScreenshotBase64(page)
- *   b) Save debug screenshot to ASSETS_DIR/step_NN.png
- *   c) action = await decideFn(b64, goal, step)
- *   d) console.log the action
- *   e) If action.type === "done": close browser, return action.answer
- *   f) obs = await executeAction(page, action)
- *   g) await page.waitForLoadState("domcontentloaded")
- *   h) console.log obs
+ * Launch chromium (viewport 1280x720), navigate to startUrl, then pick the decide
+ * function based on LLM_PROVIDER (anthropic -> decideActionAnthropic, else OpenAI).
+ * Loop up to maxSteps:
+ *   - capture the screenshot as base64 and also save a per-step debug PNG to ASSETS_DIR,
+ *   - ask the chosen decide function for the next action and log it,
+ *   - when it is a "done" action, close the browser and return its answer,
+ *   - otherwise execute it, wait for load to settle, and log the observation.
+ * If the loop finishes without a "done", return a "max steps reached" message.
  */
 async function runVisionAgent(
   goal: string,

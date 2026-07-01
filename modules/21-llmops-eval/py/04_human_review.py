@@ -71,10 +71,12 @@ class QueueItem:
 def judge_output(question: str, output: str, rubric: str, provider: Any) -> tuple[float, str]:
     """Score `output` with an LLM-as-judge. Return (score_0_1, reason).
 
-    TODO 1a: Build a prompt asking the judge to reply with JSON:
-             {"score": <0-10>, "reason": "<string>"}
+    TODO 1a: Build a judge prompt (against `question`, `output`, `rubric`) that
+             asks for ONLY a JSON object with an integer score (0–10) and a
+             short reason.
     TODO 1b: Call provider.chat() with temperature=0.
-    TODO 1c: Parse JSON; normalise score to 0–1. Default to 0.0 on parse error.
+    TODO 1c: Parse the JSON and normalise the score into 0–1 (divide by the
+             0–10 range). Default to 0.0 on parse error.
     Return (normalised_score, reason_string).
     """
     raise NotImplementedError("TODO: implement judge_output")
@@ -101,8 +103,11 @@ def write_queue(items: list[QueueItem]) -> None:
     """Append QueueItems to REVIEW_QUEUE_PATH as JSONL.
 
     TODO 3a: Create DATA_DIR if needed.
-    TODO 3b: Open REVIEW_QUEUE_PATH in append mode.
-    TODO 3c: For each item, write json.dumps(asdict(item)) + '\\n'.
+    TODO 3b: Open REVIEW_QUEUE_PATH in append mode (so re-running adds to the
+             queue instead of clobbering it).
+    TODO 3c: Write one JSON object per line (serialise each dataclass item, e.g.
+             via asdict, and terminate each with a newline — that's the JSONL
+             format).
     Print how many items were queued.
     """
     raise NotImplementedError("TODO: implement write_queue")

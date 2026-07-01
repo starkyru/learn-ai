@@ -142,41 +142,26 @@ def run_openai_tool_loop(question: str) -> None:
     print(f"Question: {question}\n")
 
     # -------------------------------------------------------------------------
-    # TODO 2: Send the initial request with the tool definition.
-    #         Use client.chat.completions.create(model, messages, tools, tool_choice="auto")
+    # TODO 2: Send the initial request. Start a `messages` list with the user's
+    #         question, then call client.chat.completions.create(...) passing
+    #         model, messages, tools=[WEATHER_TOOL], and tool_choice="auto". Read
+    #         the reply off response.choices[0].message and inspect
+    #         response.choices[0].finish_reason.
     # -------------------------------------------------------------------------
-    # messages = [{"role": "user", "content": question}]
-    # response = client.chat.completions.create(
-    #     model=model, messages=messages, tools=[WEATHER_TOOL], tool_choice="auto"
-    # )
-    # message = response.choices[0].message
-    # print("First response finish_reason:", response.choices[0].finish_reason)
 
     # -------------------------------------------------------------------------
-    # TODO 3: Check if finish_reason == "tool_calls". If so:
-    #         a) Append the assistant message to messages.
-    #         b) For each tool_call in message.tool_calls:
-    #            - Parse the arguments JSON.
-    #            - Call get_weather() with those args.
-    #            - Append a {"role": "tool", "tool_call_id": ..., "content": ...} message.
-    #         c) Call the API again with the updated messages.
-    #         d) Print the final text response.
+    # TODO 3: If finish_reason indicates a tool call ("tool_calls"):
+    #         a) Append the assistant message to `messages` as-is (it holds the
+    #            tool_calls the follow-up must answer).
+    #         b) For each tool_call in message.tool_calls: json.loads its
+    #            function.arguments, call get_weather(**args), and append a
+    #            {"role": "tool", "tool_call_id": ..., "content": ...} message
+    #            (tool_call_id must match the call's id so the model pairs them up).
+    #         c) Call the API a second time with the extended `messages`.
+    #         d) Print the final message.content.
+    #         (A robust version would loop until finish_reason is no longer a tool
+    #         call; one round-trip is enough for this exercise.)
     # -------------------------------------------------------------------------
-    # if response.choices[0].finish_reason == "tool_calls" and message.tool_calls:
-    #     messages.append(message)
-    #     for tool_call in message.tool_calls:
-    #         args = json.loads(tool_call.function.arguments)
-    #         result = get_weather(**args)
-    #         print(f"Tool called: {tool_call.function.name}({tool_call.function.arguments})")
-    #         print(f"Tool result: {result}\n")
-    #         messages.append({
-    #             "role": "tool",
-    #             "tool_call_id": tool_call.id,
-    #             "content": result,
-    #         })
-    #     response = client.chat.completions.create(model=model, messages=messages)
-    #     message = response.choices[0].message
-    # print("Final answer:", message.content)
 
     print("TODO: implement the tool loop above.")
 
@@ -195,18 +180,11 @@ def run_anthropic_tool_loop(question: str) -> None:
     print(f"Question: {question}\n")
 
     # -------------------------------------------------------------------------
-    # TODO 4: Define the Anthropic tool. Format differs from OpenAI:
-    #         {"name": ..., "description": ..., "input_schema": {"type": "object", ...}}
+    # TODO 4: Define the Anthropic tool dict. Same information as WEATHER_TOOL, but
+    #         the fields are flatter: "name", "description", and "input_schema" (the
+    #         JSON Schema object) — no nested "function" wrapper, and the schema key
+    #         is "input_schema" rather than "parameters".
     # -------------------------------------------------------------------------
-    # anthropic_tool = {
-    #     "name": "get_weather",
-    #     "description": "...",
-    #     "input_schema": {
-    #         "type": "object",
-    #         "properties": { ... },
-    #         "required": [ ... ],
-    #     },
-    # }
 
     # -------------------------------------------------------------------------
     # TODO 5: Send the initial request.

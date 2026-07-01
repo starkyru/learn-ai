@@ -59,25 +59,19 @@ async function main() {
   const app = await buildApp();
   const inputs = { messages: [new HumanMessage(QUESTION)] };
 
-  // TODO 1: streamMode "updates" — print which node ran and its delta.
-  //   for await (const chunk of await app.stream(inputs, { streamMode: "updates" })) {
-  //     for (const [node, update] of Object.entries(chunk)) {
-  //       console.log(`[${node}] +${(update as any).messages.length} message(s)`);
-  //     }
-  //   }
+  // TODO 1: stream with `app.stream(inputs, { streamMode: "updates" })`. Each chunk
+  //         is an object keyed by node name -> that node's delta. Iterate its entries
+  //         and log which node ran and how many messages it added.
 
-  // TODO 2: streamMode "values" — print the running message count.
-  //   for await (const snap of await app.stream(inputs, { streamMode: "values" })) {
-  //     console.log("state messages:", snap.messages.length);
-  //   }
+  // TODO 2: stream with { streamMode: "values" }. Now each event is the FULL state
+  //         after a step — log the running message count so you can watch it grow.
 
-  // TODO 3: streamMode "messages" — print LLM TOKENS as they arrive.
-  //   for await (const [token] of await app.stream(inputs, { streamMode: "messages" })) {
-  //     if (token.content) process.stdout.write(String(token.content));
-  //   }
-  //   console.log();
+  // TODO 3: stream with { streamMode: "messages" }. Each event destructures to a
+  //         [token, metadata] pair; write the token's content to stdout as it arrives
+  //         (no newline) for a typing effect, then log a trailing newline.
 
-  // TODO 4 (stretch): pass ["updates", "messages"] and tag each event by mode.
+  // TODO 4 (stretch): pass an array of modes, e.g. ["updates", "messages"], and tag
+  //         each event by its mode so you can see how they interleave.
   console.log("TODO: implement the three stream modes and compare them.");
 }
 

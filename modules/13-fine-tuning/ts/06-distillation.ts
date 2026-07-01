@@ -107,15 +107,13 @@ interface EvalResults {
  * TODO: implement this function.
  *
  * Steps:
- *   1. For each text, call provider.chat() with:
- *        messages: [
- *          { role: "system", content: "You are a sentiment classifier. Reply
- *            with exactly one word: positive, negative, or neutral. Nothing else." },
- *          { role: "user", content: text },
- *        ]
- *        options: { maxTokens: 5, temperature: 0 }
- *   2. Parse result.text: strip whitespace, lowercase.
- *   3. If the response is not in LABELS, default to "neutral".
+ *   1. For each text, make one provider.chat() call. Build the messages: a
+ *      system message instructing the model to act as a sentiment classifier and
+ *      reply with exactly one word — one of the LABELS — and nothing else, plus a
+ *      user message with the text. Pass options { maxTokens: ..., temperature: 0 }
+ *      — a tiny token budget and temperature 0 for a deterministic single word.
+ *   2. Normalise result.text: trim and lowercase it.
+ *   3. If the normalised reply isn't one of LABELS, fall back to "neutral".
  *   4. Return a string[] of labels, one per input text.
  *
  * Note: sequential calls are fine for this small dataset.
@@ -138,14 +136,11 @@ async function llmLabel(
  * TODO: implement this function.
  *
  * Steps:
- *   1. Extract texts and labels from `labelled`.
- *   2. Embed all texts: const result = await provider.embed(texts).
- *   3. Return {
- *        trainEmbeddings: result.vectors,
- *        trainLabels: labels,
- *        method: "knn",
- *        k: 3,
- *      } as StudentClassifier.
+ *   1. Pull the texts and labels out of `labelled`.
+ *   2. Embed all texts in a single await provider.embed(texts) call; the vectors
+ *      are on the result's `.vectors` property.
+ *   3. Build and return a StudentClassifier holding those embeddings and labels
+ *      as its training points, with method "knn" and k = 3.
  */
 async function trainStudent(
   labelled: LabelledExample[],

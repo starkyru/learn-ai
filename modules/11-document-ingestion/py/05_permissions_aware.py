@@ -132,19 +132,11 @@ def tag_access(doc: dict[str, Any], acl: ACL, chunk_id: str, vector: list[float]
     """
     Create a PermissionedChunk by attaching ACL and citation metadata to a chunk.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Return a PermissionedChunk with:
-           id       = chunk_id
-           text     = doc["text"]
-           vector   = vector
-           source   = doc["source"]
-           section  = doc["section"]
-           page     = doc.get("page", 0)
-           acl      = acl
+    Hints:
+      - Build and return a `PermissionedChunk`, copying the citation fields from
+        `doc` (text, source, section, and page — default page to 0 when missing)
+        and stamping on the passed-in `chunk_id`, `vector`, and `acl`.
     """
-    # TODO: implement tag_access
     raise NotImplementedError("TODO: implement tag_access()")
 
 
@@ -166,14 +158,12 @@ def user_can_access(user: str, chunk: PermissionedChunk) -> bool:
     Use USER_GROUPS to look up the user's group memberships.
     Unknown users have no groups.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Handle "public" → return True.
-      2. Handle "private" → return user == chunk.acl.owner.
-      3. Handle "group" → check owner or group overlap with USER_GROUPS.get(user, []).
+    Hints:
+      - Branch on `chunk.acl.visibility` and apply the three rules above.
+      - For the "group" case, the user passes if they own the chunk OR any of
+        their groups (from USER_GROUPS, defaulting to none for unknown users)
+        intersects the chunk's ACL groups.
     """
-    # TODO: implement user_can_access
     raise NotImplementedError("TODO: implement user_can_access()")
 
 
@@ -186,16 +176,15 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
     """
     Compute cosine similarity between two equal-length vectors.
 
-    TODO: implement this function.
+    Formula:  cos(a, b) = (a · b) / (‖a‖ · ‖b‖)
 
-    Steps:
-      1. dot = sum(ai * bi for ai, bi in zip(a, b))
-      2. norm_a = math.sqrt(sum(ai * ai for ai in a))
-      3. norm_b = math.sqrt(sum(bi * bi for bi in b))
-      4. Guard against zero-length vectors: return 0.0 if norm_a == 0 or norm_b == 0.
-      5. Return dot / (norm_a * norm_b).
+    Hints:
+      - Compute the dot product of the paired components, and each vector's
+        Euclidean norm (`math.sqrt` of its sum of squares).
+      - Guard the divide: if either norm is 0, return 0.0 rather than dividing by
+        zero.
+      - Otherwise return the dot product divided by the product of the norms.
     """
-    # TODO: implement cosine_similarity
     raise NotImplementedError("TODO: implement cosine_similarity()")
 
 

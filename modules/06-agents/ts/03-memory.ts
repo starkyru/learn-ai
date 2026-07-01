@@ -37,12 +37,14 @@ const SCRATCHPAD_PATH = path.join(
 //         whole file — the agent should accumulate notes over time).
 
 function readScratchpad(): string {
-  // TODO: return fs.existsSync(SCRATCHPAD_PATH) ? fs.readFileSync(SCRATCHPAD_PATH, "utf-8") : "";
+  // TODO: read `SCRATCHPAD_PATH` (utf-8) and return its contents, but guard with
+  //       an existence check so a missing file returns "" instead of throwing.
   throw new Error("TODO: implement readScratchpad");
 }
 
 function writeScratchpad(note: string): void {
-  // TODO: append `\n[${new Date().toISOString()}] ${note}` to the file.
+  // TODO: append the note to the file on its own line, prefixed with the current
+  //       ISO timestamp — use an appending write so earlier notes are preserved.
   throw new Error("TODO: implement writeScratchpad");
 }
 

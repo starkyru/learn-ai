@@ -109,33 +109,18 @@ def extract_a11y_tree(page) -> str:
       [heading] "Example Domain"
       [paragraph] "This domain is for use in..."
     """
-    # TODO 1: Get the raw a11y snapshot.
-    #   snapshot = page.accessibility.snapshot()
-    #   # snapshot is a nested dict; None if the page has no accessible nodes.
+    # TODO 1: Get the raw a11y snapshot with `page.accessibility.snapshot()`. It is a
+    #   nested dict (each node has "role", "name", optional "url"/"value", and
+    #   "children"), or None when the page has no accessible nodes.
     #
-    # TODO 2: Walk the tree and emit lines.
-    #   def _walk(node: dict, lines: list[str], depth: int = 0) -> None:
-    #       role = node.get("role", "")
-    #       name = node.get("name", "")
-    #       # Skip noise roles
-    #       if role in ("none", "presentation", "generic"):
-    #           for child in node.get("children", []):
-    #               _walk(child, lines, depth)
-    #           return
-    #       indent = "  " * depth
-    #       line = f"{indent}[{role}] {name!r}"
-    #       if "url" in node:
-    #           line += f" href={node['url']}"
-    #       if "value" in node:
-    #           line += f" value={node['value']!r}"
-    #       lines.append(line)
-    #       for child in node.get("children", []):
-    #           _walk(child, lines, depth + 1)
-    #
-    #   lines: list[str] = []
-    #   if snapshot:
-    #       _walk(snapshot, lines)
-    #   return "\n".join(lines) or "(no accessible content)"
+    # TODO 2: Write a recursive helper that walks the tree and appends one indented
+    #   line per meaningful node (indent by depth). For each node:
+    #     - Roles like "none"/"presentation"/"generic" are noise: recurse into their
+    #       children WITHOUT emitting a line or increasing depth.
+    #     - Otherwise emit `[role] "name"` and append ` href=...` / ` value=...` when
+    #       those keys are present, then recurse into children at depth+1.
+    #   Join the collected lines with newlines; fall back to a "(no accessible content)"
+    #   string when the snapshot is empty.
     raise NotImplementedError("TODO 1-2: implement extract_a11y_tree")
 
 
@@ -144,19 +129,12 @@ def extract_dom_summary(page) -> str:
 
     Returns a text list of headings, links, and form inputs.
     """
-    # TODO 3 (stretch): Use page.evaluate() to run JS in the page and collect:
-    #   - All heading texts (h1-h6)
-    #   - All link texts + hrefs
-    #   - All input names/types/placeholders
-    #   Return a formatted string.
-    #
-    # Example JS:
-    #   js = """() => {
-    #       const headings = [...document.querySelectorAll('h1,h2,h3')].map(h => h.innerText);
-    #       const links = [...document.querySelectorAll('a')].map(a => ({text: a.innerText, href: a.href}));
-    #       return { headings, links };
-    #   }"""
-    #   data = page.evaluate(js)
+    # TODO 3 (stretch): Use `page.evaluate(js)` to run a JS function in the page that
+    #   queries the DOM and returns a plain object of:
+    #   - heading texts (h1-h6)
+    #   - link texts + hrefs
+    #   - input names/types/placeholders
+    #   Then format that object into a readable text summary and return it.
     raise NotImplementedError("TODO 3: implement extract_dom_summary (optional)")
 
 
@@ -199,22 +177,21 @@ def decide_action(a11y_text: str, goal: str, step: int, provider: str) -> Action
         "What is your next action?"
     )
 
-    # TODO 4: Call the LLM and parse the JSON response.
-    #   Use llm.chat([system_msg, user_msg], options=ChatOptions(max_tokens=256))
-    #   where system_msg has role="system" and content=SYSTEM_PROMPT.format(goal=goal).
-    #   Parse the result.text as JSON and call _parse_action(data).
-    #   If JSON parsing fails, return ActionDone(answer=f"Parse error: {result.text}")
+    # TODO 4: Build a `list[ChatMessage]`: a system message whose content is
+    #   `SYSTEM_PROMPT.format(goal=goal)`, plus a user message carrying the `prompt`
+    #   assembled above. Call `llm.chat(messages, options=ChatOptions(max_tokens=...))`.
+    #   Try to `json.loads(result.text)` and pass the dict to `_parse_action(...)`;
+    #   if parsing raises, degrade gracefully by returning an ActionDone whose answer
+    #   reports the parse error and the raw text.
     raise NotImplementedError("TODO 4: implement decide_action")
 
 
 def _parse_action(data: dict) -> Action:
     """Convert a raw action dict from the LLM into a typed Action."""
-    # TODO 5: Map data["action"] to the appropriate dataclass.
-    #   "click_selector" -> ActionClickSelector(selector=data["selector"], description=...)
-    #   "click_text"     -> ActionClickText(text=data["text"])
-    #   "fill"           -> ActionFill(selector=data["selector"], value=data["value"])
-    #   "navigate"       -> ActionNavigate(url=data["url"])
-    #   "done"           -> ActionDone(answer=data["answer"])
+    # TODO 5: Branch on data["action"] and build the matching dataclass, reading each
+    #   field from `data`. The five action strings map to ActionClickSelector /
+    #   ActionClickText / ActionFill / ActionNavigate / ActionDone. Raise ValueError
+    #   for anything unexpected.
     raise NotImplementedError("TODO 5: implement _parse_action")
 
 
@@ -224,21 +201,15 @@ def _parse_action(data: dict) -> Action:
 
 def execute_action(page, action: Action) -> str:
     """Execute a text/selector-based action. Returns an observation string."""
-    # TODO 6: Dispatch on action type.
-    #   ActionClickSelector:
-    #     page.locator(action.selector).first.click()
-    #     return f"Clicked selector {action.selector!r}"
-    #   ActionClickText:
-    #     page.get_by_text(action.text, exact=False).first.click()
-    #     return f"Clicked text {action.text!r}"
-    #   ActionFill:
-    #     page.locator(action.selector).fill(action.value)
-    #     return f"Filled {action.selector!r} with {action.value!r}"
-    #   ActionNavigate:
-    #     page.goto(action.url, wait_until="domcontentloaded")
-    #     return f"Navigated to {action.url}"
-    #   ActionDone:
-    #     return f"Done: {action.answer}"
+    # TODO 6: Dispatch on the action type (isinstance) and drive Playwright:
+    #   - ActionClickSelector -> locate by CSS selector and click the first match
+    #     (`page.locator(...).first.click()`)
+    #   - ActionClickText     -> locate by visible text and click the first match
+    #     (`page.get_by_text(..., exact=False)`)
+    #   - ActionFill          -> locate by selector and `.fill(value)`
+    #   - ActionNavigate      -> `page.goto(url, wait_until="domcontentloaded")`
+    #   - ActionDone          -> no browser call; report the answer
+    #   Return a short observation string for each.
     raise NotImplementedError("TODO 6: implement execute_action")
 
 
@@ -266,14 +237,12 @@ def run_dom_agent(goal: str, start_url: str, max_steps: int = MAX_STEPS) -> str:
 
         for step in range(1, max_steps + 1):
             # TODO 7: Implement the DOM agent loop.
-            #   a) Extract a11y tree: a11y_text = extract_a11y_tree(page)
-            #   b) Print step info and a11y preview.
-            #   c) Decide action: action = decide_action(a11y_text, goal, step, provider)
-            #   d) Print the action.
-            #   e) If isinstance(action, ActionDone): browser.close(); return action.answer
-            #   f) Execute: observation = execute_action(page, action)
-            #   g) page.wait_for_load_state("domcontentloaded")
-            #   h) Print observation.
+            #   a) Extract the a11y tree text for the current page.
+            #   b) Print the step number and a short preview of the tree.
+            #   c) Ask the LLM for the next action via decide_action(...).
+            #   d) Print the action so the run is traceable.
+            #   e) When the action is an ActionDone, close the browser and return its answer.
+            #   f) Otherwise execute it, wait for load to settle, and print the observation.
             raise NotImplementedError("TODO 7: implement the DOM agent loop")
 
         browser.close()
@@ -288,11 +257,8 @@ def main() -> None:
     answer = run_dom_agent(AGENT_GOAL, START_URL)
     print(f"\nFinal answer: {answer}")
 
-    # TODO 8 (stretch): Run both vision and DOM agents on the same goal.
-    #   Compare: token cost (vision >> DOM), reliability, speed.
-    #   from modules_18.task2 import run_vision_agent
-    #   vision_answer = run_vision_agent(AGENT_GOAL, START_URL)
-    #   print(f"Vision answer: {vision_answer}")
+    # TODO 8 (stretch): Import and run the vision agent from task 2 on the same goal,
+    #   then compare the two runs on token cost (vision >> DOM), reliability, and speed.
 
 
 if __name__ == "__main__":

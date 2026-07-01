@@ -40,16 +40,14 @@ interface Subtask {
 // TODO 1: Implement the system prompt for the planner.
 //         It should instruct the model to:
 //           - Break the user question into 2-4 independent subtasks.
-//           - Emit ONLY a JSON array of Subtask objects (no prose).
-//           - Choose a worker type for each subtask:
+//           - Emit ONLY a JSON array of objects matching the Subtask interface
+//             (id like "task-1", worker, instruction) — no prose, no fence.
+//           - Choose the worker per subtask from these types:
 //               "researcher" — fact retrieval or background info
 //               "calculator" — numerical computation
 //               "writer"     — synthesis, summarisation, final prose
-//         Example output:
-//           [
-//             { "id": "task-1", "worker": "researcher", "instruction": "Find the height of the Eiffel Tower in metres." },
-//             { "id": "task-2", "worker": "calculator",  "instruction": "Convert 330 metres to feet using 1m = 3.281ft." }
-//           ]
+//         Show the model the exact JSON shape (keys and value types) you expect,
+//         but let it fill in the actual subtasks.
 
 const PLANNER_SYSTEM_PROMPT = "TODO: write the planner system prompt.";
 

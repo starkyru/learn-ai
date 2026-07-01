@@ -65,24 +65,15 @@ async function classifyWithGuardrails(
   ];
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    // TODO: call llm.chat(messages), try parseLabel on result.text
-    //       On ParseError:
-    //         - append { role: "assistant", content: result.text } to messages
-    //         - append { role: "user", content: `Invalid output: "${result.text}". Respond with exactly one of: positive, negative, neutral.` }
-    //         - continue the loop
-    //       On success: return the label
-
-    // const result = await llm.chat(messages);
-    // try {
-    //   return parseLabel(result.text);
-    // } catch (err) {
-    //   console.warn(`Attempt ${attempt + 1}: parse failed (${(err as Error).message})`);
-    //   messages.push({ role: "assistant", content: result.text });
-    //   messages.push({
-    //     role: "user",
-    //     content: `Invalid output: "${result.text}". Respond with EXACTLY one of: positive, negative, neutral.`,
-    //   });
-    // }
+    // TODO: implement one attempt of the repair loop.
+    //   - Call llm.chat(messages) and try to parseLabel(...) the reply text;
+    //     return the label immediately if it parses.
+    //   - If parseLabel throws, the reply was malformed: grow the conversation
+    //     so the next attempt can self-correct. Push the model's bad reply as an
+    //     { role: "assistant", ... } message, then push a { role: "user", ... }
+    //     message that quotes the bad output and restates the one-word constraint.
+    //     Then let the loop try again.
+    //   - After the loop exhausts maxRetries, the throw below fires.
 
     console.log(`Attempt ${attempt + 1}: TODO — implement the retry loop above.`);
     break; // remove once implemented

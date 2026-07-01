@@ -128,12 +128,14 @@ async function buildNaiveIndex(
  * TODO: implement this.
  *
  * Steps:
- *   const messages: ChatMessage[] = [
- *     { role: "system", content: "You write a 1-2 sentence context that situates a chunk within its document, so the chunk makes sense on its own. Mention the document's subject and any entity the chunk only refers to indirectly. Do NOT repeat the chunk. Output only the context." },
- *     { role: "user", content: `<document>\n${documentText}\n</document>\n\n<chunk>\n${chunkText}\n</chunk>\n\nContext:` },
- *   ];
- *   const result = await provider.chat(messages, { temperature: 0, maxTokens: 80 });
- *   return result.text.trim();
+ *   - Build a `ChatMessage[]`: a system message instructing the model to write a
+ *     1-2 sentence context that situates a chunk in its document (name the document's
+ *     subject and any entity the chunk only refers to indirectly; do NOT repeat the
+ *     chunk; output only the context), and a user message that presents the full
+ *     `documentText` and the `chunkText` (e.g. wrapped in <document>/<chunk> tags).
+ *   - Call `provider.chat(messages, { temperature: 0, maxTokens: ... })` (short cap,
+ *     it's only 1-2 sentences).
+ *   - Return the reply text, trimmed.
  */
 async function situateChunk(
   documentText: string,
@@ -156,10 +158,12 @@ async function situateChunk(
  *
  * Steps:
  *   1. Build a Map docId -> document text.
- *   2. For each chunk, augmented = `${await situateChunk(docText, chunk.text, provider)}\n\n${chunk.text}`
- *      (do these in parallel with Promise.all).
+ *   2. For each chunk, call situateChunk() with its document text, then prepend that
+ *      generated context to the original chunk text to form the augmented text (do
+ *      these in parallel with Promise.all).
  *   3. Embed ALL augmented texts in ONE provider.embed([...]) call.
- *   4. Return entries: { chunk, embedText: augmented, vector } — chunk.text stays original.
+ *   4. Return entries: { chunk, embedText: augmented, vector } — embedText is the
+ *      augmented text, but chunk.text stays the original.
  */
 async function buildContextualIndex(
   chunks: Chunk[],

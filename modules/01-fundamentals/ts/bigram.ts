@@ -32,8 +32,9 @@ type Counts = Map<string, Map<string, number>>;
 
 /**
  * Build token -> (next-token -> count) from a token sequence.
- * TODO: for each adjacent pair (tokens[i], tokens[i+1]), increment
- *       counts[tokens[i]][tokens[i+1]]. Return the nested Map.
+ * TODO: walk every adjacent pair (a token and the one right after it) and tally
+ *   how often each follower appears after each token, into the nested
+ *   `Map<string, Map<string, number>>`. Return it.
  */
 function buildBigramCounts(_tokens: string[]): Counts {
   throw new Error("Count token -> next-token frequencies — see the TODO.");

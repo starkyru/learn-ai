@@ -88,29 +88,23 @@ async def run_realtime_session(audio_path: Path) -> None:
         "OpenAI-Beta": "realtime=v1",
     }
 
-    # TODO 1: Open the WebSocket connection using websockets.connect(REALTIME_URL,
-    #         additional_headers=headers).
+    # TODO 1: Drive one realtime turn over the WebSocket. Every event you send or
+    #         receive is a JSON object with a "type" field (see the docstring and
+    #         the dry_run() function for the exact event names/shapes to mirror).
     #
-    #         Send a session.update event to configure the session:
-    #           {"type": "session.update", "session": {
-    #               "modalities": ["audio", "text"],
-    #               "voice": "nova",
-    #               "input_audio_format": "pcm16",
-    #               "output_audio_format": "pcm16",
-    #           }}
-    #
-    #         Read the audio file, base64-encode the PCM payload, and send:
-    #           {"type": "input_audio_buffer.append", "audio": <base64 string>}
-    #         Followed by:
-    #           {"type": "input_audio_buffer.commit"}
-    #           {"type": "response.create"}
-    #
-    #         Then loop over incoming messages until "response.done".
-    #         Collect "response.audio.delta" chunks and concatenate them.
-    #         Print each "response.audio_transcript.delta" as it arrives.
-    #
-    #         Write the collected audio bytes to ASSETS_DIR/"realtime_reply.raw"
-    #         and print the path.
+    #   - Connect with `websockets.connect(REALTIME_URL, additional_headers=headers)`
+    #     (an async context manager).
+    #   - Send a `session.update` event whose "session" configures both audio and
+    #     text modalities, a voice, and pcm16 for input and output audio.
+    #   - Read the WAV's PCM payload (use `_read_wav_pcm`), base64-encode it, and
+    #     send it in an `input_audio_buffer.append` event; then `commit` the buffer
+    #     and ask for a `response.create`.
+    #   - Loop over incoming messages until you see a `response.done`:
+    #       * accumulate the base64 audio from each `response.audio.delta`,
+    #       * print the text from each `response.audio_transcript.delta` as it lands.
+    #   - Decode and write the collected audio to ASSETS_DIR/"realtime_reply.raw",
+    #     then print that path.
+    #   HINT: `json.dumps(...)` to send, `json.loads(...)` to parse each message.
     raise NotImplementedError("TODO 1: implement realtime WebSocket session")
 
 

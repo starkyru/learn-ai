@@ -93,23 +93,14 @@ def describe_with_openai(image_path: Path, prompt: str) -> str:
     b64 = image_to_base64(image_path)
     mime = "image/jpeg" if image_path.suffix.lower() in (".jpg", ".jpeg") else "image/png"
 
-    # TODO (exercise): build the messages list with a multimodal user message:
-    #
-    # messages = [
-    #     {
-    #         "role": "user",
-    #         "content": [
-    #             {"type": "text", "text": prompt},
-    #             {
-    #                 "type": "image_url",
-    #                 "image_url": {"url": f"data:{mime};base64,{b64}"},
-    #             },
-    #         ],
-    #     }
-    # ]
-    #
-    # Then call client.chat.completions.create(model=model, messages=messages)
-    # and return response.choices[0].message.content
+    # TODO (exercise): build the multimodal messages and call the API.
+    #   - Make a `messages` list with ONE user message whose `content` is a LIST
+    #     of parts (not a plain string). Include two parts: a text part carrying
+    #     `prompt`, and an image part of `type: "image_url"` whose `image_url.url`
+    #     is a data URI built from `mime` and the base64 string `b64`
+    #     (format: `data:<mime>;base64,<b64>`).
+    #   - Call `client.chat.completions.create(model=model, messages=messages)`.
+    #   - Return the assistant's reply text (dig it out of `response.choices`).
 
     raise NotImplementedError(
         "Complete the TODO: build the multimodal messages list and call the API."
@@ -142,29 +133,15 @@ def describe_with_anthropic(image_path: Path, prompt: str) -> str:
     b64 = image_to_base64(image_path)
     mime = "image/jpeg" if image_path.suffix.lower() in (".jpg", ".jpeg") else "image/png"
 
-    # TODO (exercise): build the Anthropic multimodal message and call the API:
-    #
-    # message = client.messages.create(
-    #     model=model,
-    #     max_tokens=512,
-    #     messages=[
-    #         {
-    #             "role": "user",
-    #             "content": [
-    #                 {
-    #                     "type": "image",
-    #                     "source": {
-    #                         "type": "base64",
-    #                         "media_type": mime,
-    #                         "data": b64,
-    #                     },
-    #                 },
-    #                 {"type": "text", "text": prompt},
-    #             ],
-    #         }
-    #     ],
-    # )
-    # return message.content[0].text
+    # TODO (exercise): build the Anthropic multimodal message and call the API.
+    #   - Call `client.messages.create(...)` with `model=model`, a `max_tokens=...`
+    #     cap, and a `messages` list holding ONE user message whose `content` is a
+    #     LIST of parts.
+    #   - One part is the image: `type: "image"` with a `source` block of
+    #     `type: "base64"`, `media_type` set to `mime`, and `data` set to `b64`.
+    #     The other part is a text part carrying `prompt`.
+    #   - Return the reply text (the first content block of the returned message
+    #     is a text block — read its `.text`).
 
     raise NotImplementedError(
         "Complete the TODO: build the Anthropic multimodal message and call the API."

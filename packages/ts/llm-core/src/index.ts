@@ -21,7 +21,13 @@ export * from "./types.js";
 export { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
 export { AnthropicProvider } from "./providers/anthropic.js";
 
-export type ProviderName = "openai" | "anthropic" | "ollama" | "nvidia" | "lmstudio";
+export type ProviderName =
+  | "openai"
+  | "anthropic"
+  | "ollama"
+  | "nvidia"
+  | "lmstudio"
+  | "gemini";
 
 function need(value: string | undefined, varName: string): string {
   if (!value) {
@@ -81,9 +87,22 @@ export function getProvider(name?: ProviderName): LLMProvider {
           process.env.LMSTUDIO_EMBED_MODEL ?? "text-embedding-nomic-embed-text-v1.5",
       });
 
+    case "gemini":
+      // Google Gemini exposes an OpenAI-compatible endpoint, so it slots into
+      // the same adapter — just a different baseURL + key + model ids.
+      return new OpenAICompatibleProvider({
+        name: "gemini",
+        apiKey: need(process.env.GEMINI_API_KEY, "GEMINI_API_KEY"),
+        baseURL:
+          process.env.GEMINI_BASE_URL ??
+          "https://generativelanguage.googleapis.com/v1beta/openai/",
+        chatModel: process.env.GEMINI_CHAT_MODEL ?? "gemini-2.5-flash",
+        embedModel: process.env.GEMINI_EMBED_MODEL ?? "gemini-embedding-001",
+      });
+
     default:
       throw new Error(
-        `Unknown provider "${provider}". Use one of: openai, anthropic, ollama, nvidia, lmstudio.`,
+        `Unknown provider "${provider}". Use one of: openai, anthropic, ollama, nvidia, lmstudio, gemini.`,
       );
   }
 }

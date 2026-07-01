@@ -71,12 +71,14 @@ def classify_intent(question: str, provider: Any) -> RouterDecision:
          - "both"   : the question has a structured sub-question AND a knowledge
                       sub-question.
          - "unknown": intent is unclear; ask the user to rephrase.
-      2. Instruct: "Respond with a JSON object:
-                    {\"route\": \"sql|vector|both|unknown\",
-                     \"reasoning\": \"<one sentence>\"}"
-      3. Call provider.chat() with temperature=0.
-      4. Parse the JSON from result.text (handle ```json ... ``` fences).
-      5. Return RouterDecision(route=..., reasoning=...).
+      2. Instruct the model to reply as a JSON object with two fields — a
+         "route" (one of sql/vector/both/unknown) and a one-sentence
+         "reasoning" — and nothing else.
+      3. Call `provider.chat(..., ChatOptions(temperature=...))` with the
+         deterministic setting.
+      4. Parse the JSON out of `result.text`; be ready to strip a
+         ```json ... ``` fence before `json.loads`.
+      5. Return a `RouterDecision` built from the parsed "route" and "reasoning".
     """
     raise NotImplementedError("TODO: implement classify_intent()")
 
@@ -153,12 +155,13 @@ def rag_answer(question: str, provider: Any) -> str:
     vector store, and call the LLM with context. For this exercise:
 
     Steps:
-      1. Build messages:
-         - System: "Answer ONLY using the provided context. If the context
-                    does not contain the answer, say so."
-         - User: f"Context:\\n{_KNOWLEDGE_BASE}\\n\\nQuestion: {question}"
-      2. Call provider.chat(messages).
-      3. Return result.text.
+      1. Build a `list[ChatMessage]`:
+         - a system message that constrains the model to answer ONLY from the
+           supplied context and to admit when the context lacks the answer;
+         - a user message that stitches together `_KNOWLEDGE_BASE` (as the
+           context) and the `question`.
+      2. Call `provider.chat(messages)`.
+      3. Return the model's text.
 
     Reflection: what would change if you replaced _KNOWLEDGE_BASE with
     the live vector retrieval from module 05?
@@ -178,13 +181,13 @@ def route_and_answer(question: str, provider: Any) -> HybridAnswer:
     TODO: implement this function.
 
     Steps:
-      1. decision = classify_intent(question, provider).
-      2. Build a HybridAnswer(question=question, route=decision.route,
-                               reasoning=decision.reasoning).
-      3. If route in ("sql", "both"): answer.sql_result = sql_answer(question, provider).
-      4. If route in ("vector", "both"): answer.rag_result = rag_answer(question, provider).
-      5. If route == "unknown": just return the answer with sql/rag results as None.
-      6. Return answer.
+      1. Get a `RouterDecision` from `classify_intent()`.
+      2. Seed a `HybridAnswer` carrying the question plus the decision's route
+         and reasoning.
+      3. Dispatch based on the route: call `sql_answer()` when the route covers
+         SQL ("sql"/"both") and `rag_answer()` when it covers knowledge
+         ("vector"/"both"), storing each into the matching field.
+      4. For "unknown", leave both result fields unset. Return the answer.
     """
     raise NotImplementedError("TODO: implement route_and_answer()")
 

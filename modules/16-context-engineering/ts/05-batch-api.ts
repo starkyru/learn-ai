@@ -43,25 +43,22 @@ const POLL_INTERVAL_MS = 10_000;
 const MAX_POLL_ATTEMPTS = 60;
 
 // ---------------------------------------------------------------------------
-// TODO 1: Implement runAnthropicBatch.
-//         Use the @anthropic-ai/sdk Message Batches API.
-//
-//         Steps:
-//         1. Build an array of request objects:
-//            { custom_id: item.id, params: { model, max_tokens: 10, system: ..., messages: [...] } }
-//         2. Submit: const batch = await client.beta.messages.batches.create({ requests });
-//         3. Poll: await client.beta.messages.batches.retrieve(batch.id)
-//            until .processing_status === "ended".
-//         4. Stream results: for await (const result of client.beta.messages.batches.results(batch.id))
-//            extract result.result.message.content[0].text
-//         5. Print custom_id and result text for each request.
-//
-//         Example skeleton:
-//           import Anthropic from "@anthropic-ai/sdk";
-//           const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-//           const batch = await client.beta.messages.batches.create({ requests: [...] });
-//           // poll loop...
-//           for await (const item of client.beta.messages.batches.results(batch.id)) { ... }
+// TODO 1: Implement runAnthropicBatch using the @anthropic-ai/sdk Message Batches API.
+//         Construct an Anthropic client from apiKey; read the model from
+//         ANTHROPIC_MODEL (a cheap Haiku model is a good default for a classification
+//         batch). Conceptual steps:
+//         1. Map BATCH_INPUTS into one request object per item, each carrying a unique
+//            `custom_id` (reuse item.id) and a `params` object holding model, a small
+//            max_tokens, `system: CLASSIFY_SYSTEM`, and a one-user-message array with
+//            the item's text.
+//         2. Submit them with `client.beta.messages.batches.create({ requests })`.
+//         3. Poll `client.beta.messages.batches.retrieve(batch.id)` on an interval
+//            (use POLL_INTERVAL_MS / MAX_POLL_ATTEMPTS) until processing_status is
+//            "ended".
+//         4. Stream outputs with `for await (... of
+//            client.beta.messages.batches.results(batch.id))` — the classification text
+//            lives on the first content block of each result's message.
+//         5. Print each result's custom_id alongside that text.
 // ---------------------------------------------------------------------------
 async function runAnthropicBatch(): Promise<void> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -70,46 +67,29 @@ async function runAnthropicBatch(): Promise<void> {
     return;
   }
 
-  // TODO: implement
-  // import Anthropic from "@anthropic-ai/sdk";
-  // const client = new Anthropic({ apiKey });
-  // const model = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5"; // use haiku for low cost
-  // const requests = BATCH_INPUTS.map((item) => ({
-  //   custom_id: item.id,
-  //   params: {
-  //     model,
-  //     max_tokens: 10,
-  //     system: CLASSIFY_SYSTEM,
-  //     messages: [{ role: "user", content: item.text }],
-  //   },
-  // }));
-  // const batch = await client.beta.messages.batches.create({ requests });
-  // console.log(`  Batch submitted: id=${batch.id}`);
-  // // ... poll and collect results
+  // TODO: implement (import Anthropic from "@anthropic-ai/sdk")
   throw new Error("TODO: implement runAnthropicBatch");
 }
 
 // ---------------------------------------------------------------------------
-// TODO 2: Implement runOpenAIBatch.
-//         Use the openai SDK Batch API.
-//
-//         Steps:
-//         1. Build a JSONL string where each line is:
-//            { custom_id, method: "POST", url: "/v1/chat/completions", body: { model, messages, max_tokens: 10 } }
-//         2. Write to a temp file; upload: const fileObj = await client.files.create({ file, purpose: "batch" }).
-//         3. Submit: const batch = await client.batches.create({ input_file_id, endpoint, completion_window: "24h" }).
-//         4. Poll: await client.batches.retrieve(batch.id) until .status === "completed".
-//         5. Download output: const content = await client.files.content(batch.output_file_id).
-//         6. Parse each JSONL line; print custom_id and response message content.
-//
-//         Example skeleton:
-//           import OpenAI from "openai";
-//           const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-//           const lines = BATCH_INPUTS.map((item) => JSON.stringify({ custom_id: item.id, ... }));
-//           const tmp = path.join(os.tmpdir(), "batch_input.jsonl");
-//           fs.writeFileSync(tmp, lines.join("\n"));
-//           const fileObj = await client.files.create({ file: fs.createReadStream(tmp), purpose: "batch" });
-//           const batch = await client.batches.create({ input_file_id: fileObj.id, endpoint: "/v1/chat/completions", completion_window: "24h" });
+// TODO 2: Implement runOpenAIBatch using the openai SDK Batch API.
+//         Construct an OpenAI client from apiKey; read the model from
+//         OPENAI_CHAT_MODEL. Unlike Anthropic, OpenAI batches are driven through an
+//         uploaded JSONL file. Conceptual steps:
+//         1. Build a JSONL string — one line per BATCH_INPUTS item. Each line is a
+//            request object with `custom_id`, `method` "POST", `url`
+//            "/v1/chat/completions", and a `body` holding model, the messages array
+//            (system = CLASSIFY_SYSTEM, user = the item text), and a small max_tokens.
+//            Write it to a temp file (path.join(os.tmpdir(), ...), fs.writeFileSync).
+//         2. Upload it: `client.files.create({ file: fs.createReadStream(tmp),
+//            purpose: "batch" })`.
+//         3. Submit: `client.batches.create({ input_file_id, endpoint:
+//            "/v1/chat/completions", completion_window: "24h" })`.
+//         4. Poll `client.batches.retrieve(batch.id)` (POLL_INTERVAL_MS /
+//            MAX_POLL_ATTEMPTS) until status is "completed".
+//         5. Download results via `client.files.content(batch.output_file_id)`.
+//         6. Parse each returned JSONL line; print its custom_id and the response
+//            message content.
 // ---------------------------------------------------------------------------
 async function runOpenAIBatch(): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -118,11 +98,7 @@ async function runOpenAIBatch(): Promise<void> {
     return;
   }
 
-  // TODO: implement
-  // import OpenAI from "openai";
-  // const client = new OpenAI({ apiKey });
-  // const model = process.env.OPENAI_CHAT_MODEL ?? "gpt-4o-mini";
-  // ...
+  // TODO: implement (import OpenAI from "openai")
   throw new Error("TODO: implement runOpenAIBatch");
 }
 

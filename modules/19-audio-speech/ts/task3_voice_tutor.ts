@@ -80,10 +80,10 @@ async function buildIndex(corpus: Chunk[]): Promise<[number[][], Chunk[]]> {
   const provider = getProvider();
   const texts = corpus.map((c) => c.text);
 
-  // TODO 1: Call provider.embed(texts) and return [result.vectors, corpus].
-  //   If the provider has token limits, consider batching in groups of 50.
-  //   HINT: const result = await provider.embed(texts);
-  //         return [result.vectors, corpus];
+  // TODO 1: Embed every chunk's text with `await provider.embed(texts)`; the
+  //   result carries the per-chunk vectors. Return them alongside `corpus` as a
+  //   `[number[][], Chunk[]]` tuple so vectors[i] lines up with corpus[i].
+  //   If the provider has token limits, embed in smaller batches and concatenate.
   throw new Error("TODO 1: embed the corpus chunks");
 }
 
@@ -117,9 +117,11 @@ async function retrieve(
 ): Promise<Array<Chunk & { score: number }>> {
   const provider = getProvider();
 
-  // TODO 2: Embed the query with provider.embed([query]).
-  //   Compute cosineSimilarity between queryVec and each entry in vectors.
-  //   Sort by descending score and return the top topK chunks with a "score" field.
+  // TODO 2: Embed the query the same way (its single vector lives in the result's
+  //   vectors list), then score it against every corpus vector using the
+  //   `cosineSimilarity()` helper above. Sort by descending score and return the
+  //   best `topK` chunks, each augmented with a `score` field
+  //   (`Array<Chunk & { score: number }>`).
   throw new Error("TODO 2: embed query and rank corpus chunks");
 }
 
@@ -151,12 +153,10 @@ async function answerWithRag(
     "If the context does not contain the answer, say so honestly. " +
     "Keep your answer under 3 sentences — it will be read aloud.";
 
-  // TODO 3: Build a messages array and call provider.chat(messages).
-  //   messages = [
-  //     { role: "system", content: system },
-  //     { role: "user",   content: `Context:\n${contextBlock}\n\nQuestion: ${question}` },
-  //   ];
-  //   Return result.text.
+  // TODO 3: Build a messages array: the `system` string above as the system
+  //   turn, and a user turn that combines `contextBlock` and `question` (label
+  //   the two parts so the model knows which is retrieved context and which is
+  //   the question). Call `provider.chat(messages)` and return the reply's text.
   throw new Error("TODO 3: call provider.chat() with RAG context");
 }
 

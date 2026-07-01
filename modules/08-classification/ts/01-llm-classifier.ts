@@ -119,10 +119,11 @@ const FEW_SHOT_EXAMPLES: [string, string][] = [
  *
  * TODO: craft a prompt that:
  *   1. Describes the task and valid labels (same as zero-shot).
- *   2. Shows each [exampleText, label] pair in a clear, consistent format:
- *        Text: <example_text>
- *        Label: <label>
- *   3. Ends with the query text but without the label (so the model fills it in).
+ *   2. Shows each [exampleText, label] pair in a clear, consistent format —
+ *      e.g. a line for the text and a line for its label, repeated per example.
+ *   3. Ends with the query text in that SAME layout but with the label line left
+ *      blank, so the model completes it. Reuse the exact field labels/delimiters
+ *      you chose for the examples.
  */
 function buildFewShotPrompt(
   text: string,

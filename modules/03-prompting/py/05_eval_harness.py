@@ -119,15 +119,14 @@ def eval_variant(variant: PromptVariant) -> EvalResult:
     result = EvalResult(variant_name=variant.name)
 
     for point in DATASET:
-        # TODO: call the LLM and record the result
-        # messages = variant.build_messages(point["input"])
-        # llm_result = llm.chat(messages)
-        # predicted = parse_output(llm_result.text)
-        # correct = predicted == point["label"].lower()
-        # result.samples.append(SampleResult(
-        #     id=point["id"], input=point["input"],
-        #     expected=point["label"], predicted=predicted, correct=correct,
-        # ))
+        # TODO: run this variant on `point` and record a real SampleResult.
+        #   - Build the messages with variant.build_messages(point["input"]) and
+        #     send them through llm.chat(...).
+        #   - Run the reply text through parse_output(...) to get the predicted
+        #     label, and mark it correct when it matches point["label"]
+        #     case-insensitively.
+        #   - Append a SampleResult with those id/input/expected/predicted/correct
+        #     fields (replace the placeholder below).
 
         # Placeholder until implemented:
         result.samples.append(SampleResult(
@@ -169,12 +168,9 @@ def main() -> None:
     print(f"Variants: {len(VARIANTS)}\n")
 
     # -------------------------------------------------------------------------
-    # TODO 5: Run eval for each variant and collect results.
-    #         Then call print_results(results).
+    # TODO 5: Run eval_variant for each entry in VARIANTS, collect the
+    #         EvalResult list, and hand it to print_results(...).
     # -------------------------------------------------------------------------
-
-    # results = [eval_variant(v) for v in VARIANTS]
-    # print_results(results)
 
     # Placeholder until implemented:
     results = [eval_variant(v) for v in VARIANTS]

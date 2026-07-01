@@ -2,20 +2,21 @@
 
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand · 🔴 from-scratch
 
-Module 06 showed how to build a tool-calling agent by hand: call the SDK,
+Module 06 showed how to build a tool-calling agent by hand: call the SDK (Software Development Kit),
 check the stop reason, dispatch tools, append results, loop. That approach is
 transparent and universal — it works with any provider. But it puts all the
 protocol plumbing on your side.
 
 This module shows two complementary evolutions:
 
-**Modern agent-platform APIs** (Task 1) — OpenAI's Responses API and
-Anthropic's tool-use SDK handle more of the bookkeeping for you: conversation
+**Modern agent-platform APIs** (Application Programming Interfaces) (Task 1) —
+OpenAI's Responses API and Anthropic's tool-use SDK handle more of the
+bookkeeping for you: conversation
 threading via response IDs, hosted tools that run server-side, and built-in
 connectors for the next piece.
 
-**The Model Context Protocol** (Tasks 2–5) — an open standard (Anthropic, 2024)
-for exposing tools, resources, and prompts to _any_ LLM application. Claude Code,
+**The Model Context Protocol (MCP)** (Tasks 2–5) — an open standard (Anthropic, 2024)
+for exposing tools, resources, and prompts to _any_ LLM (Large Language Model) application. Claude Code,
 OpenAI, LangGraph, Cursor, and your own agents all speak MCP. Instead of each
 app re-inventing tool schemas and dispatch, every MCP server is instantly usable
 by every MCP client.
@@ -34,11 +35,11 @@ it separately for each platform.
 MCP is the universal adapter: one server definition, every client. The protocol
 covers three primitives:
 
-| Primitive | What it is | Example |
-|-----------|------------|---------|
-| **Tools** | callable functions with JSON Schema args | `search_docs(query)` |
-| **Resources** | readable data sources identified by URI | `file:///modules/README.md` |
-| **Prompts** | reusable prompt templates with args | `explain_concept(topic)` |
+| Primitive     | What it is                                                                   | Example                     |
+| ------------- | ---------------------------------------------------------------------------- | --------------------------- |
+| **Tools**     | callable functions with JSON Schema (JavaScript Object Notation Schema) args | `search_docs(query)`        |
+| **Resources** | readable data sources identified by URI (Uniform Resource Identifier)        | `file:///modules/README.md` |
+| **Prompts**   | reusable prompt templates with args                                          | `explain_concept(topic)`    |
 
 ### Transports
 
@@ -46,11 +47,12 @@ MCP runs over two transports:
 
 **stdio** — the server runs as a subprocess; communication happens over
 stdin/stdout. Simple, secure, and local. Claude Code uses this for most
-project MCP servers. A client opens the subprocess, sends JSON-RPC frames
+project MCP servers. A client opens the subprocess, sends JSON-RPC (JSON Remote Procedure Call) frames
 on stdin, reads responses from stdout.
 
-**HTTP/SSE** — the server runs as a web service. The client sends requests
+**HTTP (HyperText Transfer Protocol)/SSE** — the server runs as a web service. The client sends requests
 as HTTP POST; the server responds with Server-Sent Events (SSE). Required for:
+
 - Remote servers (different machine, cloud-hosted)
 - Multiple clients sharing one server
 - OpenAI Responses API MCP connector (it calls your server from OpenAI's side)
@@ -192,6 +194,7 @@ two-part question that requires calling two different tools. Compare the
 ergonomics to the manual Chat-Completions loop from module 06.
 
 **Steps (Python `01_modern_agent_api.py`):**
+
 1. Implement `run_calculator` (TODO 1) and `run_lookup` (TODO 2).
 2. Implement `dispatch` to route by tool name (TODO 3).
 3. Define OpenAI tool schemas in Responses-API format (TODO 4).
@@ -203,12 +206,14 @@ ergonomics to the manual Chat-Completions loop from module 06.
 8. (Stretch) Run both in `main()` and compare round-trips (TODO 8).
 
 **Steps (TypeScript `01-modern-agent-api.ts`):**
+
 1. Implement `runCalculator` (TODO 1), `runLookup` (TODO 2), `dispatch` (TODO 3).
 2. Define tool schemas and implement `runOpenAIResponses` (TODO 4 + 5).
 3. Define Anthropic tools and implement `runAnthropicTools` (TODO 6 + 7).
 4. Run both providers.
 
 **Acceptance:**
+
 - Both providers correctly answer a two-part question (lookup + math).
 - You can articulate: what does `previous_response_id` replace versus the
   module 06 manual-messages-list approach?
@@ -222,17 +227,20 @@ ergonomics to the manual Chat-Completions loop from module 06.
 tools and resources, and call one tool programmatically.
 
 **Steps (Python `02_use_mcp_server.py`):**
+
 1. Implement `list_server_capabilities()` using `stdio_client` and
    `ClientSession` (TODOs 1–5).
 2. Implement `call_tool_demo()` to call one tool and extract text (TODO 6).
 3. Wire both into `main()` (TODOs 7–8).
 
 **Steps (TypeScript `02-use-mcp-server.ts`):**
+
 1. Implement `listServerCapabilities()` (TODO 1).
 2. Implement `callToolDemo()` (TODO 2).
 3. Wire into `main()` (TODOs 3–4).
 
 **Acceptance:**
+
 - Prints a list of tool names and descriptions from the server.
 - Calls one tool and prints its result.
 - Works with the default filesystem server _and_ the course server from task 3.
@@ -246,6 +254,7 @@ tools and resources, and call one tool programmatically.
 server tasks 2 and 4 will connect to.
 
 **Steps (Python `03_course_mcp_server.py`):**
+
 1. Implement `_simple_search()` — keyword-frequency search over all module
    READMEs (TODO 1).
 2. Implement `_read_module_readme()` — resolve a module name to a README and
@@ -257,6 +266,7 @@ server tasks 2 and 4 will connect to.
 6. Test: in another terminal, use `02_use_mcp_server.py` to connect.
 
 **Steps (TypeScript `03-course-mcp-server.ts`):**
+
 1. Implement `allReadmes()` (TODO 1), `simpleSearch()` (TODO 2),
    `readModuleReadme()` (TODO 3).
 2. Implement `getExamQuestion()` and `gradeAnswer()` (TODOs 4–5).
@@ -264,6 +274,7 @@ server tasks 2 and 4 will connect to.
 4. Implement `main()` to start the stdio transport (TODO 7).
 
 **Acceptance:**
+
 - `uv run python modules/17-mcp/py/02_use_mcp_server.py` (with `MCP_SERVER_CMD`
   pointing at task 3) lists three tools: `search_docs`, `read_module`,
   `run_exam_question`.
@@ -280,6 +291,7 @@ answer questions by calling your server's tools dynamically — without any
 hardcoded tool schemas.
 
 **Steps (Python `04_mcp_agent.py`):**
+
 1. Implement `mcp_tools_to_openai()` — convert MCP Tool objects to OpenAI
    function-calling format (TODO 1).
 2. Implement `mcp_tools_to_anthropic()` — convert to Anthropic format (TODO 2).
@@ -290,10 +302,12 @@ hardcoded tool schemas.
 4. Implement `run_anthropic_mcp_agent()` — same for Anthropic (TODO 4).
 
 **Steps (TypeScript `04-mcp-agent.ts`):**
+
 1. Implement `mcpToolsToOpenAI()` (TODO 1) and `mcpToolsToAnthropic()` (TODO 2).
 2. Implement `runOpenAIMcpAgent()` (TODO 3) and `runAnthropicMcpAgent()` (TODO 4).
 
 **Acceptance:**
+
 - The agent answers "What does module 06 cover?" by calling `read_module`.
 - The agent answers "Search for RAG pipeline" by calling `search_docs`.
 - Changing the question causes the agent to pick different tools.
@@ -307,6 +321,7 @@ hardcoded tool schemas.
 connect to it. Understand the security implications.
 
 **Steps (Python `05_remote_mcp.py`):**
+
 1. Implement `serve_http()` — wrap the server tools in an HTTP/SSE transport
    with optional bearer-token auth (TODOs 1–4).
 2. Implement `connect_http_client()` — connect via `sse_client` and call a
@@ -315,10 +330,12 @@ connect to it. Understand the security implications.
 4. Run `--serve` in one terminal, `--client` in another.
 
 **Steps (TypeScript `05-remote-mcp.ts`):**
+
 1. Implement `serveHttp()` — HTTP server with SSE transport and auth (TODO 1).
 2. Implement `connectHttpClient()` — `SSEClientTransport` connection (TODO 2).
 
 **Acceptance:**
+
 - Starting with `--serve` and connecting with `--client` lists the course
   server's tools over HTTP.
 - Calling `search_docs` over HTTP returns the same result as the stdio client.
@@ -330,15 +347,15 @@ connect to it. Understand the security implications.
 ## Done when
 
 - [ ] Task 1: both OpenAI Responses API and Anthropic correctly answer a
-       two-part question with tools; you can articulate the difference from
-       the module 06 manual loop.
+      two-part question with tools; you can articulate the difference from
+      the module 06 manual loop.
 - [ ] Task 2: connected to an existing MCP server, listed its tools, called one.
 - [ ] Task 3: built the course MCP server; all three tools work when tested
-       with the task 2 client.
+      with the task 2 client.
 - [ ] Task 4: built an agent that dynamically fetches MCP tool schemas and uses
-       them to answer course-related questions.
+      them to answer course-related questions.
 - [ ] Task 5: exposed the server over HTTP/SSE; connected a client; can list
-       and call tools over the network.
+      and call tools over the network.
 
 ---
 
@@ -367,5 +384,5 @@ connect to it. Understand the security implications.
   the editor.
 - **MCP sampling**: the server can ask the client to run an LLM call (not just
   return data), enabling server-side agentic behaviour.
-- **Authentication schemes**: beyond bearer tokens — OAuth 2.0 PKCE flow for
+- **Authentication schemes**: beyond bearer tokens — OAuth 2.0 (Open Authorization) PKCE (Proof Key for Code Exchange) flow for
   user-delegated access (e.g., Google Calendar MCP server).

@@ -52,8 +52,9 @@ PROBLEMS = [
 #         The model should respond with JUST the answer, no explanation.
 # ---------------------------------------------------------------------------
 def build_direct_prompt(question: str) -> str:
-    # TODO: return a prompt that instructs the model to answer directly.
-    # Example: "Answer with only the final answer, no explanation.\n\nQuestion: ..."
+    # TODO: return a single prompt string that instructs the model to reply with
+    #       only the final answer (no reasoning, no explanation) and then embeds
+    #       `question`.
     return f"TODO: build direct (non-CoT) prompt for: {question}"
 
 
@@ -70,9 +71,11 @@ def build_cot_prompt(question: str) -> str:
 
 # ---------------------------------------------------------------------------
 # TODO 3: Implement extract_final_answer.
-#         Parse the CoT response to extract just the final answer.
-#         Your logic should match the format you used in TODO 2.
-#         For "Final answer: X" format: re.search(r"[Ff]inal answer:\s*(.+)", text)
+#         Parse the CoT response to pull out just the final answer.
+#         Your logic must match the answer format you asked for in TODO 2 —
+#         e.g. if you used a "Final answer: <x>" line, search for that line with
+#         `re` (imported above) and capture what follows it; fall back sensibly
+#         if the marker is missing. Normalise (strip) the captured value.
 # ---------------------------------------------------------------------------
 def extract_final_answer(cot_response: str) -> str:
     # TODO: implement extraction matching your CoT format
@@ -107,36 +110,25 @@ def main() -> None:
 
         # -------------------------------------------------------------------------
         # TODO 5: Zero-shot direct answer.
+        #         Send a one-message user chat built from build_direct_prompt(question)
+        #         and print the reply's trimmed text.
         # -------------------------------------------------------------------------
-        # direct_result = llm.chat([{"role": "user", "content": build_direct_prompt(question)}])
-        # print(f"Direct (0-shot): {direct_result.text.strip()}")
         print("Direct (0-shot): TODO")
 
         # -------------------------------------------------------------------------
-        # TODO 6: Single CoT sample (temperature=0 for determinism).
+        # TODO 6: Single CoT sample.
+        #         Call llm.chat with build_cot_prompt(question) and
+        #         ChatOptions(temperature=...) pinned to 0 for a deterministic run,
+        #         then run the reply through extract_final_answer and print it.
         # -------------------------------------------------------------------------
-        # cot_result = llm.chat(
-        #     [{"role": "user", "content": build_cot_prompt(question)}],
-        #     ChatOptions(temperature=0),
-        # )
-        # cot_answer = extract_final_answer(cot_result.text)
-        # print(f"CoT (single):   {cot_answer}")
-        # print("Reasoning snippet:", cot_result.text[:200] + "...")
         print("CoT (single):   TODO")
 
         # -------------------------------------------------------------------------
-        # TODO 7: Self-consistency — sample N_SAMPLES times at temperature=0.7,
-        #         extract each answer, majority vote.
+        # TODO 7: Self-consistency — call the CoT prompt N_SAMPLES times with a
+        #         non-zero ChatOptions(temperature=...) (e.g. ~0.7) so the samples
+        #         vary, collect extract_final_answer for each, then majority_vote
+        #         them. Print the samples and the winning answer.
         # -------------------------------------------------------------------------
-        # samples = []
-        # for _ in range(N_SAMPLES):
-        #     r = llm.chat(
-        #         [{"role": "user", "content": build_cot_prompt(question)}],
-        #         ChatOptions(temperature=0.7),
-        #     )
-        #     samples.append(extract_final_answer(r.text))
-        # winner = majority_vote(samples)
-        # print(f"Self-consistency: samples={samples}, vote={winner}")
         print(f"Self-consistency (N={N_SAMPLES}): TODO")
 
     # -------------------------------------------------------------------------

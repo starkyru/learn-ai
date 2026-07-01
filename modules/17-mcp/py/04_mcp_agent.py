@@ -66,18 +66,11 @@ def mcp_tools_to_openai(tools) -> list[dict]:
     MCP Tool: .name, .description, .inputSchema (JSON Schema dict)
     OpenAI:   { "type": "function", "function": { name, description, parameters } }
     """
-    # TODO 1: Build the OpenAI tool list.
-    #   return [
-    #       {
-    #           "type": "function",
-    #           "function": {
-    #               "name": tool.name,
-    #               "description": tool.description or "",
-    #               "parameters": tool.inputSchema,
-    #           },
-    #       }
-    #       for tool in tools
-    #   ]
+    # TODO 1: Map each MCP tool to an OpenAI function-tool dict (a `list[dict]`).
+    #   OpenAI nests the tool under a "function" key: {"type": "function",
+    #   "function": {name, description, parameters}}. Pull name/description from
+    #   each tool (default description to "" when missing) and pass the tool's
+    #   .inputSchema straight through as "parameters".
     raise NotImplementedError("TODO 1: implement mcp_tools_to_openai")
 
 
@@ -86,15 +79,10 @@ def mcp_tools_to_anthropic(tools) -> list[dict]:
 
     Anthropic: { name, description, input_schema: <JSON Schema> }
     """
-    # TODO 2: Build the Anthropic tool list.
-    #   return [
-    #       {
-    #           "name": tool.name,
-    #           "description": tool.description or "",
-    #           "input_schema": tool.inputSchema,
-    #       }
-    #       for tool in tools
-    #   ]
+    # TODO 2: Map each MCP tool to an Anthropic tool dict (a `list[dict]`).
+    #   Anthropic keeps it flat: {name, description, input_schema}. Same fields
+    #   as TODO 1 but the schema key is "input_schema" (fed from .inputSchema),
+    #   and there's no "function" wrapper.
     raise NotImplementedError("TODO 2: implement mcp_tools_to_anthropic")
 
 
@@ -120,25 +108,19 @@ async def run_openai_mcp_agent(question: str) -> str:
     )
 
     # TODO 3: Implement the MCP + OpenAI agent loop.
-    #   a) Open a stdio_client session and initialize it.
-    #   b) Fetch tools: tool_list = (await session.list_tools()).tools
-    #   c) Convert: openai_tools = mcp_tools_to_openai(tool_list)
-    #   d) Standard OpenAI tool loop (module 06 Task 2 pattern):
-    #      messages = [{"role": "user", "content": question}]
-    #      while True:
-    #          response = client.chat.completions.create(model=model, messages=messages, tools=openai_tools)
-    #          choice = response.choices[0]
-    #          if choice.finish_reason == "tool_calls":
-    #              for tc in choice.message.tool_calls:
-    #                  args = json.loads(tc.function.arguments)
-    #                  # CALL MCP TOOL (not a local function!):
-    #                  result = await session.call_tool(tc.function.name, arguments=args)
-    #                  text = " ".join(b.text for b in result.content if b.type == "text")
-    #                  print(f"  [tool] {tc.function.name}({args}) -> {text[:120]}...")
-    #                  messages.append(choice.message)
-    #                  messages.append({"role": "tool", "tool_call_id": tc.id, "content": text})
-    #          else:
-    #              return choice.message.content or ""
+    #   a) Open a stdio_client(server_params) session (same connect/initialize
+    #      pattern as task 2) and await session.initialize().
+    #   b) Fetch the server's tools via session.list_tools() and convert them
+    #      with mcp_tools_to_openai().
+    #   c) Run the module-06 tool loop: start messages with the user question,
+    #      then loop calling client.chat.completions.create(model, messages,
+    #      tools). While finish_reason is "tool_calls", for each tool call parse
+    #      its JSON arguments and — crucially — dispatch it by awaiting
+    #      session.call_tool(name, arguments=...) rather than a local function.
+    #      Join the text blocks of the result, append the assistant message and
+    #      a role="tool" message (carrying tool_call_id and the result text),
+    #      then loop. When finish_reason is not "tool_calls", return the message
+    #      content. print() each tool call for tracing.
     raise NotImplementedError("TODO 3: implement run_openai_mcp_agent")
 
 

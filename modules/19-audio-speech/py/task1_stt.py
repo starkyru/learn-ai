@@ -86,15 +86,15 @@ def transcribe_hosted(audio_path: Path) -> str:
 
     client = openai.OpenAI(api_key=api_key)
 
-    # TODO 1: Open audio_path in binary mode and call:
-    #   client.audio.transcriptions.create(
-    #       model="whisper-1",
-    #       file=<file object>,
-    #       response_format="text",   # returns a plain string
-    #   )
-    #   Return the transcript text.
-    #   HINT: use `with open(audio_path, "rb") as f:` then pass the tuple
-    #         (audio_path.name, f, "audio/wav") as `file=`.
+    # TODO 1: Transcribe the file via the Whisper endpoint.
+    #   - Open audio_path in binary mode (a `with open(..., "rb")` block so the
+    #     handle closes cleanly).
+    #   - Call `client.audio.transcriptions.create(...)` with the Whisper model,
+    #     the open file as `file=`, and `response_format="text"` so the call
+    #     returns a plain string rather than a JSON object.
+    #   - Return that transcript string.
+    #   HINT: some SDK/server combos want `file=` as a
+    #     (filename, fileobj, mimetype) tuple, e.g. built from `audio_path.name`.
     raise NotImplementedError("TODO 1: call client.audio.transcriptions.create()")
 
 
@@ -124,9 +124,13 @@ def transcribe_local(audio_path: Path, model_size: str = "base") -> str:
             "faster-whisper not installed. Run: uv sync --extra audio"
         ) from exc
 
-    # TODO 2 (optional): Instantiate WhisperModel(model_size, device="cpu",
-    #         compute_type="int8"), then call model.transcribe(str(audio_path)).
-    #         Concatenate segment.text for each segment returned by the generator.
+    # TODO 2 (optional): Run whisper locally.
+    #   - Instantiate `WhisperModel(model_size, device=..., compute_type=...)` —
+    #     pick a CPU-friendly device and a small compute type (e.g. int8) so it
+    #     runs without a GPU.
+    #   - Call `model.transcribe(str(audio_path))`; it returns a (segments,
+    #     info) pair where `segments` is a generator.
+    #   - Join the `.text` of each segment into one string and return it.
     raise NotImplementedError("TODO 2 (optional): implement local transcription")
 
 

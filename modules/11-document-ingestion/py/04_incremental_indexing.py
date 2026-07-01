@@ -63,13 +63,11 @@ def load_manifest() -> dict[str, ManifestEntry]:
     """
     Load the manifest from disk.
 
-    TODO: implement this function.
-
-    Steps:
-      1. If MANIFEST_PATH does not exist, return {}.
-      2. Read JSON: `json.loads(MANIFEST_PATH.read_text())`.
-      3. Convert each value dict back to a ManifestEntry dataclass.
-      4. Return dict keyed by `source`.
+    Hints:
+      - If MANIFEST_PATH doesn't exist yet (first run), return an empty dict.
+      - Otherwise parse its JSON and rebuild a `ManifestEntry` dataclass from each
+        stored value (the JSON holds plain dicts — expand them into the dataclass).
+      - Return a `dict[str, ManifestEntry]` keyed by each entry's `source`.
     """
     raise NotImplementedError("TODO: implement load_manifest()")
 
@@ -78,12 +76,11 @@ def save_manifest(manifest: dict[str, ManifestEntry]) -> None:
     """
     Persist the manifest to disk as JSON.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Convert each ManifestEntry to a dict with `asdict()`.
-      2. Serialise to JSON with indent=2.
-      3. Write to MANIFEST_PATH (create parent dirs if needed).
+    Hints:
+      - Turn each `ManifestEntry` dataclass into a plain dict (`asdict()`) so it is
+        JSON-serialisable.
+      - Serialise the whole mapping to indented JSON and write it to MANIFEST_PATH
+        (ensure the parent dir exists first).
     """
     raise NotImplementedError("TODO: implement save_manifest()")
 
@@ -97,11 +94,11 @@ def content_hash(text: str) -> str:
     """
     Return a short SHA-256 hex digest of the document text.
 
-    TODO: implement this function.
-
-    Steps:
-      1. hashlib.sha256(text.encode()).hexdigest()
-      2. Return the first 16 characters (enough for collision resistance here).
+    Hints:
+      - Hash the UTF-8 bytes of the text with SHA-256 (`hashlib`) and take the hex
+        digest.
+      - Truncate to the first 16 hex chars — enough collision resistance for a
+        change-detection key, and keeps the manifest readable.
     """
     raise NotImplementedError("TODO: implement content_hash()")
 
@@ -134,34 +131,25 @@ def ingest_documents(
     """
     Ingest a list of document paths, skipping unchanged ones.
 
-    TODO: implement this function.
+    Returns the tally (new_count, changed_count, skipped_count).
 
-    Returns (new_count, changed_count, skipped_count).
+    Hints — loop over each path and let the content hash decide the work:
+      - Read the file text and compute its `content_hash(...)`.
+      - Compare against the manifest entry for that path (if any):
+          * same hash  → nothing changed: bump the skipped tally and move on
+            WITHOUT re-embedding (that's the whole point — save the API call).
+          * different hash → count it as changed (fall through to re-embed).
+          * no entry → count it as new (fall through to embed).
+      - For new/changed docs: split with `simple_chunks(text, path)`, embed the
+        whole batch in ONE `provider.embed(...)` call, wrap each result in an
+        `IndexedChunk`, and append to `in_memory_index` (in production this is
+        where you'd upsert to a vector DB).
+      - Record the fresh state by writing a `ManifestEntry` back into the manifest
+        for that path: its source, the new hash, a current UTC ISO-8601 timestamp,
+        the chunk count, and `provider.embed_model`.
+      - Return the three counts.
 
-    Algorithm for each path:
-      1. Read the file text: Path(path).read_text(encoding="utf-8").
-      2. Compute hash = content_hash(text).
-      3. Look up path in manifest:
-         - If present and manifest[path].content_hash == hash:
-             skipped_count += 1; continue (no re-embedding needed).
-         - If present but hash differs: changed_count += 1 (will re-embed).
-         - If absent: new_count += 1.
-      4. Chunk the text: chunks_text = simple_chunks(text, path).
-      5. Embed all chunks in one call:
-           result = provider.embed(chunks_text)
-      6. Build IndexedChunk objects and append to in_memory_index.
-         (In production you'd upsert to a vector DB here.)
-      7. Update manifest[path] = ManifestEntry(
-             source=path,
-             content_hash=hash,
-             ingested_at=<current ISO timestamp>,
-             num_chunks=len(chunks_text),
-             model=provider.embed_model,
-         )
-      8. Return (new_count, changed_count, skipped_count).
-
-    Tip: use `from datetime import datetime, timezone` and
-    `datetime.now(timezone.utc).isoformat()` for the timestamp.
+    Tip: `datetime.now(timezone.utc).isoformat()` gives you the timestamp.
     """
     raise NotImplementedError("TODO: implement ingest_documents()")
 
@@ -172,12 +160,11 @@ def remove_stale_entries(
     """
     Remove manifest entries for documents that no longer exist.
 
-    TODO: implement this function.
-
-    Steps:
-      1. Find keys in manifest that are NOT in current_paths.
-      2. Delete them from manifest.
-      3. Return the list of removed source paths.
+    Hints:
+      - Find the manifest keys that are absent from `current_paths` — those docs
+        were deleted or renamed.
+      - Delete each of them from the manifest (mutate it in place) and collect the
+        removed source paths to return.
     """
     raise NotImplementedError("TODO: implement remove_stale_entries()")
 

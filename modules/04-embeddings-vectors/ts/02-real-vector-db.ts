@@ -52,10 +52,12 @@ const CORPUS: Document[] = [
 /**
  * Upsert documents into a Chroma collection.
  *
- * TODO: Fill in the upsert call.
- *
- * collection.upsert() takes:
+ * TODO: make ONE call to `collection.upsert(...)`. It takes an object with four
+ * parallel arrays, all in the same document order:
  *   { ids: string[], embeddings: number[][], documents: string[], metadatas: object[] }
+ *   - ids from each doc's id, embeddings = the `vectors` passed in,
+ *     documents from each doc's text, metadatas from each doc's metadata
+ *     (fall back to an empty object when a doc has none).
  *
  * "Upsert" means insert-or-update — safe to call multiple times.
  */
@@ -64,12 +66,7 @@ async function indexIntoChroma(
   docs: Document[],
   vectors: number[][]
 ): Promise<void> {
-  // TODO: call collection.upsert({
-  //   ids:        docs.map(d => d.id),
-  //   embeddings: vectors,
-  //   documents:  docs.map(d => d.text),
-  //   metadatas:  docs.map(d => d.metadata ?? {}),
-  // });
+  // TODO: build the four arrays and pass them to collection.upsert(...).
   throw new Error("TODO: implement indexIntoChroma()");
 }
 
@@ -87,19 +84,15 @@ async function queryChroma(
   queryVector: number[],
   k: number = 3
 ): Promise<Array<{ id: string; score: number; text: string }>> {
-  // TODO: const results = await collection.query({
-  //   queryEmbeddings: [queryVector],
-  //   nResults: k,
-  // });
-  //
-  // Chroma returns `distances` (L2 by default). Convert to a similarity score:
-  //   score = 1 / (1 + distance)   — so distance 0 → score 1, distance ∞ → score 0
-  //
-  // Return: results.ids[0].map((id, i) => ({
-  //   id,
-  //   score: 1 / (1 + (results.distances![0][i])),
-  //   text: results.documents![0][i] ?? "",
-  // }));
+  // TODO:
+  //   1. await collection.query({ queryEmbeddings: [...], nResults: ... }) — pass
+  //      the single query vector wrapped in an array, and k as nResults.
+  //   2. Chroma returns `distances` (L2 by default). Convert each distance to a
+  //      similarity score with:  score = 1 / (1 + distance)
+  //      (distance 0 → score 1, distance ∞ → score 0).
+  //   3. The response arrays are nested one level (index [0] is the first query).
+  //      Map over the first row of ids to build the { id, score, text } objects,
+  //      reading the matching distance and document by the same index.
   throw new Error("TODO: implement queryChroma()");
 }
 
@@ -188,27 +181,19 @@ main().catch((err) => {
 //   }
 //
 //   async createCollection(dim: number) {
-//     // TODO: await this.client.recreateCollection(this.collection, {
-//     //   vectors: { size: dim, distance: "Cosine" },
-//     // });
+//     // TODO: call this.client.recreateCollection(...) so the collection's vector
+//     //       config uses size = dim and distance "Cosine".
 //   }
 //
 //   async upsert(docs: Document[], vectors: number[][]) {
-//     // TODO: await this.client.upsert(this.collection, {
-//     //   points: docs.map((d, i) => ({
-//     //     id: i,                   // Qdrant needs numeric or UUID ids
-//     //     vector: vectors[i],
-//     //     payload: { id: d.id, text: d.text, ...d.metadata },
-//     //   })),
-//     // });
+//     // TODO: call this.client.upsert(...) with one point per doc. Each point needs
+//     //       a numeric (or UUID) id, its vector, and a payload carrying the
+//     //       original id/text (plus any metadata) so you can read it back.
 //   }
 //
 //   async query(queryVec: number[], k = 3) {
-//     // TODO: const results = await this.client.search(this.collection, {
-//     //   vector: queryVec,
-//     //   limit: k,
-//     //   with_payload: true,
-//     // });
-//     // return results.map(r => ({ id: r.payload!["id"], score: r.score, text: r.payload!["text"] }));
+//     // TODO: call this.client.search(...) with the query vector, limit = k, and
+//     //       payload enabled. Map each hit to { id, score, text } from its
+//     //       payload and .score.
 //   }
 // }

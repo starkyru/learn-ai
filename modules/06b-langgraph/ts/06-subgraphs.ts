@@ -82,11 +82,12 @@ async function buildParent() {
   return (
     new StateGraph(MessagesAnnotation)
       .addNode("preprocess", preprocess)
-      // TODO 1: add the compiled subgraph DIRECTLY as a node.
-      //   .addNode("research", research)
+      // TODO 1: add the compiled `research` subgraph DIRECTLY as a node (a compiled
+      //         graph IS a valid node) — give it a name like "research".
       .addNode("summarise", summarise)
       .addEdge(START, "preprocess")
-      // TODO 2: preprocess -> research -> summarise -> END
+      // TODO 2: wire the linear path preprocess -> research -> summarise -> END with
+      //         .addEdge calls before .compile().
       .compile()
   );
 }
@@ -95,12 +96,13 @@ async function main() {
   const app = await buildParent();
   const inputs = { messages: [new HumanMessage("How tall is the tallest mountain?")] };
 
-  // TODO 3: stream with subgraphs:true so inner steps are visible.
-  //   for await (const [ns, chunk] of await app.stream(inputs, { subgraphs: true, streamMode: "updates" })) {
-  //     console.log(ns, Object.keys(chunk)); // ns is [] for parent, ["research:<id>"] for subgraph
-  //   }
+  // TODO 3: stream the parent with `{ subgraphs: true, streamMode: "updates" }`. Each
+  //         event destructures to a [namespace, chunk] pair: the namespace is [] for
+  //         the parent and ["research:<id>"] for steps inside the subgraph. Log the
+  //         namespace and the chunk's node keys to watch the inner steps surface.
 
-  // TODO 4: confirm isolation — the final parent state has no `sourcesSeen`.
+  // TODO 4: confirm isolation — inspect the final parent state and verify it has no
+  //         `sourcesSeen` key (that PRIVATE channel never leaked out of the subgraph).
   console.log("TODO: add the subgraph as a node, stream with subgraphs:true.");
 }
 

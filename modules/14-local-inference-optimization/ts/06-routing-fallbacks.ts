@@ -85,12 +85,13 @@ const HARD_MODEL = "llama3.2";     // slower, stronger
  *
  * TODO: implement this function.
  *
- * Heuristic rules (apply in order; first match wins):
- *   1. If the lowercased query contains any substring from HARD_KEYWORDS → "hard".
- *   2. If query.split(/\s+/).length > 20 → "hard".
- *   3. If (query.match(/\?/g) ?? []).length > 1 → "hard" (compound question).
- *   4. If the lowercased query contains any substring from EASY_KEYWORDS → "easy".
- *   5. Default → "easy".
+ * Heuristic rules (apply in order; FIRST match wins, so order matters):
+ *   1. Lowercase the query. If it contains any HARD_KEYWORDS entry → "hard".
+ *   2. If the query is long (word count past a "this needs context" threshold,
+ *      ~20) → "hard".
+ *   3. If it packs more than one question mark (a compound question) → "hard".
+ *   4. If it contains any EASY_KEYWORDS entry → "easy".
+ *   5. Otherwise default to "easy".
  *
  * Returns "easy" | "hard".
  */
@@ -130,18 +131,13 @@ function route(query: string): RoutingDecision {
  * TODO: implement this function.
  *
  * Algorithm:
- *   For each provider in providers:
- *     1. Try:
- *          const result = await Promise.race([
- *            call(provider),
- *            new Promise((_, reject) =>
- *              setTimeout(() => reject(new Error("timeout")), timeoutMs)
- *            ),
- *          ]);
- *          Return [result, provider.name].
- *     2. On timeout or any error: console.warn(...) and continue to next provider.
- *
- *   If all providers fail, throw new Error("All providers failed.").
+ *   Loop over providers in order. For each one:
+ *     1. Race call(provider) against a timeout — Promise.race the real call
+ *        against a promise that rejects after timeoutMs (a setTimeout that
+ *        rejects). If the call wins, return [result, provider.name].
+ *     2. On timeout OR any error: console.warn(...) and fall through to the next
+ *        provider.
+ *   If every provider is exhausted, throw an Error.
  *
  * `call` is an async function that takes a provider and returns a result.
  */

@@ -152,14 +152,13 @@ def chunk_documents(
 
     TODO: implement this function.
 
-    For each doc, split doc["text"] on whitespace into words. Walk through
-    the words in steps of `words_per_chunk`, join each slice into a string,
-    and create a Chunk:
-      id     = f"{doc['source']}-chunk-{index}"   (0-based index per doc)
-      text   = joined words
-      source = doc["source"]
+    For each doc, split doc["text"] on whitespace into words. Walk the words in
+    steps of `words_per_chunk`, joining each slice back into a string. Build a
+    `Chunk` per slice whose `id` combines the doc source with a 0-based index
+    that RESETS per doc (so ids look like "embeddings-guide-chunk-0"), `text` is
+    the joined slice, and `source` is the doc source.
 
-    Return the full list of Chunk objects across all docs.
+    Return the flat list of every `Chunk` across all docs.
     """
     raise NotImplementedError("TODO: implement chunk_documents()")
 
@@ -189,9 +188,10 @@ def build_index(chunks: list[Chunk], provider: Any) -> list[IndexEntry]:
     TODO: implement this function.
 
     Steps:
-      1. texts = [c.text for c in chunks]
-      2. result = provider.embed(texts)
-      3. return [IndexEntry(chunk=chunks[i], vector=result.vectors[i]) for i in ...]
+      1. Collect the `.text` of every chunk into a list.
+      2. Embed them all in ONE `provider.embed(...)` call (batching matters).
+      3. Pair each chunk with its vector from `result.vectors` (same order) and
+         return the list of `IndexEntry(chunk=..., vector=...)`.
     """
     raise NotImplementedError("TODO: implement build_index()")
 
@@ -232,20 +232,14 @@ def build_rag_prompt(
 
     TODO: implement this function.
 
-    Return [system_message, user_message] where:
+    Return a `list[ChatMessage]` of [system, user]:
 
-    System: "You are a helpful assistant. Answer using ONLY the provided
-             context. After each claim, add a citation like [chunk-id].
-             If the context does not contain the answer, say so."
-
-    User: Build a context block like:
-            [chunk-id-1]
-            {text}
-
-            [chunk-id-2]
-            {text}
-
-            Question: {question}
+    - System message: instruct the model to answer using ONLY the provided
+      context, to append a citation like [chunk-id] after each claim, and to
+      admit it when the context does not contain the answer.
+    - User message: assemble a context block by labelling each chunk with its
+      id (e.g. a "[{id}]\n{text}" section per chunk, separated by blank lines),
+      then append the question at the end.
     """
     raise NotImplementedError("TODO: implement build_rag_prompt()")
 

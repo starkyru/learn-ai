@@ -41,9 +41,9 @@ const calculatorTool: Tool = {
   description:
     'Evaluates a simple math expression. Input: a math expression as a string, e.g. "12 * (3 + 4)".',
   execute(args: string): string {
-    // TODO: Use Function() or a safe eval to compute the expression.
-    //       Return the result as a string, or an error message on failure.
-    //       HINT: new Function("return " + args)()
+    // TODO: Compute the expression by constructing a `Function` that returns it
+    //       (e.g. build one from "return " + args and invoke it). Return the
+    //       result as a string, or an error message string if it throws.
     //       WARNING: In production never eval untrusted input. This is a demo.
     throw new Error("TODO: implement calculator");
   },

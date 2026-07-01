@@ -122,17 +122,10 @@ const USER_GROUPS: Record<string, string[]> = {
 /**
  * Create a PermissionedChunk by attaching ACL and citation metadata.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Return a PermissionedChunk with:
- *        id      = chunkId
- *        text    = doc.text
- *        vector  = vector
- *        source  = doc.source
- *        section = doc.section
- *        page    = doc.page ?? 0
- *        acl     = acl
+ * Hints:
+ *   - Build and return a `PermissionedChunk`, copying the citation fields from
+ *     `doc` (text, source, section, page — default page to 0 when missing) and
+ *     stamping on the passed-in `chunkId`, `vector`, and `acl`.
  */
 function tagAccess(doc: RawDoc, acl: ACL, chunkId: string, vector: number[]): PermissionedChunk {
   // TODO: implement tagAccess
@@ -169,14 +162,13 @@ function userCanAccess(user: string, chunk: PermissionedChunk): boolean {
 /**
  * Compute cosine similarity between two equal-length vectors.
  *
- * TODO: implement this function.
+ * Formula:  cos(a, b) = (a · b) / (‖a‖ · ‖b‖)
  *
- * Steps:
- *   1. dot = a.reduce((s, v, i) => s + v * b[i], 0)
- *   2. normA = Math.sqrt(a.reduce((s, v) => s + v * v, 0))
- *   3. normB = Math.sqrt(b.reduce((s, v) => s + v * v, 0))
- *   4. Guard: return 0 if normA === 0 || normB === 0.
- *   5. Return dot / (normA * normB).
+ * Hints:
+ *   - Compute the dot product of the paired components, and each vector's
+ *     Euclidean norm (`Math.sqrt` of its sum of squares).
+ *   - Guard the divide: if either norm is 0, return 0 instead of dividing by zero.
+ *   - Otherwise return the dot product over the product of the norms.
  */
 function cosineSimilarity(a: number[], b: number[]): number {
   // TODO: implement cosineSimilarity

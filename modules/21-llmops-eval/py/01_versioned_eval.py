@@ -110,8 +110,10 @@ def run_system(case: EvalCase, provider: Any) -> tuple[str, float]:
 def grade_exact(output: str, case: EvalCase) -> GraderResult:
     """Exact-match grader: passes if reference_answer appears verbatim in output.
 
-    TODO 3a: Check if case.reference_answer (case-insensitive) is in output.
-    Return a GraderResult with score=1.0/0.0 and passed accordingly.
+    TODO 3a: Decide whether case.reference_answer appears inside output, ignoring
+             letter case (normalise both sides before comparing).
+    Return a GraderResult whose score is 1.0 when it matches and 0.0 otherwise,
+    with passed set to match.
     """
     raise NotImplementedError("TODO: implement grade_exact")
 
@@ -129,16 +131,14 @@ def grade_contains(output: str, case: EvalCase) -> GraderResult:
 def grade_llm_judge(output: str, case: EvalCase, provider: Any) -> GraderResult:
     """LLM-as-judge grader: ask a second LLM to score 0–10.
 
-    TODO 3c: Build a judge prompt that includes:
-             - The original question
-             - The rubric (case.rubric)
-             - The system output to evaluate
-             - Clear instruction to reply with ONLY a JSON object:
-               {"score": <0-10>, "reason": "<short explanation>"}
-    TODO 3d: Call provider.chat() with temperature=0.
-    TODO 3e: Parse the JSON. score_normalized = score / 10.
-             passed = score >= 7.
-    Handle JSON parse errors gracefully (score=0, passed=False).
+    TODO 3c: Build a `list[ChatMessage]` for a judge that sees the original
+             question, the rubric (case.rubric), and the system output to
+             evaluate, and is told to reply with ONLY a JSON object carrying an
+             integer score field (0–10) and a short reason field.
+    TODO 3d: Call provider.chat() with temperature=0 (deterministic grading).
+    TODO 3e: Parse the JSON, normalise the score into 0–1 (divide by the 0–10
+             range), and treat a score of 7+ as a pass.
+    Handle JSON parse errors gracefully (fall back to score=0, passed=False).
     Return a GraderResult.
     """
     raise NotImplementedError("TODO: implement grade_llm_judge")

@@ -2,12 +2,12 @@
 
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand
 
-Building an LLM that can answer questions is now table stakes. Making that LLM
+Building an LLM (Large Language Model) that can answer questions is now table stakes. Making that LLM
 feel **trustworthy and usable** — so users know when to trust it, can see where
 it got its information, and have a way to push back when it's wrong — is the
 actual hard product problem.
 
-This module builds a small but fully runnable RAG chat UI and the backend that
+This module builds a small but fully runnable RAG (Retrieval-Augmented Generation) chat UI (User Interface) and the backend that
 powers it. Every trust/UX principle is embodied in working code you can run and
 inspect.
 
@@ -18,28 +18,29 @@ inspect.
 ### Why UX matters for AI trust
 
 A model that's right 85 % of the time is worse than useless if the user can't
-tell which 15 % to ignore. The UX job is to surface the model's uncertainty,
+tell which 15 % to ignore. The UX (User Experience) job is to surface the model's uncertainty,
 show its reasoning, and give users a way to correct it.
 
 Five patterns that separate a demo from a trustworthy product:
 
-| Pattern | The problem it solves |
-|---------|----------------------|
-| **Streaming** | Long waits feel broken. Tokens arriving immediately feel alive. |
-| **Citations** | "Where did that come from?" — users won't trust what they can't verify. |
-| **Confidence states** | Low confidence answers need a warning, not silent delivery. |
-| **Feedback** | Users need a way to push back. Every "looks wrong" is training data. |
-| **Approval flows** | Risky AI actions (send email, delete data) must be gated. |
+| Pattern               | The problem it solves                                                   |
+| --------------------- | ----------------------------------------------------------------------- |
+| **Streaming**         | Long waits feel broken. Tokens arriving immediately feel alive.         |
+| **Citations**         | "Where did that come from?" — users won't trust what they can't verify. |
+| **Confidence states** | Low confidence answers need a warning, not silent delivery.             |
+| **Feedback**          | Users need a way to push back. Every "looks wrong" is training data.    |
+| **Approval flows**    | Risky AI actions (send email, delete data) must be gated.               |
 
 ### Streaming (SSE)
 
 Server-Sent Events (SSE) are the right transport for token streaming:
 
 - One-way server → client (simpler than WebSocket).
-- Works over plain HTTP with no special setup.
+- Works over plain HTTP (HyperText Transfer Protocol) with no special setup.
 - The client reads `text/event-stream` with `EventSource` or `fetch` + `ReadableStream`.
 
-Each SSE event in this module is a typed JSON payload:
+Each SSE event in this module is a typed JSON (JavaScript Object Notation) payload:
+
 ```
 data: {"type": "token",    "text": "..."}
 data: {"type": "citation", "doc": {...}}
@@ -53,8 +54,9 @@ string parsing.
 ### Citations / "show sources"
 
 The LLM is instructed to output a citation block at the end of its answer:
+
 ```json
-{"citations": ["doc1", "doc3"]}
+{ "citations": ["doc1", "doc3"] }
 ```
 
 The server strips this from the streamed text, resolves the doc IDs to full
@@ -67,6 +69,7 @@ they can check; they don't forgive wrong answers with no source.
 ### Confidence & failure states
 
 Every answer has an explicit confidence score. The client renders:
+
 - **High (≥ 75%)** — green badge, proceed.
 - **Medium (50–74%)** — yellow badge, "verify sources".
 - **Low (< 50%)** — red badge, prominent warning.
@@ -78,7 +81,7 @@ third distinct state — not a blank page.
 ### Feedback capture
 
 Every 👍/👎 and "this looks wrong" report is a POST to `/feedback` and stored
-as JSONL. That log feeds directly into module 21's human review queue — closing
+as JSONL (JSON Lines). That log feeds directly into module 21's human review queue — closing
 the product loop: bad production outputs → human labels → better eval set →
 better model.
 
@@ -137,61 +140,69 @@ python -m http.server 8080 --directory modules/22-ai-product-ux/web
 
 **Endpoints:**
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET`  | `/health` | Health check |
-| `POST` | `/ask/stream` | Streaming RAG answer (SSE) |
-| `POST` | `/ask` | Synchronous RAG answer |
-| `POST` | `/feedback` | Store user feedback |
-| `POST` | `/actions/request` | Request approval token |
-| `POST` | `/actions/approve` | Consume approval token |
+| Method | Path               | Description                |
+| ------ | ------------------ | -------------------------- |
+| `GET`  | `/health`          | Health check               |
+| `POST` | `/ask/stream`      | Streaming RAG answer (SSE) |
+| `POST` | `/ask`             | Synchronous RAG answer     |
+| `POST` | `/feedback`        | Store user feedback        |
+| `POST` | `/actions/request` | Request approval token     |
+| `POST` | `/actions/approve` | Consume approval token     |
 
 **Files produced at runtime:**
 
-| File | Created by |
-|------|-----------|
+| File                | Created by             |
+| ------------------- | ---------------------- |
 | `py/feedback.jsonl` | Python server — task 4 |
 | `py/actions.jsonl`  | Python server — task 5 |
-| `ts/feedback.jsonl` | TS server — task 4 |
-| `ts/actions.jsonl`  | TS server — task 5 |
+| `ts/feedback.jsonl` | TS server — task 4     |
+| `ts/actions.jsonl`  | TS server — task 5     |
 
 ---
 
 ## UI walkthrough
 
 ### Empty state
+
 Open the page before asking anything. You see a centred placeholder with
 example questions — no blank white void.
 
 ### Loading state
+
 Submit a question. A spinner appears immediately with "Thinking…" — the user
 knows something is happening.
 
 ### Streaming (task 1)
+
 Tokens arrive one by one in the answer card. A blinking cursor indicates the
 stream is live. Watch the Network tab → `/ask/stream` → Response to see the
 raw SSE events.
 
 ### Citations (task 2)
+
 After the final token, source chips appear below the answer ("Sources: Module 05
-— RAG  Module 07 — Advanced & Production"). Click a chip to slide open the
+— RAG Module 07 — Advanced & Production"). Click a chip to slide open the
 source panel with title, URL, and excerpt. Click the overlay or ✕ to close it.
 
 ### Confidence (task 3)
+
 A coloured badge appears in the top-left of the answer card. Green = high,
 yellow = medium, red = low. Low-confidence answers include "verify sources"
 in the badge text.
 
 ### Error state (task 3)
+
 Stop the backend and submit a question. The error state appears with the
 network error message and a "Try again" link.
 
 ### Feedback (task 4)
+
 Click 👍 or 👎 — a green "Thanks for your feedback!" confirmation appears for
 3 seconds. Click "This looks wrong" to expand a text area; submitting it sends
 rating="wrong" with the note to `/feedback`. Check `feedback.jsonl` to verify.
 
 ### Approval flow (task 5)
+
 Click "⚠ Simulate a risky action (requires approval)" at the bottom of the
 answer card. A modal appears with the action description and a JSON payload.
 Click Approve → server logs it in `actions.jsonl` and confirms. Click Cancel →
@@ -206,6 +217,7 @@ server logs it as rejected. Wait 2 minutes without responding → token expires.
 **Goal:** Ask a question and watch tokens arrive live.
 
 **Steps (Python):**
+
 1. Start the Python server: `uv run python modules/22-ai-product-ux/py/server.py`
 2. Open `web/index.html`.
 3. Ask "What is RAG?" — watch tokens stream in.
@@ -213,13 +225,15 @@ server logs it as rejected. Wait 2 minutes without responding → token expires.
    by type. Add a second event type if you like (e.g., `"thinking"` before
    the first token).
 5. Study `web/app.js` `streamAnswer()` — the `fetch` + `ReadableStream` SSE
-   client. Trace one token from server to DOM.
+   client. Trace one token from server to DOM (Document Object Model).
 
 **Steps (TypeScript):**
+
 1. Start: `pnpm tsx modules/22-ai-product-ux/ts/server.ts`
 2. Same frontend works. Study `ts/server.ts` `app.post("/ask/stream")`.
 
 **Acceptance:**
+
 - Tokens appear progressively (not all at once after a delay).
 - The blinking cursor disappears when streaming is done.
 - Opening DevTools → Network → `/ask/stream` → Response shows individual
@@ -233,6 +247,7 @@ server logs it as rejected. Wait 2 minutes without responding → token expires.
 inspectable.
 
 **Steps:**
+
 1. The backend already sends `citation` events. Open `web/app.js`.
 2. Find `renderCitations()`. Extend it: add a small superscript number to the
    answer text next to each sentence that cites a source (like Wikipedia [1]).
@@ -243,6 +258,7 @@ inspectable.
    docs whose content includes at least one word from the question.
 
 **Acceptance:**
+
 - Source chips appear after every answer.
 - Clicking a chip opens a panel with title, URL, content.
 - Closing the panel (✕ or overlay click) works.
@@ -254,6 +270,7 @@ inspectable.
 **Goal:** The UI handles all three non-happy states: loading, error, low confidence.
 
 **Steps:**
+
 1. `web/app.js` already has `showState()`. Verify all four states render by:
    - Asking a question (loading → answer).
    - Stopping the server and asking again (loading → error → retry).
@@ -267,6 +284,7 @@ inspectable.
    answer text.
 
 **Acceptance:**
+
 - Network error shows the error state with a retry button.
 - Low-confidence answers (< 50%) show a red badge with "verify sources".
 - High-confidence answers show a green badge.
@@ -278,6 +296,7 @@ inspectable.
 **Goal:** Users can rate answers and report problems; all feedback is stored.
 
 **Steps:**
+
 1. Click 👍 and 👎 — verify `feedback.jsonl` is written.
 2. Click "This looks wrong", type a note, submit — verify the note is stored.
 3. Extend the backend to accept an optional `session_id` in the feedback body
@@ -285,9 +304,10 @@ inspectable.
 4. Write a small script (Python or TS) that reads `feedback.jsonl` and prints:
    - Total ratings, up vs down ratio.
    - All "wrong" reports with their notes.
-   This is the seed of a feedback dashboard.
+     This is the seed of a feedback dashboard.
 
 **Acceptance:**
+
 - `feedback.jsonl` contains one entry per feedback submission.
 - Each entry has: id, timestamp, question, answer, rating, note.
 - The "Thanks!" confirmation appears and disappears after 3 s.
@@ -299,6 +319,7 @@ inspectable.
 **Goal:** A modal gate prevents AI-triggered side effects without user confirmation.
 
 **Steps:**
+
 1. Click "⚠ Simulate a risky action" — the modal appears.
 2. Approve — check `actions.jsonl` for `"approved": true`.
 3. Reject — check for `"approved": false`.
@@ -309,10 +330,11 @@ inspectable.
    payload of `{"to": "test@example.com", "subject": "AI Summary"}`.
    The modal should show the email address prominently — users need to see
    exactly what will happen.
-6. Test token expiry: change the TTL to 5 s in the server; request an action,
+6. Test token expiry: change the TTL (Time To Live) to 5 s in the server; request an action,
    wait 6 s, then approve — you should get `"status": "expired"`.
 
 **Acceptance:**
+
 - The modal shows action name and JSON payload.
 - Approve / reject both write to `actions.jsonl`.
 - Expired tokens return `"status": "expired"` (not an error).

@@ -134,16 +134,16 @@ the LLM is hallucinating despite having the right context.`,
  *   source: the document source string
  *
  * Algorithm: split text on whitespace, accumulate words until you hit
- * wordsPerChunk, then push a chunk and start fresh.
+ * wordsPerChunk, then push a chunk and start fresh. The index in the id
+ * resets to 0 for each doc.
  */
 function chunkDocuments(
   docs: Array<{ source: string; text: string }>,
   wordsPerChunk: number = 80
 ): Chunk[] {
-  // TODO: implement chunking.
-  // For each doc:
-  //   const words = doc.text.split(/\s+/).filter(Boolean);
-  //   walk in steps of wordsPerChunk, slicing + joining.
+  // TODO: implement chunking. Split each doc's text on whitespace, walk the
+  // words in steps of wordsPerChunk (slice + join back with spaces), and push
+  // one Chunk per slice. Return the flat Chunk[] across all docs.
   throw new Error("TODO: implement chunkDocuments()");
 }
 
@@ -162,9 +162,9 @@ interface VectorEntry {
  * TODO: implement this function.
  *
  * Steps:
- *   1. Extract chunk.text for each chunk.
- *   2. Call provider.embed(texts) — batch all chunks in one call.
- *   3. Zip chunks with their vectors into VectorEntry objects.
+ *   1. Collect chunk.text for every chunk.
+ *   2. Call provider.embed(...) once — batch all chunks in a single call.
+ *   3. Pair each chunk with its vector (same order) into VectorEntry objects.
  */
 async function buildIndex(
   chunks: Chunk[],
@@ -218,16 +218,13 @@ function retrieve(
  *
  * TODO: implement this function.
  *
- * Prompt structure:
- *   System: "You are a helpful assistant. Answer using ONLY the provided
- *            context. After each claim, add a citation in the form [chunk-id].
- *            If the context does not contain the answer, say so."
- *
- *   User: "Context:\n\n[CHUNK-1-ID]\n{text}\n\n[CHUNK-2-ID]\n{text}\n\n...
- *          \n\nQuestion: {question}"
- *
- * Each chunk in the context should be labelled with its id so the LLM can
- * reference it.
+ * Return a ChatMessage[] of [system, user]:
+ *   - System message: instruct the model to answer using ONLY the provided
+ *     context, to append a citation like [chunk-id] after each claim, and to
+ *     say so when the context does not contain the answer.
+ *   - User message: assemble a context block by labelling each chunk with its
+ *     id (a "[{id}]\n{text}" section per chunk, blank-line separated), then
+ *     append the question at the end.
  */
 function buildRAGPrompt(question: string, chunks: RetrievedChunk[]): ChatMessage[] {
   // TODO: build and return [systemMessage, userMessage].

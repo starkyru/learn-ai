@@ -125,24 +125,15 @@ def build_citation_prompt(question: str, chunks: list[RetrievedChunk]) -> list[C
 
     TODO: implement this function.
 
-    System message:
-      "You are a helpful assistant. Answer using ONLY the provided context.
-       Break your answer into individual factual claims. For each claim,
-       provide the id of the context chunk it came from.
-       If a claim cannot be grounded in any chunk, set citation to null.
-       Output ONLY valid JSON in this format:
-       {\"claims\": [{\"text\": \"...\", \"citation\": \"chunk-id-or-null\"}, ...]}"
-
-    User message:
-      Build a context block labelling each chunk:
-        [chunk-id-1]
-        {text}
-
-        [chunk-id-2]
-        {text}
-        ...
-
-        Question: {question}
+    Return a `list[ChatMessage]` of [system, user]:
+    - System message: instruct the model to answer using ONLY the context, to
+      break its answer into individual factual claims, to tag each claim with
+      the id of the chunk it came from (or null when it can't be grounded), and
+      to output ONLY valid JSON shaped as
+      {"claims": [{"text": ..., "citation": <chunk-id or null>}, ...]}.
+    - User message: assemble a context block labelling each chunk with its id
+      (a "[{id}]\n{text}" section per chunk, blank-line separated), then append
+      the question.
     """
     raise NotImplementedError("TODO: implement build_citation_prompt()")
 
@@ -163,21 +154,18 @@ def cited_rag(
     TODO: implement this function.
 
     Steps:
-      1. messages = build_citation_prompt(question, chunks)
-      2. result = provider.chat(messages)
-      3. Parse result.text as JSON. Handle json.JSONDecodeError (return empty CitedAnswer).
-      4. Extract claims: [{"text": ..., "citation": ...}, ...]
-      5. valid_citations   = [c["citation"] for c in claims if c["citation"] is not None
-                              and c["citation"] in {ch.id for ch in chunks}]
-      6. invalid_citations = [c["citation"] for c in claims if c["citation"] is not None
-                              and c["citation"] not in {ch.id for ch in chunks}]
-      7. uncited_claims    = [c["text"] for c in claims if c["citation"] is None]
-      8. Build readable answer:
-           " ".join(
-               c["text"] + (f" [{c['citation']}]" if c["citation"] else " [UNCITED]")
-               for c in claims
-           )
-      9. Return CitedAnswer.
+      1. Build the prompt with `build_citation_prompt(question, chunks)` and send
+         it via `provider.chat(...)`.
+      2. Parse `result.text` as JSON; catch `json.JSONDecodeError` and return an
+         empty `CitedAnswer` so the harness survives malformed output.
+      3. Pull out the "claims" list, each item shaped {"text", "citation"}.
+      4. Compute the id set of the retrieved chunks, then partition claims into:
+           - valid_citations:   non-null citations that ARE in that id set
+           - invalid_citations: non-null citations NOT in that id set (hallucinated)
+           - uncited_claims:    the text of claims whose citation is null
+      5. Reconstruct a readable answer string by joining each claim's text with a
+         trailing " [citation]" tag (or a " [UNCITED]" marker when null).
+      6. Return the assembled `CitedAnswer`.
     """
     raise NotImplementedError("TODO: implement cited_rag()")
 

@@ -100,13 +100,12 @@ function cleanExample(example: Example | null | undefined, maxChars = 512): Exam
  * test fraction = 1 - trainFrac - valFrac.
  *
  * TODO:
- *   1. Shuffle a copy of examples with a seeded PRNG (use a simple LCG or
- *      the Fisher-Yates shuffle with a fixed seed sequence).
- *      Tip: a quick-and-dirty deterministic shuffle:
- *        let rng = seed; const rand = () => { rng = (rng * 1664525 + 1013904223) >>> 0; return rng / 2**32; };
- *        for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i+1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
- *   2. Compute split indices.
- *   3. Return [train, val, test].
+ *   1. Shuffle a COPY of examples deterministically. Drive a Fisher-Yates
+ *      shuffle from a seeded PRNG so the same seed always gives the same order —
+ *      a tiny LCG (a linear-congruential generator: rng = rng * a + c, kept in
+ *      uint32 range) is enough to produce the random() values you need.
+ *   2. Compute the split sizes from trainFrac / valFrac; the remainder is test.
+ *   3. Slice into three non-overlapping parts and return [train, val, test].
  */
 function splitDataset(
   examples: Example[],

@@ -106,8 +106,8 @@ Action = ActionClick | ActionType | ActionNavigate | ActionScroll | ActionDone
 
 def page_screenshot_b64(page) -> str:
     """Take a screenshot of the current page and return it as a base64 string."""
-    # TODO 1: Use page.screenshot(type="png") which returns bytes.
-    #         Return base64.standard_b64encode(data).decode("utf-8").
+    # TODO 1: Call `page.screenshot(type="png")` (it returns raw bytes), then
+    #   base64-encode those bytes and decode to a UTF-8 `str` before returning.
     raise NotImplementedError("TODO 1: implement page_screenshot_b64")
 
 
@@ -141,25 +141,16 @@ def decide_action_openai(screenshot_b64: str, goal: str, step: int) -> Action:
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model = os.getenv("OPENAI_VISION_MODEL", "gpt-4o-mini")
 
-    # TODO 2: Build the multimodal message (same pattern as module 09 task 3).
-    #   messages = [{
-    #       "role": "user",
-    #       "content": [
-    #           {"type": "text", "text": f"Step {step}. Goal: {goal}"},
-    #           {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot_b64}"}},
-    #       ]
-    #   }]
-    #   response = client.chat.completions.create(
-    #       model=model,
-    #       messages=messages,
-    #       system=SYSTEM_PROMPT.format(goal=goal),  # Note: OpenAI uses messages[0] as system
-    #       max_tokens=256,
-    #       response_format={"type": "json_object"},  # request JSON output
-    #   )
-    #   raw = response.choices[0].message.content
-    #   return _parse_action(json.loads(raw))
-    #
-    # Hint: pass the system prompt as a separate system message in the list.
+    # TODO 2: Build the multimodal message list (same pattern as module 09 task 3).
+    #   - Start with a system message whose content is `SYSTEM_PROMPT.format(goal=goal)`.
+    #   - Add a user message whose `content` is a LIST mixing a text part (step + goal)
+    #     and an image part. For OpenAI the image part is
+    #     `{"type": "image_url", "image_url": {"url": ...}}` where the url is a
+    #     `data:image/png;base64,<screenshot_b64>` URI.
+    #   - Call `client.chat.completions.create(model=model, messages=..., max_tokens=...)`
+    #     and request JSON with `response_format={"type": "json_object"}`.
+    #   - Pull the message content off the first choice, `json.loads(...)` it, and hand
+    #     the dict to `_parse_action(...)`.
     raise NotImplementedError("TODO 2: implement decide_action_openai")
 
 
@@ -170,33 +161,24 @@ def decide_action_anthropic(screenshot_b64: str, goal: str, step: int) -> Action
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     model = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5")
 
-    # TODO 3: Build the Anthropic multimodal message (same as module 09 task 3).
-    #   message = client.messages.create(
-    #       model=model,
-    #       max_tokens=256,
-    #       system=SYSTEM_PROMPT.format(goal=goal),
-    #       messages=[{
-    #           "role": "user",
-    #           "content": [
-    #               {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": screenshot_b64}},
-    #               {"type": "text", "text": f"Step {step}. What should I do next to achieve the goal?"},
-    #           ],
-    #       }],
-    #   )
-    #   raw = message.content[0].text
-    #   return _parse_action(json.loads(raw))
+    # TODO 3: Same idea as TODO 2 but with the Anthropic SDK (module 09 task 3 pattern).
+    #   - `client.messages.create(model=model, max_tokens=..., system=..., messages=...)`.
+    #     Anthropic takes the system prompt as the top-level `system=` argument (formatted
+    #     with the goal), NOT as a message.
+    #   - The single user message's `content` is a list with an image part
+    #     `{"type": "image", "source": {"type": "base64", "media_type": "image/png",
+    #     "data": screenshot_b64}}` plus a text part asking what to do next.
+    #   - Read the text off the first content block, `json.loads(...)` it, and pass the
+    #     dict to `_parse_action(...)`.
     raise NotImplementedError("TODO 3: implement decide_action_anthropic")
 
 
 def _parse_action(data: dict) -> Action:
     """Convert a raw action dict from the LLM into a typed Action."""
-    # TODO 4: Map data["action"] to the appropriate dataclass.
-    #   "click"    -> ActionClick(x=data["x"], y=data["y"], description=data.get("description",""))
-    #   "type"     -> ActionType(text=data["text"])
-    #   "navigate" -> ActionNavigate(url=data["url"])
-    #   "scroll"   -> ActionScroll(direction=data["direction"], amount=data.get("amount", 300))
-    #   "done"     -> ActionDone(answer=data["answer"])
-    #   Raise ValueError for unknown actions.
+    # TODO 4: Branch on data["action"] and construct the matching dataclass, reading
+    #   each field from `data` (use `.get(..., default)` for the optional description
+    #   and scroll amount). The five action strings map to ActionClick / ActionType /
+    #   ActionNavigate / ActionScroll / ActionDone. Raise ValueError for anything else.
     raise NotImplementedError("TODO 4: implement _parse_action")
 
 
@@ -206,12 +188,14 @@ def _parse_action(data: dict) -> Action:
 
 def execute_action(page, action: Action) -> str:
     """Execute an action on the browser page. Returns a short observation string."""
-    # TODO 5: Dispatch on action type and call the appropriate Playwright method.
-    #   ActionClick:    page.mouse.click(action.x, action.y); return f"Clicked ({action.x},{action.y})"
-    #   ActionType:     page.keyboard.type(action.text); return f"Typed: {action.text!r}"
-    #   ActionNavigate: page.goto(action.url, wait_until="domcontentloaded"); return f"Navigated to {action.url}"
-    #   ActionScroll:   page.mouse.wheel(0, action.amount if action.direction=="down" else -action.amount)
-    #   ActionDone:     return f"Done: {action.answer}"  (no browser interaction)
+    # TODO 5: Dispatch on the action type (isinstance) and drive Playwright:
+    #   - ActionClick    -> click at the (x, y) via `page.mouse.click(...)`
+    #   - ActionType     -> type the text via `page.keyboard.type(...)`
+    #   - ActionNavigate -> `page.goto(url, wait_until="domcontentloaded")`
+    #   - ActionScroll   -> `page.mouse.wheel(0, dy)` where dy is +amount for "down",
+    #                       -amount for "up"
+    #   - ActionDone     -> no browser call; just report the answer
+    #   Return a short observation string for each so the loop can print it.
     raise NotImplementedError("TODO 5: implement execute_action")
 
 
@@ -242,14 +226,13 @@ def run_vision_agent(goal: str, start_url: str, max_steps: int = MAX_STEPS) -> s
 
         for step in range(1, max_steps + 1):
             # TODO 6: Implement the agent loop body.
-            #   a) Take a screenshot: screenshot_b64 = page_screenshot_b64(page)
-            #   b) Save a debug copy: page.screenshot(path=str(ASSETS_DIR / f"step_{step:02d}.png"))
-            #   c) Decide: action = decide_fn(screenshot_b64, goal, step)
-            #   d) Print the action for the learner to trace.
-            #   e) If isinstance(action, ActionDone): browser.close(); return action.answer
-            #   f) Observe: observation = execute_action(page, action)
-            #   g) Wait for any navigation: page.wait_for_load_state("domcontentloaded")
-            #   h) Print the observation.
+            #   a) Grab the current screenshot as base64 via page_screenshot_b64(page).
+            #   b) Also save a debug PNG per step to ASSETS_DIR (e.g. f"step_{step:02d}.png").
+            #   c) Ask the LLM for the next action: decide_fn(screenshot_b64, goal, step).
+            #   d) Print the action so the learner can trace the run.
+            #   e) When the action is an ActionDone, close the browser and return its answer.
+            #   f) Otherwise execute it, wait for any navigation to settle, and print the
+            #      observation before looping again.
             raise NotImplementedError("TODO 6: implement the agent loop body")
 
         browser.close()

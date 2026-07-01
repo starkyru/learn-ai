@@ -45,11 +45,11 @@ def measure_ttft(prompt: str, provider) -> float:
     Returns elapsed seconds until the first token.
 
     TODO:
-      1. Record start = time.perf_counter().
-      2. Call provider.chat_stream([ChatMessage("user", prompt)]).
-      3. On the FIRST non-empty chunk received, record first_token_time.
-         Break out of the loop immediately after recording the time.
-      4. Return first_token_time - start.
+      1. Snapshot start = time.perf_counter().
+      2. Iterate provider.chat_stream() over a single "user" message.
+      3. The moment you see the FIRST non-empty chunk, snapshot the clock and
+         break — don't drain the rest of the stream.
+      4. Return the elapsed seconds from start to that first chunk.
 
     Note: we break immediately after the first chunk to avoid waiting for
     the full response — that's the whole point of TTFT.

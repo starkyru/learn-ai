@@ -49,15 +49,14 @@ class Subtask:
 #   It should instruct the LLM to:
 #     - Break the user question into 2-4 independent subtasks.
 #     - Output ONLY a JSON array — no prose, no markdown fence.
-#     - Choose a worker type per subtask:
+#     - Emit each subtask as an object matching the Subtask dataclass:
+#         id (like "task-1"), worker, instruction.
+#     - Choose the worker per subtask from these types:
 #         "researcher"  — fact retrieval or background info
 #         "calculator"  — numerical computation or unit conversion
 #         "writer"      — synthesis, summarisation, final prose
-#   Example output:
-#     [
-#       {"id": "task-1", "worker": "researcher", "instruction": "Find the height of the Eiffel Tower."},
-#       {"id": "task-2", "worker": "calculator",  "instruction": "Convert 330 metres to feet (1m=3.281ft)."}
-#     ]
+#   Show the model the exact JSON shape you expect (keys and value types), but
+#   let it fill in the actual subtasks.
 
 PLANNER_SYSTEM_PROMPT = "TODO: write the planner system prompt."
 

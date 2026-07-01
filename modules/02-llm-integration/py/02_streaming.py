@@ -45,13 +45,8 @@ def main() -> None:
     #           a) If it's the first chunk, record first_token_time.
     #           b) Print the chunk without a newline: print(chunk, end="", flush=True)
     #           c) Append the chunk to full_text.
+    #         first_token_time starts None; set it once, on the first chunk only.
     # -------------------------------------------------------------------------
-
-    # for chunk in llm.chat_stream([{"role": "user", "content": PROMPT}]):
-    #     if first_token_time is None:
-    #         first_token_time = time.perf_counter()
-    #     print(chunk, end="", flush=True)
-    #     full_text += chunk
 
     print("\nTODO: implement streaming above.")
 
@@ -61,15 +56,9 @@ def main() -> None:
     #   - Total time           = time.perf_counter() - start_time  (ms)
     #   - Words in output      = rough estimate: len(full_text.split())
     #   - Words/second         = words / total_time_seconds
+    #         Guard the TTFT print for the case where no chunk ever arrived
+    #         (first_token_time still None). time.perf_counter() again for the end.
     # -------------------------------------------------------------------------
-
-    # total_time = time.perf_counter() - start_time
-    # ttft = (first_token_time - start_time) * 1000 if first_token_time else None
-    # words = len(full_text.split())
-    # print("\n--- stats ---")
-    # print(f"TTFT:        {ttft:.0f} ms" if ttft else "TTFT: N/A")
-    # print(f"Total time:  {total_time * 1000:.0f} ms")
-    # print(f"~Words out:  {words}  (~{words / total_time:.1f} words/s)")
 
     # -------------------------------------------------------------------------
     # TODO 4 (stretch): Try the same prompt with llm.chat() (non-streaming) and

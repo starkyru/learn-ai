@@ -82,7 +82,8 @@ interface EvalCase {
 /**
  * Load eval_set_v1.json and return its cases.
  *
- * TODO 1: readFileSync + JSON.parse; return data.cases as EvalCase[].
+ * TODO 1: Read the file and parse the JSON; return its `cases` array typed as
+ *         EvalCase[].
  */
 function loadEvalSet(path: string): EvalCase[] {
   // TODO: implement loadEvalSet

@@ -63,15 +63,14 @@ type StateT = typeof State.State;
 
 // supervisor returns a Command(goto=...) — the routing primitive.
 async function supervisor(state: StateT) {
-  // TODO 1: ask the model to pick the next worker or FINISH, then return a Command.
-  //   const sys = new SystemMessage(
-  //     "Route work between: researcher (facts), mathematician (arithmetic). " +
-  //     "Reply with EXACTLY one word: researcher, mathematician, or FINISH.");
-  //   const choice = String((await (await getChatModel()).invoke([sys, ...state.messages])).content)
-  //     .trim().toLowerCase();
-  //   const goto = choice.includes("finish") ? END
-  //     : choice.includes("research") ? "researcher" : "mathematician";
-  //   return new Command({ goto, update: { next: goto } });
+  // TODO 1: make ONE routing call. Build a SystemMessage telling the model it routes
+  //         between the two workers (researcher = facts, mathematician = arithmetic)
+  //         and must reply with EXACTLY one word: a worker name or FINISH. Invoke the
+  //         chat model on [that system message, ...state.messages], coerce the reply's
+  //         content to a normalised string (trim + lowercase), and map it to a `goto`:
+  //         END on "finish", else the matching worker name. Return
+  //         `new Command({ goto, update: { next: goto } })` so one move both records
+  //         the choice and jumps.
   throw new Error("TODO 1");
 }
 
@@ -107,10 +106,9 @@ async function main() {
   const app = await buildApp();
   const question = "How tall is the Eiffel Tower in feet? (1 m = 3.281 ft)";
 
-  // TODO 2: stream updates and watch handoffs (supervisor -> worker -> supervisor -> END).
-  //   for await (const chunk of await app.stream({ messages: [new HumanMessage(question)] }, { streamMode: "updates" })) {
-  //     console.log(Object.keys(chunk));
-  //   }
+  // TODO 2: stream the app with { streamMode: "updates" } on a HumanMessage carrying
+  //         the `question`, and log each chunk's node keys. Watch the handoffs cycle:
+  //         supervisor -> worker -> supervisor -> ... -> END.
   console.log("TODO: implement supervisor routing, then trace the handoffs.");
 }
 

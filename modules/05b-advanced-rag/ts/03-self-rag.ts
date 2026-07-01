@@ -73,12 +73,12 @@ function isYes(text: string): boolean {
  * "What is 17 * 23?" -> false ; "What did the Q3 report say?" -> true.
  *
  * TODO: implement this.
- *   const messages: ChatMessage[] = [
- *     { role: "system", content: "Decide if answering the question needs retrieving external documents. Closed-book facts, math, and general reasoning do NOT. Answer only 'yes' or 'no'." },
- *     { role: "user", content: query },
- *   ];
- *   const r = await provider.chat(messages, { temperature: 0, maxTokens: 3 });
- *   return isYes(r.text);
+ *   - Make ONE yes/no LLM-as-judge call. Build a `ChatMessage[]`: a system message
+ *     telling the model to reply only yes/no about whether answering needs external
+ *     documents (closed-book facts, math, and general reasoning do NOT), and a user
+ *     message with the query.
+ *   - Call `provider.chat(messages, { temperature: 0, maxTokens: ... })` (a tiny cap).
+ *   - Convert the reply to a boolean with the provided `isYes()` helper.
  */
 async function shouldRetrieve(query: string, provider: Provider): Promise<boolean> {
   // TODO: implement shouldRetrieve().
@@ -93,10 +93,12 @@ async function shouldRetrieve(query: string, provider: Provider): Promise<boolea
  * Return only the chunks relevant to the query.
  *
  * TODO: implement this.
- *   Use Promise.all to ask yes/no per chunk:
- *     system: "Is the passage relevant to answering the question? Answer only 'yes' or 'no'."
- *     user:   `Question: ${query}\nPassage: ${chunk.text}`
- *   keep chunk when isYes(r.text). Return kept chunks.
+ *   - Ask one yes/no judgement PER chunk, in parallel with `Promise.all`. For each
+ *     chunk build a `ChatMessage[]`: a system message asking only yes/no whether the
+ *     passage is relevant to the question, and a user message carrying the query plus
+ *     that chunk's text.
+ *   - Use `provider.chat(messages, { temperature: 0, maxTokens: ... })`.
+ *   - Keep a chunk when `isYes()` of its reply, and return the surviving chunks.
  */
 async function gradeRelevance(
   query: string,
@@ -117,13 +119,12 @@ type Support = "fully" | "partially" | "no";
  * Judge whether `answer` is supported by the kept passages.
  *
  * TODO: implement this.
- *   const context = chunks.map((c) => c.text).join("\n");
- *   const messages: ChatMessage[] = [
- *     { role: "system", content: "Judge how well the ANSWER is supported by the CONTEXT. Reply with exactly one word: fully, partially, or no." },
- *     { role: "user", content: `Context:\n${context}\n\nAnswer:\n${answer}` },
- *   ];
- *   const r = await provider.chat(messages, { temperature: 0, maxTokens: 5 });
- *   normalise r.text to "fully" | "partially" | "no" (default "no").
+ *   - Join the kept chunk texts into one context string.
+ *   - Build a `ChatMessage[]`: a system message telling the model to judge how well
+ *     the ANSWER is supported by the CONTEXT and reply with exactly one word —
+ *     fully, partially, or no — and a user message carrying the context and answer.
+ *   - Call `provider.chat(messages, { temperature: 0, maxTokens: ... })` (a few tokens).
+ *   - Normalise the reply to one of "fully" | "partially" | "no", defaulting to "no".
  */
 async function gradeSupport(
   answer: string,
@@ -178,14 +179,12 @@ async function selfRag(
   corpus: Chunk[],
   provider: Provider,
 ): Promise<SelfRagResult> {
-  // TODO: implement selfRag().
-  //   if (!(await shouldRetrieve(query, provider)))
-  //     return { answer: await generate(query, null, provider), retrieved: false, keptChunkIds: [], support: "n/a" };
-  //   const chunks = lexicalRetrieve(query, corpus);
-  //   const kept = await gradeRelevance(query, chunks, provider);
-  //   const answer = await generate(query, kept.map((c) => c.text).join("\n"), provider);
-  //   const support = await gradeSupport(answer, kept, provider);
-  //   return { answer, retrieved: true, keptChunkIds: kept.map((c) => c.id), support };
+  // TODO: implement selfRag(), returning a SelfRagResult.
+  //   - If shouldRetrieve() says no: generate closed-book (pass null context) and
+  //     return with retrieved:false, no kept ids, and support "n/a".
+  //   - Otherwise: retrieve with lexicalRetrieve(), filter with gradeRelevance(),
+  //     generate() over the kept chunks' joined text, then gradeSupport() the answer.
+  //     Return retrieved:true with the kept chunk ids and the support verdict.
   throw new Error("TODO: implement selfRag()");
 }
 

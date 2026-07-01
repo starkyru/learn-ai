@@ -36,11 +36,13 @@ const SHORT_PROMPT = "What is 2 + 2? Answer with just the number.";
  * Returns elapsed milliseconds until the first token.
  *
  * TODO:
- *   1. Record start = performance.now().
- *   2. Call provider.chatStream([{ role: "user", content: prompt }]).
- *   3. On the FIRST non-empty chunk (for await ... of stream), record firstTokenTime.
- *      Break immediately after — we only want the time to first token.
- *   4. Return firstTokenTime - start (in ms, convert to seconds at the call site).
+ *   1. Snapshot start = performance.now().
+ *   2. Iterate provider.chatStream() over a single "user" message with
+ *      `for await (const chunk of ...)`.
+ *   3. The moment you see the FIRST non-empty chunk, snapshot the clock and
+ *      break — don't drain the rest of the stream.
+ *   4. Return the elapsed ms from start to that first chunk (the caller converts
+ *      to seconds).
  */
 async function measureTtft(
   prompt: string,
@@ -94,12 +96,13 @@ interface ConcurrentResult {
  * Returns { n, wallClockS, totalTokens, aggregateTokensPerS }.
  *
  * TODO:
- *   1. Record start = performance.now().
- *   2. await Promise.all(Array.from({ length: n }, () => provider.chat(...))).
- *      Use max_tokens: 100 to keep runs short.
- *   3. Record end. Compute wallClockS = (end - start) / 1000.
- *   4. Sum all output tokens.
- *   5. Return the result object.
+ *   1. Snapshot start = performance.now().
+ *   2. Kick off n provider.chat() calls at once and await them together with
+ *      Promise.all — keep each run short with a small maxTokens.
+ *   3. Snapshot end; wallClockS is the difference in seconds.
+ *   4. Sum the output tokens across all results.
+ *   5. Return the ConcurrentResult (n / wallClockS / totalTokens /
+ *      aggregateTokensPerS).
  */
 async function measureConcurrent(
   prompt: string,

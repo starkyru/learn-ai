@@ -1,6 +1,6 @@
 # Module 06b — LangGraph deep dive
 
-Module 06 built a ReAct agent **from scratch** (Task 1) and then rebuilt it once
+Module 06 built a ReAct (Reasoning and Acting) agent **from scratch** (Task 1) and then rebuilt it once
 with LangGraph (Task 4) to see the same loop as a state machine. That single task
 is enough to recognise LangGraph. It is **not** enough to pass an interview that
 asks "have you used LangGraph in production?" — those questions are about
@@ -20,17 +20,17 @@ the framework's actual value-add: the parts you'd otherwise rebuild badly.
 A raw `while` loop (module 06, Task 1) works until you need any of these, at which
 point you start reinventing a framework:
 
-| You need…                                    | Hand-rolled cost                    | LangGraph gives you                           |
-| -------------------------------------------- | ----------------------------------- | --------------------------------------------- |
-| Resume a run after a crash / next day        | serialise+reload all state yourself | **checkpointer** + `thread_id`                |
-| Pause for human approval before a tool fires | bespoke flag plumbing               | `interrupt()` / `interrupt_before`            |
-| Stream tokens _and_ steps to a UI            | manual fan-out                      | `stream_mode` (`values`/`updates`/`messages`) |
-| Branch / retry / fork a conversation         | snapshot bookkeeping                | **time travel** over checkpoints              |
-| Several specialists routing to each other    | ad-hoc dispatch                     | **`Command(goto=…)`** handoff + subgraphs     |
-| See every message that flowed                | print debugging                     | LangSmith tracing                             |
+| You need…                                          | Hand-rolled cost                    | LangGraph gives you                           |
+| -------------------------------------------------- | ----------------------------------- | --------------------------------------------- |
+| Resume a run after a crash / next day              | serialise+reload all state yourself | **checkpointer** + `thread_id`                |
+| Pause for human approval before a tool fires       | bespoke flag plumbing               | `interrupt()` / `interrupt_before`            |
+| Stream tokens _and_ steps to a UI (User Interface) | manual fan-out                      | `stream_mode` (`values`/`updates`/`messages`) |
+| Branch / retry / fork a conversation               | snapshot bookkeeping                | **time travel** over checkpoints              |
+| Several specialists routing to each other          | ad-hoc dispatch                     | **`Command(goto=…)`** handoff + subgraphs     |
+| See every message that flowed                      | print debugging                     | LangSmith tracing                             |
 
 LangGraph is **the runtime**, not the prompting library. It's a typed,
-checkpointed, streamable state machine for LLM workflows. LangChain (chains,
+checkpointed, streamable state machine for LLM (Large Language Model) workflows. LangChain (chains,
 chat-model wrappers, `@tool`) is a _dependency_ it leans on for the model layer —
 but the graph engine is the product.
 
@@ -180,7 +180,7 @@ You won't build these here, but interviewers name-drop them:
 - **LangSmith** — tracing/eval/observability dashboard (set `LANGCHAIN_TRACING_V2=true`).
 - **LangGraph Studio** — visual graph debugger; step through nodes, edit state, time-travel in a UI.
 - **LangGraph Platform / Server** — hosted deployment: turns your compiled graph
-  into an API with a managed checkpointer, scheduling, and a task queue.
+  into an API (Application Programming Interface) with a managed checkpointer, scheduling, and a task queue.
 
 ---
 
@@ -369,7 +369,7 @@ read the `Command(goto=…)` handoffs in the trace. (Bonus: note how
 
 Questions companies actually ask (answers live in `docs/LANGGRAPH.md`):
 
-- "LangGraph vs a plain agent loop — when reach for it?" → persistence, HITL,
+- "LangGraph vs a plain agent loop — when reach for it?" → persistence, HITL (Human-in-the-Loop),
   streaming, branching, multi-agent. Not for a single linear prompt.
 - "What's a reducer and why does the messages list grow?" → Task 1.
 - "How do you add human approval before a tool runs?" → `interrupt()` / `interrupt_before` (Task 4).

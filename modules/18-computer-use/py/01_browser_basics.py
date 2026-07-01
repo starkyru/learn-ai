@@ -67,24 +67,20 @@ def navigate_and_read(url: str) -> dict:
       text        — visible text content (stripped of most HTML)
       link_count  — number of anchor tags found
     """
-    # TODO 1: Import playwright and navigate.
-    #   from playwright.sync_api import sync_playwright
+    # TODO 1: Import playwright's `sync_playwright` and open a browser inside a
+    #   `with sync_playwright() as p:` block. Launch chromium with `headless=HEADLESS`,
+    #   open a new page, and navigate to `url` (pass `wait_until="domcontentloaded"`
+    #   so goto returns once the DOM is parsed).
     #
-    #   with sync_playwright() as p:
-    #       browser = p.chromium.launch(headless=HEADLESS)
-    #       page = browser.new_page()
-    #       page.goto(url, wait_until="domcontentloaded")
+    # TODO 2: Read the page info you need for the dict:
+    #   - title from `page.title()`
+    #   - the final URL from the page (after any redirects)
+    #   - the visible body text — locate the "body" element and read its INNER TEXT
+    #     (not raw HTML/content)
+    #   - the number of anchors — locate "a" elements and count them
     #
-    # TODO 2: Read page info.
-    #   title = page.title()
-    #   final_url = page.url
-    #   # Get visible text (inner text of the body, not raw HTML):
-    #   text = page.locator("body").inner_text()
-    #   link_count = page.locator("a").count()
-    #
-    # TODO 3: Return the dict and close the browser.
-    #   browser.close()
-    #   return {"title": title, "url": final_url, "text": text[:1000], "link_count": link_count}
+    # TODO 3: Close the browser and return the dict with keys
+    #   title / url / text / link_count. Truncate the text to its first ~1000 chars.
     raise NotImplementedError("TODO 1-3: implement navigate_and_read")
 
 
@@ -93,10 +89,9 @@ def take_screenshot(url: str, output_path: Path) -> Path:
 
     Returns the path to the saved file.
     """
-    # TODO 4: Use playwright to take a full-page screenshot.
-    #   page.screenshot(path=str(output_path), full_page=True)
-    #   browser.close()
-    #   return output_path
+    # TODO 4: Open a browser as in TODO 1, navigate to `url`, then capture a
+    #   full-page screenshot with `page.screenshot(...)` — pass the file path as a
+    #   string and enable the full-page option. Close the browser and return output_path.
     raise NotImplementedError("TODO 4: implement take_screenshot")
 
 
@@ -114,10 +109,10 @@ def search_on_page(url: str, search_selector: str, query: str) -> str:
     """
     # TODO 5: Implement a search flow.
     #   a) Navigate to url.
-    #   b) page.locator(search_selector).fill(query)
-    #   c) page.keyboard.press("Enter")
-    #   d) page.wait_for_load_state("domcontentloaded")
-    #   e) Return page.title()
+    #   b) Locate the input via `search_selector` and `.fill(query)` it.
+    #   c) Submit by pressing Enter on the keyboard.
+    #   d) Wait for the new page to load (`wait_for_load_state("domcontentloaded")`).
+    #   e) Return the resulting page title.
     #
     # Note: search_selector="input[name='q']" works for DuckDuckGo.
     #       Use TARGET_URL="https://duckduckgo.com" and
@@ -135,16 +130,9 @@ async def navigate_async(url: str) -> str:
     Many browser agents use the async API so they can await tool calls
     alongside LLM responses.
     """
-    # TODO 6: Repeat the navigation using the async Playwright API.
-    #   from playwright.async_api import async_playwright
-    #
-    #   async with async_playwright() as p:
-    #       browser = await p.chromium.launch(headless=HEADLESS)
-    #       page = await browser.new_page()
-    #       await page.goto(url, wait_until="domcontentloaded")
-    #       title = await page.title()
-    #       await browser.close()
-    #       return title
+    # TODO 6: Mirror navigate_and_read using the ASYNC Playwright API instead.
+    #   Import `async_playwright`, use `async with ... as p:`, and `await` every
+    #   browser call (launch, new_page, goto, title, close). Return just the title.
     raise NotImplementedError("TODO 6: implement navigate_async")
 
 
@@ -169,10 +157,8 @@ def main() -> None:
     path = take_screenshot(TARGET_URL, SCREENSHOT_PATH)
     print(f"Saved to : {path}")
 
-    # TODO 7 (stretch): Demonstrate the async API.
-    #   import asyncio
-    #   title = asyncio.run(navigate_async(TARGET_URL))
-    #   print(f"\nAsync title: {title}")
+    # TODO 7 (stretch): Demonstrate the async API — drive `navigate_async` to
+    #   completion with `asyncio.run(...)` and print the title it returns.
 
 
 if __name__ == "__main__":

@@ -69,6 +69,45 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  modules/01b-ml-foundations/ts:
+    dependencies:
+      '@learn-ai/llm-core':
+        specifier: workspace:*
+        version: link:../../../packages/ts/llm-core
+    devDependencies:
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  modules/01c-deep-learning/ts:
+    dependencies:
+      '@learn-ai/llm-core':
+        specifier: workspace:*
+        version: link:../../../packages/ts/llm-core
+    devDependencies:
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  modules/01d-transformer/ts:
+    dependencies:
+      '@learn-ai/llm-core':
+        specifier: workspace:*
+        version: link:../../../packages/ts/llm-core
+    devDependencies:
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   modules/02-llm-integration/ts:
     dependencies:
       '@anthropic-ai/sdk':
@@ -211,11 +250,27 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  modules/06c-agent-frameworks/ts:
+    dependencies:
+      '@learn-ai/llm-core':
+        specifier: workspace:*
+        version: link:../../../packages/ts/llm-core
+    devDependencies:
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   modules/07-advanced-production/ts:
     dependencies:
       '@learn-ai/llm-core':
         specifier: workspace:*
         version: link:../../../packages/ts/llm-core
+      langfuse:
+        specifier: ^3.0.0
+        version: 3.38.20
     devDependencies:
       tsx:
         specifier: ^4.19.0
@@ -2479,6 +2534,14 @@ packages:
   kleur@3.0.3:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
+
+  langfuse-core@3.38.20:
+    resolution: {integrity: sha512-zBKVmQN/1oT5VWZUBYlWzvokIlkC/6mnpgr/2atMyTeAm+jR3ia7w2iJMjlrF5/oG8ukO1s8+LDRCzJpF1QeEA==}
+    engines: {node: '>=18'}
+
+  langfuse@3.38.20:
+    resolution: {integrity: sha512-MAmBAASSzJtmK1O9HQegA1mFsQhT8Yf+OJRGvE7FXkyv3g/eiBE0glLD0Ohg3pkxhoPdggM5SejK7ue9ctlaMA==}
+    engines: {node: '>=18'}
 
   langsmith@0.3.87:
     resolution: {integrity: sha512-XXR1+9INH8YX96FKWc5tie0QixWz6tOqAsAKfcJyPkE0xPep+NDz0IQLR32q4bn10QK3LqD2HN6T3n6z1YLW7Q==}
@@ -5604,6 +5667,14 @@ snapshots:
   jsonc-parser@3.3.1: {}
 
   kleur@3.0.3: {}
+
+  langfuse-core@3.38.20:
+    dependencies:
+      mustache: 4.2.0
+
+  langfuse@3.38.20:
+    dependencies:
+      langfuse-core: 3.38.20
 
   langsmith@0.3.87(openai@4.104.0(zod@3.25.76)):
     dependencies:

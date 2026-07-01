@@ -70,19 +70,12 @@ export async function withRetry<T>(
   maxRetries = 3,
   baseMs = 500,
 ): Promise<T> {
-  // TODO: implement
-  // for (let attempt = 0; attempt <= maxRetries; attempt++) {
-  //   try {
-  //     return await fn();
-  //   } catch (err) {
-  //     if (attempt === maxRetries || !isRetriable(err)) throw err;
-  //     const delay = baseMs * 2 ** attempt + Math.random() * baseMs;
-  //     console.warn(`Attempt ${attempt + 1} failed (${(err as Error).message}). Retrying in ${delay.toFixed(0)}ms...`);
-  //     await new Promise(r => setTimeout(r, delay));
-  //   }
-  // }
-  // throw new Error("unreachable");
-  throw new Error("withRetry not implemented yet — uncomment the block above");
+  // Loop attempts 0..maxRetries. Each pass: try `await fn()` and return on
+  // success. On error, rethrow immediately when the attempt budget is spent OR
+  // !isRetriable(err); otherwise sleep for the backoff-with-jitter delay from the
+  // header (baseMs * 2**attempt + a random fraction of baseMs, in ms), log the
+  // attempt, and continue. Await a Promise wrapping setTimeout to sleep.
+  throw new Error("withRetry not implemented yet");
 }
 
 // ---------------------------------------------------------------------------
@@ -94,8 +87,9 @@ async function chatWithRetry(
   maxRetries = 3,
 ): Promise<ChatResult> {
   const llm = getProvider();
-  // TODO: return withRetry(() => llm.chat(messages), maxRetries);
-  return llm.chat(messages); // placeholder — replace with the line above
+  // Wrap the llm.chat(messages) call in withRetry (pass it as a zero-arg async
+  // thunk) so a transient failure is retried, and return that result.
+  return llm.chat(messages); // placeholder — route through withRetry instead
 }
 
 // ---------------------------------------------------------------------------

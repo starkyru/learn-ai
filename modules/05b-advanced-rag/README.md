@@ -2,15 +2,15 @@
 
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand · 🔴 from-scratch
 
-Module 05 built the **naive RAG** pipeline (chunk → embed → retrieve → rerank →
-generate → cite) and made it measurably better with reranking and HyDE. That
+Module 05 built the **naive RAG (Retrieval-Augmented Generation)** pipeline (chunk → embed → retrieve → rerank →
+generate → cite) and made it measurably better with reranking and HyDE (Hypothetical Document Embeddings). That
 pipeline is _open-loop_: it retrieves once, trusts whatever comes back, and
 generates. It has no answer to the three questions that break real RAG systems:
 
 1. **"What if the chunk is meaningless on its own?"** — "It grew 3%." Grew by
    _what_, in _which_ quarter? Embedding a context-free chunk buries it.
 2. **"What if retrieval returned garbage?"** — naive RAG generates anyway, and
-   the LLM confidently hallucinates over off-topic context.
+   the LLM (Large Language Model) confidently hallucinates over off-topic context.
 3. **"What if the answer needs two hops?"** — "Which colleague of Marie Curie
    also won two Nobel Prizes?" No single chunk contains that; you must _connect_
    facts across documents.
@@ -31,10 +31,10 @@ Naive RAG is a straight line. Every architecture here bends that line into a
 rewrites each chunk to be self-contained _before_ embedding, so retrieval finds
 it at all. **Corrective RAG (CRAG)** adds a _grader after retrieval_: score the
 chunks, and if they're weak, correct course (rewrite the query, fall back to web
-search) instead of generating over noise. **Self-RAG** moves the decisions _into
+search) instead of generating over noise. **Self-RAG (Self-Reflective RAG)** moves the decisions _into
 the generation loop_: the model itself decides whether to retrieve, judges each
 passage's relevance, and critiques whether its own answer is actually supported.
-**GraphRAG** throws out the flat vector list entirely and builds a _graph_ of
+**GraphRAG (Graph-based RAG)** throws out the flat vector list entirely and builds a _graph_ of
 entities and relations, so multi-hop questions become graph traversals. Same
 retriever underneath; radically different control flow around it.
 
@@ -55,14 +55,14 @@ retriever underneath; radically different control flow around it.
 ### 1. Contextual Retrieval — fix the chunk before you embed it
 
 A chunk like _"The model scored 88.7% on the benchmark."_ is nearly useless in
-isolation: which model? which benchmark? A query for _"Claude's MMLU score"_
+isolation: which model? which benchmark? A query for _"Claude's MMLU (Massive Multitask Language Understanding) score"_
 won't match it, because the chunk never says "Claude" or "MMLU". The words that
 would make it findable live in **other** chunks of the document.
 
 **Contextual Retrieval** (Anthropic, 2024) fixes this at index time: for each
 chunk, ask an LLM to write a short (1–2 sentence) context that situates the chunk
 _within its source document_, then **prepend that context to the chunk before
-embedding** (and before BM25 indexing). The chunk you store for retrieval becomes:
+embedding** (and before BM25 (Best Matching 25) indexing). The chunk you store for retrieval becomes:
 
 ```
 [context: This is from Anthropic's 2024 model card, describing Claude 3.5
@@ -161,7 +161,7 @@ adjacency lists, and implementing it is the point).
 ## Tasks
 
 All exercise code goes through the shared client — `get_provider()` /
-`getProvider()` — never a hardcoded SDK. **Embeddings note:** Anthropic has no
+`getProvider()` — never a hardcoded SDK (Software Development Kit). **Embeddings note:** Anthropic has no
 `embed()`. Only **Task 1** embeds — for it use `LLM_PROVIDER=openai`, `ollama`,
 `nvidia`, or `lmstudio`. Tasks 2–4 only call `chat()`, so any provider works
 (Anthropic included).
@@ -273,10 +273,10 @@ graph here is a plain dict of adjacency lists. Building it is the lesson.
 **Steps:**
 
 1. Implement `extract_triples()` — prompt the LLM to extract
-   `(subject, relation, object)` triples from a chunk; parse the JSON.
+   `(subject, relation, object)` triples from a chunk; parse the JSON (JavaScript Object Notation).
 2. Implement `KnowledgeGraph.add_triple()` / `.neighbors()` — store triples as an
    adjacency map `entity -> [(relation, other_entity), ...]` (both directions).
-3. Implement `multi_hop_subgraph()` — BFS from the query's seed entities out to
+3. Implement `multi_hop_subgraph()` — BFS (Breadth-First Search) from the query's seed entities out to
    `depth` hops, collecting the triples encountered.
 4. Implement `graph_rag_answer()` — find seed entities in the query, gather the
    multi-hop subgraph, serialise the triples into context, and ask the LLM to

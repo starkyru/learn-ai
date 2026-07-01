@@ -1,7 +1,7 @@
-"""compare_providers.py — same prompt, all five providers, side by side.
+"""compare_providers.py — same prompt, all six providers, side by side.
 
 What it teaches:
-    The provider abstraction in action: the exact same call works against five
+    The provider abstraction in action: the exact same call works against six
     different backends. And a real-world habit — gracefully SKIP a provider
     whose key or server is missing (catch the error) instead of crashing the
     whole script.
@@ -19,7 +19,7 @@ from llm_core import ChatMessage, get_provider
 
 PROMPT = "Explain what a large language model is, in 2 sentences."
 
-PROVIDERS = ["openai", "anthropic", "ollama", "nvidia", "lmstudio"]
+PROVIDERS = ["openai", "anthropic", "ollama", "nvidia", "lmstudio", "gemini"]
 
 
 def try_provider(name: str) -> None:

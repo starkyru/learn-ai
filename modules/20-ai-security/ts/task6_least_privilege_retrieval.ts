@@ -97,8 +97,9 @@ const SECRET_PATTERNS: Array<[RegExp, string]> = [
  * adversarial or accidental — can retrieve it.
  */
 function redactSecrets(text: string): string {
-  // TODO 1: For each [pattern, replacement] in SECRET_PATTERNS, apply
-  //   text = text.replace(pattern, replacement). Return the redacted text.
+  // TODO 1: Walk SECRET_PATTERNS in order, replacing every match of each pattern
+  //   with its typed placeholder (String.replace with the global regexes). Each
+  //   pass feeds the next, so the returned text has all secret/PII shapes replaced.
   throw new Error("TODO 1: redact secrets before indexing");
 }
 
@@ -121,12 +122,10 @@ const EXFIL_CLASSIFIER_PROMPT =
 async function classifyExfilIntent(query: string): Promise<boolean> {
   const provider = getProvider();
 
-  // TODO 2: Call provider.chat([
-  //     { role: "system", content: EXFIL_CLASSIFIER_PROMPT },
-  //     { role: "user", content: query },
-  //   ]).
-  //   Return true if result.text.trim().toUpperCase().startsWith("DENY"),
-  //   otherwise false.
+  // TODO 2: Build a `ChatMessage[]` — a "system" turn with EXFIL_CLASSIFIER_PROMPT
+  //   and a "user" turn with `query` — and call provider.chat(...). The classifier
+  //   answers a single word; normalise the reply (trim + upper-case) and return
+  //   true only when it signals DENY, false otherwise.
   throw new Error("TODO 2: classify data-exfiltration intent");
 }
 
@@ -146,7 +145,8 @@ function cosineSimilarity(a: number[], b: number[]): number {
 
 /** Access policy: public docs are visible to all; private docs only to owner. */
 function userCanAccess(doc: Doc, user: string): boolean {
-  // TODO 3: Return true if doc.classification === "public" OR doc.owner === user.
+  // TODO 3: Return true when the doc is public, OR when its owner is the
+  //   requesting user; deny everything else.
   throw new Error("TODO 3: implement the access policy");
 }
 
@@ -164,11 +164,11 @@ async function retrieveWithAcl(
 ): Promise<Array<{ doc: Doc; score: number }>> {
   const provider = getProvider();
 
-  // TODO 4:
-  //   1. const visible = docs.filter((d) => userCanAccess(d, user));
-  //   2. Embed the query: (await provider.embed([query])).vectors[0].
-  //   3. Score each visible doc with cosineSimilarity(queryVec, d.vector!).
-  //   4. Sort by score descending and return the top topK as { doc, score }.
+  // TODO 4: Enforce the ACL BEFORE ranking (order is the whole point):
+  //   1. Filter `docs` down to the ones userCanAccess(...) permits.
+  //   2. Embed `query` with provider.embed(...) to get its vector.
+  //   3. Score each permitted doc with cosineSimilarity(queryVec, d.vector!).
+  //   4. Sort by score descending and return the top topK as { doc, score } objects.
   throw new Error("TODO 4: ACL-filter then rank");
 }
 
@@ -190,12 +190,11 @@ async function answerGrounded(
   const context = retrieved.map(({ doc }) => `[${doc.id}] ${doc.text}`).join("\n\n");
 
   // TODO 5:
-  //   1. Call provider.chat([
-  //        { role: "system", content: ANSWER_SYSTEM_PROMPT },
-  //        { role: "user", content: `Context:\n${context}\n\nQuestion: ${query}` },
-  //      ]).
-  //   2. Pass result.text through redactSecrets() as a last-resort DLP backstop
-  //      and return it.
+  //   1. Build a `ChatMessage[]` — a "system" turn with ANSWER_SYSTEM_PROMPT and a
+  //      "user" turn combining the grounding `context` and the `query` — and call
+  //      provider.chat(...).
+  //   2. Run the reply text through redactSecrets() one more time as a last-resort
+  //      DLP backstop, and return that sanitised result.
   throw new Error("TODO 5: grounded answer + output DLP filter");
 }
 

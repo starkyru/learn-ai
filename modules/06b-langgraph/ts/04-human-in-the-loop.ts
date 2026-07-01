@@ -47,17 +47,13 @@ async function buildApp() {
     const last = state.messages.at(-1) as AIMessage;
     const out: ToolMessage[] = [];
     for (const call of last.tool_calls ?? []) {
-      // TODO 1: gate send_email behind a human decision.
-      //   if (call.name === "send_email") {
-      //     const decision = interrupt({ action: "send_email", args: call.args });
-      //     if (decision !== "approve") {
-      //       out.push(new ToolMessage({
-      //         content: "Human DENIED this email. Do not retry; explain instead.",
-      //         tool_call_id: call.id!,
-      //       }));
-      //       continue;
-      //     }
-      //   }
+      // TODO 1: gate send_email behind a human decision. When the call is for
+      //         "send_email", pause the graph by calling `interrupt(payload)` — pass a
+      //         payload object describing the action and its args for the human to
+      //         review. The human's resume value is interrupt()'s return. If it isn't
+      //         an approval, push a `new ToolMessage({ ... tool_call_id: call.id! })`
+      //         telling the model the human denied it and to explain rather than
+      //         retry, then `continue` past the real invoke below.
       const result = await TOOLS_BY_NAME[call.name].invoke(call.args as any);
       out.push(new ToolMessage({ content: String(result), tool_call_id: call.id! }));
     }
@@ -76,8 +72,8 @@ async function buildApp() {
     .addConditionalEdges("agent", route)
     .addEdge("tools", "agent");
 
-  // TODO 2: compile WITH a checkpointer — interrupts require it.
-  //   return graph.compile({ checkpointer: new MemorySaver() });
+  // TODO 2: compile WITH a checkpointer (a `new MemorySaver()` is enough) — interrupts
+  //         cannot pause/resume without one.
   return graph.compile();
 }
 
@@ -86,13 +82,14 @@ async function main() {
   const config = { configurable: { thread_id: "hitl-1" } };
   const prompt = "Email ada@example.com to say the build passed.";
 
-  // TODO 3: first invoke runs until interrupt(), then pauses.
-  //   const result = await app.invoke({ messages: [new HumanMessage(prompt)] }, config);
-  //   console.log("PAUSED, awaiting approval:", result.__interrupt__);
+  // TODO 3: first invoke the app normally (a HumanMessage with `prompt`, plus the
+  //         `config` carrying the thread_id). It runs until interrupt() and pauses;
+  //         the payload you passed to interrupt() surfaces on the result's
+  //         `__interrupt__` field. Log it to see what's awaiting approval.
 
-  // TODO 4: resume with a human decision on the SAME thread.
-  //   const approved = await app.invoke(new Command({ resume: "approve" }), config); // "deny" rejects
-  //   console.log(approved.messages.at(-1).content);
+  // TODO 4: resume on the SAME thread by invoking the app with `new Command({ resume })`
+  //         carrying the human's decision — that value flows back as interrupt()'s
+  //         return in the tools node. Log the final message. ("deny" should reject.)
   console.log("TODO: invoke, observe the pause, resume with new Command({ resume }).");
 }
 

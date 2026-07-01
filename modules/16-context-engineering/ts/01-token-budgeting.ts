@@ -64,19 +64,15 @@ count is required to balance quality and cost.
 const MAX_TOKEN_BUDGET = 200; // tight budget to make truncation interesting
 
 // ---------------------------------------------------------------------------
-// TODO 1: Implement countTokens using @dqbd/tiktoken.
-//         Use the "cl100k_base" encoding (GPT-4 / GPT-3.5 tokeniser).
-//         Steps:
-//           const enc = get_encoding("cl100k_base");
-//           const tokens = enc.encode(text);
-//           enc.free();    // IMPORTANT: avoid WASM memory leaks
-//           return tokens.length;
+// TODO 1: Implement countTokens using @dqbd/tiktoken (uncomment the import above).
+//         - Get an encoder via get_encoding for the "cl100k_base" encoding
+//           (GPT-4 / GPT-3.5 tokeniser).
+//         - Encode the text and return the number of token ids.
+//         - IMPORTANT: call .free() on the encoder before returning, or the WASM
+//           encoder leaks memory on every call.
 // ---------------------------------------------------------------------------
 function countTokens(text: string): number {
-  // const enc = get_encoding("cl100k_base");
-  // const tokens = enc.encode(text);
-  // enc.free();
-  // return tokens.length;
+  // TODO: implement with @dqbd/tiktoken
 
   // Rough fallback until you implement the above:
   return Math.ceil(text.split(/\s+/).length * 1.3);
@@ -85,16 +81,12 @@ function countTokens(text: string): number {
 // ---------------------------------------------------------------------------
 // TODO 2: Implement truncateHead.
 //         Keep the FIRST maxTokens tokens; discard the tail.
-//         Steps:
-//           const enc = get_encoding("cl100k_base");
-//           const tokens = enc.encode(text);
-//           const kept = tokens.slice(0, maxTokens);
-//           const result = enc.decode(kept);
-//           enc.free();
-//           return new TextDecoder().decode(result);
+//         - Encode the text, slice off the leading maxTokens ids, and decode that
+//           slice back to text. (enc.decode returns bytes — run it through a
+//           TextDecoder to get a string.) Remember enc.free() to avoid the WASM leak.
 // ---------------------------------------------------------------------------
 function truncateHead(text: string, maxTokens: number): string {
-  // TODO: implement with tiktoken
+  // TODO: implement with tiktoken (encode -> slice the head -> decode)
   const words = text.split(/\s+/);
   const approx = Math.floor(maxTokens / 1.3);
   return words.slice(0, approx).join(" ");

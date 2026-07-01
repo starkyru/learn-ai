@@ -108,10 +108,11 @@ def softmax(z: np.ndarray) -> np.ndarray:
 
     Shape: z is (N, C) → returns (N, C), each row sums to 1.
 
-    TODO: implement.
-      1. z_stable = z - z.max(axis=1, keepdims=True)
-      2. exp_z = np.exp(z_stable)
-      3. return exp_z / exp_z.sum(axis=1, keepdims=True)
+    TODO: implement the numerically-stable softmax.
+      - First shift each row so its max becomes 0: subtract the per-row max.
+        Use `np.max(..., axis=1, keepdims=True)` so it broadcasts back over rows.
+      - Exponentiate the shifted scores, then divide each row by its own sum
+        (again reduce with `axis=1, keepdims=True` so the shapes broadcast).
     """
     # TODO: implement numerically-stable softmax
     raise NotImplementedError("TODO: implement softmax()")
@@ -129,9 +130,11 @@ def cross_entropy_loss(probs: np.ndarray, y: np.ndarray) -> float:
     Clip probabilities at 1e-12 to avoid log(0).
 
     TODO: implement.
-      1. Clip probs: np.clip(probs, 1e-12, 1.0)
-      2. Gather the predicted prob for each true class: probs[np.arange(N), y]
-      3. Return -np.mean(np.log(correct_probs))
+      - Clip `probs` into the range [1e-12, 1.0] with `np.clip` before taking any log.
+      - Pull out the probability assigned to each sample's TRUE class. Advanced
+        indexing does this in one shot: index rows with `np.arange(N)` and columns
+        with `y`.
+      - The loss is the negative mean of the logs of those correct-class probs.
     """
     # TODO: implement
     raise NotImplementedError("TODO: implement cross_entropy_loss()")
@@ -201,16 +204,15 @@ class LogisticRegressionScratch:
 
         Return the scalar loss (for logging).
 
-        TODO: implement this method.
-
-        Steps:
-          1. Forward pass to get probs and loss.
-          2. One-hot encode y: create a zero (N, C) array, set [i, y[i]] = 1.
-          3. Compute dz = probs - one_hot.
-          4. Compute dW = X.T @ dz / N.
-          5. Compute db = dz.mean(axis=0).
-          6. Update W and b.
-          7. Return loss.
+        TODO: implement this method — translate the math above into numpy.
+          - Run the forward pass (self.forward) to get probs, and record the loss
+            (self.loss or cross_entropy_loss) so you can return it at the end.
+          - Build the one-hot target matrix for y (shape N×C): a zeros array with a
+            single 1 per row in the true-class column.
+          - Form dz = probs - one_hot, then turn it into the two gradients using the
+            dL/dW and dL/db formulas above (note the 1/N and the `axis=0` mean).
+          - Take one gradient-descent step on self.W and self.b (subtract lr * grad),
+            and return the scalar loss.
         """
         # TODO: implement gradient step
         raise NotImplementedError("TODO: implement gradient_step()")

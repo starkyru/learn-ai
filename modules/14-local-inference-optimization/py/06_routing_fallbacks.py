@@ -107,12 +107,13 @@ def classify_difficulty(query: str) -> str:
 
     TODO: implement this function.
 
-    Heuristic rules (apply in order; first match wins):
-      1. If the lowercased query contains any word from HARD_KEYWORDS → "hard".
-      2. If len(query.split()) > 20 → "hard".
-      3. If query.count("?") > 1 → "hard" (compound question).
-      4. If the lowercased query contains any word from EASY_KEYWORDS → "easy".
-      5. Default → "easy".
+    Heuristic rules (apply in order; FIRST match wins, so order matters):
+      1. Lowercase the query. If it contains any HARD_KEYWORDS entry → "hard".
+      2. If the query is long (word count past a "this needs context" threshold,
+         ~20) → "hard".
+      3. If it packs more than one question mark (a compound question) → "hard".
+      4. If it contains any EASY_KEYWORDS entry → "easy".
+      5. Otherwise default to "easy".
 
     Returns "easy" or "hard".
     """
@@ -137,13 +138,11 @@ def route(query: str) -> RoutingDecision:
     TODO: implement this function.
 
     Steps:
-      1. Call classify_difficulty(query).
-      2. If difficulty == "hard", chosen_model = HARD_MODEL.
-         Else, chosen_model = EASY_MODEL.
-      3. Build a human-readable reason string, e.g.:
-           "Query contains reasoning keyword — routing to stronger model."
-           "Short factual query — routing to fast model."
-      4. Return RoutingDecision.
+      1. Classify the query with classify_difficulty().
+      2. Map "hard" → HARD_MODEL and everything else → EASY_MODEL.
+      3. Compose a short human-readable reason explaining the choice (mention the
+         difficulty and why the bigger/faster model fits).
+      4. Return a RoutingDecision(query, difficulty, chosen_model, reason).
     """
     # TODO: implement route
     raise NotImplementedError("TODO: implement route()")
@@ -165,21 +164,17 @@ async def with_fallback(
     TODO: implement this function.
 
     Algorithm:
-      For each provider in providers:
-        1. Try: result = await asyncio.wait_for(
-                             asyncio.to_thread(call, provider),
-                             timeout=timeout_s
-                         )
-           (asyncio.to_thread wraps a synchronous call so it doesn't block
-            the event loop.)
-        2. If successful, return (result, provider.name).
-        3. On asyncio.TimeoutError: print a warning and try the next provider.
-        4. On any other exception: print a warning and try the next provider.
+      Loop over providers in order. For each one:
+        1. Run call(provider) off the event loop with asyncio.to_thread (the
+           provider call is synchronous), and bound it with asyncio.wait_for
+           using timeout_s so a slow provider can't hang the chain.
+        2. On success, return (result, provider.name) immediately.
+        3. On asyncio.TimeoutError OR any other exception: warn and fall through
+           to the next provider.
+      If every provider is exhausted, raise a RuntimeError.
 
-      If all providers fail, raise RuntimeError("All providers failed.").
-
-    Tip: wrap the provider call with asyncio.to_thread because provider.chat()
-    is synchronous. asyncio.wait_for enforces the timeout.
+    Tip: asyncio.to_thread wraps the synchronous provider.chat(); asyncio.wait_for
+    enforces the per-provider timeout.
     """
     # TODO: implement with_fallback
     raise NotImplementedError("TODO: implement with_fallback()")

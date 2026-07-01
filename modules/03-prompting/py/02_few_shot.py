@@ -46,13 +46,14 @@ FEW_SHOT_EXAMPLES: list[dict[str, str]] = [
 
 # ---------------------------------------------------------------------------
 # TODO 2: Implement build_zero_shot_messages.
-#         Return a list of ChatMessage with:
-#           - system: "You are a sentiment classifier. Respond with exactly one
-#             word: positive, negative, or neutral."
-#           - user: the input text
+#         Return a list[ChatMessage] with two messages:
+#           - a system message that makes the model a sentiment classifier and
+#             tells it to reply with exactly one word (positive/negative/neutral)
+#           - a user message carrying `input_text`
+#         No examples yet — that's the whole point of "zero-shot".
 # ---------------------------------------------------------------------------
 def build_zero_shot_messages(input_text: str) -> list[ChatMessage]:
-    # TODO: return the messages list
+    # TODO: build and return the two-message list described above
     return []
 
 
@@ -90,14 +91,11 @@ def main() -> None:
         #   - Zero-shot (no examples)
         #   - One-shot (first example from FEW_SHOT_EXAMPLES)
         #   - Three-shot (first three examples)
-        #   Trim and lowercase the results.
+        #   Trim and lowercase each reply's text before printing.
+        #   Use FEW_SHOT_EXAMPLES[:1] for one-shot and FEW_SHOT_EXAMPLES[:3] for
+        #   three-shot; each call goes through llm.chat(...) with the messages
+        #   from your two builder functions above.
         # ---------------------------------------------------------------------
-
-        # zero_shot = llm.chat(build_zero_shot_messages(text)).text.strip().lower()
-        # one_shot = llm.chat(build_few_shot_messages(text, FEW_SHOT_EXAMPLES[:1])).text.strip().lower()
-        # three_shot = llm.chat(build_few_shot_messages(text, FEW_SHOT_EXAMPLES[:3])).text.strip().lower()
-        # truncated = text[:50] + "..." if len(text) > 50 else text
-        # print(f"{truncated:<55} {zero_shot:<12} {one_shot:<12} {three_shot}")
 
         truncated = text[:50] + "..." if len(text) > 50 else text
         print(f"{truncated:<55} {'TODO':<12} {'TODO':<12} TODO")

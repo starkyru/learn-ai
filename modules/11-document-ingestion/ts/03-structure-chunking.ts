@@ -52,16 +52,16 @@ export function estimateTokens(text: string): number {
 /**
  * Naive fixed-size chunker — reproduced from module 04 for comparison.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Split text on whitespace into words.
- *   2. Accumulate words. When the running chunk would exceed maxTokens * 4 chars,
- *      emit a Chunk and slide forward by (maxTokens - overlapTokens) * 4 chars
- *      worth of words.
- *   3. id = `${source}-naive-${index}` (0-based).
- *   4. metadata.estimatedTokens = estimateTokens(chunkText).
- *   5. Return the list.
+ * Hints:
+ *   - Work in words (split on whitespace) so you never cut mid-word.
+ *   - Grow a window until adding the next word would push the chunk past the
+ *     `maxTokens` budget — recall `estimateTokens`' chars/token ratio, so the
+ *     char budget is roughly `maxTokens * 4`.
+ *   - Emit a `Chunk`, then slide the window forward but leave `overlapTokens`
+ *     worth of words behind so adjacent chunks share context.
+ *   - Give each chunk a stable `id` like `${source}-naive-${index}` and set
+ *     `metadata.estimatedTokens` from `estimateTokens(...)`.
+ *   - Return the list.
  */
 export function naiveFixedSizeChunks(
   text: string,
@@ -77,21 +77,19 @@ export function naiveFixedSizeChunks(
  * Section-aware chunker: split first by Markdown headings, then sub-chunk any
  * section that is too large.
  *
- * TODO: implement this function.
- *
- * Steps:
- *   1. Split the document into (heading, body) pairs:
- *      - Scan line by line for /^(#{1,3})\s+(.+)/ matches.
- *      - When a heading is found, start a new section.
- *      - Text before the first heading → section ("(preamble)", text).
- *   2. For each section:
- *      a. If estimateTokens(heading + body) <= maxTokens: emit one Chunk.
- *      b. Otherwise: sub-chunk the body with naiveFixedSizeChunks(), then
- *         prepend the heading text to each sub-chunk so the section title
- *         is always present in context.
- *   3. id = `${source}-section-${sectionIdx}-${subIdx}`.
- *   4. metadata = { section: headingText, estimatedTokens: estimateTokens(...) }.
- *   5. Return the list.
+ * Hints:
+ *   - First break the document into sections keyed by heading. Scan the lines
+ *     for Markdown ATX headings (levels H1–H3) and start a new section at each;
+ *     capture each as (headingText, bodyText). Any text before the first heading
+ *     is its own section — label it something like "(preamble)".
+ *   - For each section, decide whether it fits: if `estimateTokens(heading +
+ *     body)` is within `maxTokens`, emit it as a single `Chunk`. If it's too big,
+ *     sub-chunk the body with `naiveFixedSizeChunks(...)` and prepend the heading
+ *     text to every sub-chunk so the section title always travels with it.
+ *   - Give chunks stable ids encoding both indices (e.g.
+ *     `${source}-section-${sectionIdx}-${subIdx}`), and store the section heading
+ *     plus `estimateTokens(...)` in each chunk's metadata.
+ *   - Return the list.
  */
 export function sectionChunks(
   text: string,

@@ -85,18 +85,15 @@ interface Grade {
  * TODO: implement this.
  *
  * Steps:
- *   1. const scores = await Promise.all(chunks.map(async (chunk) => {
- *        const messages: ChatMessage[] = [
- *          { role: "system", content: "You are a retrieval evaluator. Output ONLY a number between 0 and 1 for how well the passage helps answer the question." },
- *          { role: "user", content: `Question: ${query}\nPassage: ${chunk.text}\nRelevance (0-1):` },
- *        ];
- *        const r = await provider.chat(messages, { temperature: 0, maxTokens: 5 });
- *        const n = parseFloat(r.text.trim());
- *        return Number.isNaN(n) ? 0 : Math.min(1, Math.max(0, n));
- *      }));
- *   2. const max = scores.length ? Math.max(...scores) : 0;
- *      verdict = max >= 0.7 ? "Correct" : max < 0.3 ? "Incorrect" : "Ambiguous";
- *   3. return { scores, verdict };
+ *   1. Score every chunk in parallel with `Promise.all`. For each chunk build a
+ *      `ChatMessage[]`: a system message telling the model to act as a retrieval
+ *      evaluator and output ONLY a number between 0 and 1 for how well the passage
+ *      helps answer the question, and a user message carrying the query and the chunk
+ *      text. Call `provider.chat(messages, { temperature: 0, maxTokens: ... })`, then
+ *      parseFloat the reply, coerce NaN to 0, and clamp into [0, 1].
+ *   2. Take the MAX score (0 if no chunks) and apply the buckets above to get the
+ *      verdict.
+ *   3. Return the { scores, verdict } Grade.
  */
 async function gradeRetrieval(
   query: string,
@@ -115,12 +112,11 @@ async function gradeRetrieval(
  * Turn the user's question into a clean standalone search query.
  *
  * TODO: implement this.
- *   const messages: ChatMessage[] = [
- *     { role: "system", content: "Rewrite the user's question into a concise web search query. Output only the query." },
- *     { role: "user", content: query },
- *   ];
- *   const r = await provider.chat(messages, { temperature: 0, maxTokens: 30 });
- *   return r.text.trim();
+ *   - Build a `ChatMessage[]`: a system message asking the model to rewrite the user's
+ *     question into a concise web search query and output only the query, plus a user
+ *     message with the query.
+ *   - Call `provider.chat(messages, { temperature: 0, maxTokens: ... })` (a short cap).
+ *   - Return the reply text, trimmed.
  */
 async function rewriteQuery(query: string, provider: Provider): Promise<string> {
   // TODO: implement rewriteQuery().
@@ -172,12 +168,13 @@ async function correctiveRag(
   corpus: Chunk[],
   provider: Provider,
 ): Promise<CragResult> {
-  // TODO: implement correctiveRag().
-  //   const chunks = lexicalRetrieve(query, corpus, 2);
-  //   const grade = await gradeRetrieval(query, chunks, provider);
-  //   ...branch on grade.verdict to build `context` + `branch`...
-  //   const answer = await generate(query, context, provider);
-  //   return { answer, verdict: grade.verdict, branch, contextUsed: context };
+  // TODO: implement correctiveRag(), returning a CragResult.
+  //   - Retrieve with lexicalRetrieve(), then gradeRetrieval() to get the verdict.
+  //   - Branch on the verdict to assemble `context` and the `branch` label per the
+  //     table above (Correct: kept chunk texts; Incorrect: rewriteQuery() then
+  //     webSearchStub(); Ambiguous: both merged).
+  //   - generate() the answer over that context and return it with the verdict,
+  //     branch, and the context you used.
   throw new Error("TODO: implement correctiveRag()");
 }
 

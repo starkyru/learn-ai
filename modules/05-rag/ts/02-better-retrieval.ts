@@ -91,15 +91,16 @@ function retrieveTopK(queryVec: number[], index: VectorEntry[], k: number): Retr
  * TODO: implement this function.
  *
  * Algorithm:
- *   For each chunk, call provider.chat() with a prompt like:
- *     "Rate the relevance of the following passage to the question on a
- *      scale of 0–10. Reply with ONLY the integer score.
- *      Question: {question}
- *      Passage: {chunk.text}"
- *   Parse the integer from the response.
- *   Sort descending by score. Return top k.
+ *   For each candidate, build a ChatMessage[] asking the model to rate the
+ *   passage's relevance to the question on a 0–10 scale and reply with ONLY
+ *   the integer (interpolate question + chunk.text). Call
+ *   provider.chat(messages, { temperature: 0, maxTokens: ... }) with a tiny
+ *   token budget, then parse the integer out of the reply (guard against NaN,
+ *   fall back to 0). Attach the score to the chunk, sort descending, take k.
  *
- * Hint: use parseInt(result.text.trim(), 10). Guard against NaN.
+ * Hint: parse with parseInt(result.text.trim(), 10). Run the per-candidate
+ * calls concurrently with Promise.all over candidates.map(...) so you don't
+ * pay the latency serially.
  */
 async function llmRerank(
   question: string,
@@ -107,16 +108,8 @@ async function llmRerank(
   provider: ReturnType<typeof getProvider>,
   k: number = 3
 ): Promise<RetrievedChunk[]> {
-  // TODO: implement LLM reranking.
-  //
-  // For cost efficiency, make the calls in parallel:
-  //   const scores = await Promise.all(candidates.map(async (chunk) => {
-  //     const messages: ChatMessage[] = [...];
-  //     const result = await provider.chat(messages, { temperature: 0, maxTokens: 5 });
-  //     const score = parseInt(result.text.trim(), 10);
-  //     return { ...chunk, score: isNaN(score) ? 0 : score };
-  //   }));
-  //   return scores.sort((a, b) => b.score - a.score).slice(0, k);
+  // TODO: implement LLM reranking (score each candidate via the LLM in
+  // parallel, then sort by score and slice the top k).
   throw new Error("TODO: implement llmRerank()");
 }
 
@@ -138,11 +131,11 @@ async function llmRerank(
  * TODO: implement this function.
  *
  * Steps:
- *   1. Ask the LLM: "Write a short, factual paragraph that would be a
- *      good answer to this question. Be concise (2–3 sentences).
- *      Question: {question}"
- *   2. Embed the generated hypothesis.
- *   3. Return the embedding vector (number[]).
+ *   1. Call provider.chat(...) with a ChatMessage[] that asks the model to
+ *      write a short, factual 2–3 sentence paragraph answering the question
+ *      (interpolate question).
+ *   2. Embed the generated hypothesis with provider.embed([...]).
+ *   3. Return the single embedding vector (number[]) from .vectors.
  */
 async function hydeQueryVector(
   question: string,

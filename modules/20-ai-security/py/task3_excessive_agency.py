@@ -160,14 +160,11 @@ def approval_gate(action: str, args: dict, tool: Tool) -> bool:
     if not tool.is_destructive:
         return True  # non-destructive actions auto-approved
 
-    # TODO 1: Print a clear description of what the agent wants to do.
-    #         Ask the user to type "yes" to approve or anything else to deny.
-    #         Return True iff the user typed "yes" (case-insensitive).
-    #   HINT:
-    #   print(f"\n[APPROVAL REQUIRED] Agent wants to execute: {action}")
-    #   print(f"  Arguments: {args}")
-    #   answer = input("Type 'yes' to approve, anything else to deny: ").strip().lower()
-    #   return answer == "yes"
+    # TODO 1: This runs only for destructive actions (the guard above already
+    #   auto-approved the rest). Print a clear description of what the agent wants
+    #   to do — the `action` and its `args` — then read a line from the operator
+    #   with input(...). Return True only when they explicitly typed "yes"
+    #   (case-insensitive, trimmed); anything else denies.
     raise NotImplementedError("TODO 1: implement approval_gate")
 
 

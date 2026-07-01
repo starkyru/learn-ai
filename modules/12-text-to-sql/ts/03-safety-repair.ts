@@ -48,12 +48,15 @@ export class UnsafeSqlError extends Error {
  * TODO: implement this function.
  *
  * Steps:
- *   1. Strip leading whitespace and comment lines (lines starting with "--").
- *   2. Extract the first keyword: sql.trimStart().split(/\s+/)[0].toUpperCase().
- *   3. If not "SELECT": throw new UnsafeSqlError(`Rejected: starts with '${keyword}', not SELECT.`).
- *   4. Scan the full SQL for forbidden keywords as standalone words
- *      (regex: /\b(DROP|DELETE|UPDATE|INSERT|ALTER|CREATE|REPLACE|TRUNCATE)\b/i).
- *      If found: throw new UnsafeSqlError(`Rejected: contains forbidden keyword '${match}'.`).
+ *   1. Normalise first: drop leading whitespace and any comment lines (starting
+ *      with "--") so the real first token is visible.
+ *   2. Extract the leading keyword (split on whitespace, take the first token,
+ *      upper-case it).
+ *   3. If it is not "SELECT", throw an `UnsafeSqlError` naming the keyword.
+ *   4. As defence-in-depth, scan the whole SQL for any mutating keyword — DROP,
+ *      DELETE, UPDATE, INSERT, ALTER, CREATE, REPLACE, TRUNCATE — matched as
+ *      standalone words (word-boundary `\b...\b`, case-insensitive) so
+ *      substrings like "created_at" don't trip it, and throw if one is found.
  */
 export function validateReadOnly(sql: string): void {
   // TODO: implement validateReadOnly().
@@ -66,10 +69,10 @@ export function validateReadOnly(sql: string): void {
  * TODO: implement this function.
  *
  * Steps:
- *   1. Count ";" in sql.
- *   2. If more than one ";", throw new UnsafeSqlError("Rejected: multiple statements.").
- *   3. If a ";" appears before the trimmed end of the string (e.g. "; --" suffix),
- *      also reject.
+ *   1. Look at where ";" characters fall. A legitimate single statement has at
+ *      most one ";", and it must be the last non-whitespace character.
+ *   2. If there is more than one ";", or a ";" sits before the trimmed end of
+ *      the string (e.g. a "; --" suffix), throw an `UnsafeSqlError`.
  *
  * Example to block: SELECT 1; DROP TABLE customers; --
  */
@@ -136,24 +139,19 @@ export interface SafeQueryResult {
  * TODO: implement this function.
  *
  * Steps:
- *   1. sql = await generateSqlSimple(question, provider).
- *   2. validateReadOnly(sql)            — throws UnsafeSqlError immediately (no retry).
- *   3. validateNoStackedQueries(sql).
- *   4. For attempt = 0 to maxRetries:
- *      a. Try:
- *           const db = new Database(DB_PATH);
- *           const stmt = db.prepare(sql);
- *           const rows = stmt.all() as Record<string, unknown>[];
- *           db.close();
- *           return { sql, columns: Object.keys(rows[0] ?? {}),
- *                    rows: rows.map(r => Object.values(r)), retries: attempt }.
- *      b. Catch any error:
- *           if attempt < maxRetries:
- *             sql = await repairSql(question, sql, String(error), provider);
- *             validateReadOnly(sql);       // re-validate
- *             validateNoStackedQueries(sql);
- *           else: throw.
- *   5. (Unreachable — for type safety) throw new Error("Exceeded retries").
+ *   1. Generate the SQL with `generateSqlSimple()` (await it).
+ *   2. Gate it through BOTH validators (`validateReadOnly`,
+ *      `validateNoStackedQueries`) before touching the database — they throw on
+ *      unsafe input and must NOT be retried.
+ *   3. Loop from attempt 0 up to `maxRetries`:
+ *      - Try to open the DB, run `.all()`, and build a `SafeQueryResult`
+ *        (sql, columns from the first row's keys, rows as value arrays, and
+ *        `retries` set to the current attempt number).
+ *      - On any DB error, if attempts remain: ask `repairSql()` for a corrected
+ *        query using `String(error)`, then re-run BOTH validators on the
+ *        repaired SQL before looping. If none remain, rethrow.
+ *   4. Add an unreachable guard after the loop (throw) so the function is
+ *      provably total for the type checker.
  *
  * Note: UnsafeSqlError should never be caught here — let it propagate.
  */

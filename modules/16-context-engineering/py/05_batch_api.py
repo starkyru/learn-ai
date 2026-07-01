@@ -52,35 +52,20 @@ MAX_POLL_ATTEMPTS = 60  # 10 minutes max wait
 
 
 # ---------------------------------------------------------------------------
-# TODO 1: Implement run_anthropic_batch.
-#         Use the Anthropic Message Batches API.
-#
-#         Steps:
-#         1. Build a list of `MessageBatchRequest` objects, one per BATCH_INPUTS item.
-#            Each request needs a unique `custom_id` and a `params` dict with
-#            model, max_tokens, system, and messages.
-#         2. Submit with `client.beta.messages.batches.create(requests=[...])`.
-#         3. Poll `client.beta.messages.batches.retrieve(batch_id)` until
-#            `processing_status == "ended"`.
-#         4. Iterate results with `client.beta.messages.batches.results(batch_id)`.
-#         5. Print each result's custom_id and the first text block content.
-#
-#         Example skeleton:
-#           import anthropic
-#           client = anthropic.Anthropic(api_key=...)
-#           requests = [
-#               anthropic.types.beta.messages.MessageBatchRequestParam(
-#                   custom_id=item["id"],
-#                   params={
-#                       "model": model,
-#                       "max_tokens": 10,
-#                       "system": CLASSIFY_SYSTEM,
-#                       "messages": [{"role": "user", "content": item["text"]}],
-#                   }
-#               )
-#               for item in BATCH_INPUTS
-#           ]
-#           batch = client.beta.messages.batches.create(requests=requests)
+# TODO 1: Implement run_anthropic_batch using the Anthropic Message Batches API.
+#         Create an `anthropic.Anthropic` client; read the model from ANTHROPIC_MODEL
+#         (a cheap Haiku model is a good default for a classification batch).
+#         Conceptual steps:
+#         1. Turn BATCH_INPUTS into one batch-request object per item. Each carries a
+#            unique `custom_id` (reuse item["id"]) and a `params` dict holding model,
+#            a small max_tokens, `system=CLASSIFY_SYSTEM`, and a one-user-message list
+#            with the item's text.
+#         2. Submit them with `client.beta.messages.batches.create(requests=...)`.
+#         3. Poll `client.beta.messages.batches.retrieve(batch_id)` on an interval
+#            (use POLL_INTERVAL_SECONDS / MAX_POLL_ATTEMPTS) until its
+#            `processing_status` reaches "ended".
+#         4. Stream the outputs via `client.beta.messages.batches.results(batch_id)`.
+#         5. For each result, print its custom_id and the text of the first content block.
 # ---------------------------------------------------------------------------
 def run_anthropic_batch() -> None:
     api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -88,37 +73,26 @@ def run_anthropic_batch() -> None:
         print("  ANTHROPIC_API_KEY not set — skipping Anthropic batch demo.")
         return
 
-    # TODO: implement
-    # import anthropic
-    # client = anthropic.Anthropic(api_key=api_key)
-    # model = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5")  # use haiku for low cost
-    # ...
     raise NotImplementedError("TODO: implement run_anthropic_batch")
 
 
 # ---------------------------------------------------------------------------
-# TODO 2: Implement run_openai_batch.
-#         Use the OpenAI Batch API.
-#
-#         Steps:
-#         1. Write a JSONL file where each line is a request dict:
-#            {"custom_id": id, "method": "POST", "url": "/v1/chat/completions",
-#             "body": {"model": ..., "messages": [...], "max_tokens": 10}}
-#         2. Upload the file with `client.files.create(file=..., purpose="batch")`.
-#         3. Submit with `client.batches.create(input_file_id=..., endpoint=..., completion_window="24h")`.
-#         4. Poll `client.batches.retrieve(batch_id)` until `status == "completed"`.
-#         5. Download the output file with `client.files.content(output_file_id)`.
-#         6. Parse each JSON line and print custom_id + response content.
-#
-#         Example skeleton:
-#           import openai, tempfile
-#           client = openai.OpenAI(api_key=...)
-#           lines = [json.dumps({...}) for item in BATCH_INPUTS]
-#           with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as f:
-#               f.write("\n".join(lines))
-#               tmp_path = f.name
-#           file_obj = client.files.create(file=open(tmp_path, "rb"), purpose="batch")
-#           batch = client.batches.create(input_file_id=file_obj.id, endpoint="/v1/chat/completions", completion_window="24h")
+# TODO 2: Implement run_openai_batch using the OpenAI Batch API.
+#         Create an `openai.OpenAI` client; read the model from OPENAI_CHAT_MODEL.
+#         Unlike Anthropic, OpenAI batches are driven through an uploaded JSONL file.
+#         Conceptual steps:
+#         1. Build a JSONL payload — one line per BATCH_INPUTS item. Each line is a
+#            request object with `custom_id`, `method` "POST", `url`
+#            "/v1/chat/completions", and a `body` holding model, the messages list
+#            (system = CLASSIFY_SYSTEM, user = the item text), and a small max_tokens.
+#            Write those lines to a temp .jsonl file.
+#         2. Upload it with `client.files.create(file=..., purpose="batch")`.
+#         3. Submit with `client.batches.create(input_file_id=..., endpoint=...,
+#            completion_window="24h")`.
+#         4. Poll `client.batches.retrieve(batch_id)` (POLL_INTERVAL_SECONDS /
+#            MAX_POLL_ATTEMPTS) until `status == "completed"`.
+#         5. Fetch the results file via `client.files.content(output_file_id)`.
+#         6. Parse each returned JSON line and print its custom_id + response content.
 # ---------------------------------------------------------------------------
 def run_openai_batch() -> None:
     api_key = os.getenv("OPENAI_API_KEY")
@@ -126,11 +100,6 @@ def run_openai_batch() -> None:
         print("  OPENAI_API_KEY not set — skipping OpenAI batch demo.")
         return
 
-    # TODO: implement
-    # import openai, tempfile
-    # client = openai.OpenAI(api_key=api_key)
-    # model = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
-    # ...
     raise NotImplementedError("TODO: implement run_openai_batch")
 
 

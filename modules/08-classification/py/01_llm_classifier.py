@@ -132,15 +132,13 @@ def few_shot_prompt(text: str, examples: list[tuple[str, str]], labels: list[str
 
     TODO: craft a prompt that:
       1. Describes the task and valid labels (same as zero-shot).
-      2. Shows each (example_text, label) pair in a clear, consistent format.
-         A common pattern:
-           Text: <example_text>
-           Label: <label>
-      3. Ends with the query text in the same format but without the label
-         (so the model fills it in).
+      2. Shows each (example_text, label) pair in a clear, consistent format —
+         e.g. a line for the text and a line for its label, repeated per example.
+      3. Ends with the query text in that SAME layout but with the label line left
+         blank, so the model completes it.
 
-    Tip: keep the format consistent — if you use "Text:" in examples, use it
-    for the query too.
+    Tip: whatever field labels/delimiters you pick for the examples, reuse them
+    verbatim for the query — consistency is what makes few-shot reliable.
     """
     # TODO: return the formatted prompt string
     raise NotImplementedError("TODO: implement few_shot_prompt()")

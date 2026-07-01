@@ -1,8 +1,8 @@
 /**
- * compare_providers.ts — same prompt, all five providers, side by side.
+ * compare_providers.ts — same prompt, all six providers, side by side.
  *
  * What it teaches:
- *   The provider abstraction in action: the exact same call works against five
+ *   The provider abstraction in action: the exact same call works against six
  *   different backends. And a real-world habit — gracefully SKIP a provider
  *   whose key or server is missing (catch the error) instead of crashing.
  *
@@ -23,6 +23,7 @@ const PROVIDERS: ProviderName[] = [
   "ollama",
   "nvidia",
   "lmstudio",
+  "gemini",
 ];
 
 async function tryProvider(name: ProviderName): Promise<void> {

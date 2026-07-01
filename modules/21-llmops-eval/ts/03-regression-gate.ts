@@ -68,7 +68,7 @@ interface ResultsFile {
 /**
  * Parse a JSON results file produced by task 1 or 2.
  *
- * TODO 1: readFileSync(path, 'utf8') + JSON.parse.
+ * TODO 1: Read the file as UTF-8 text and parse the JSON.
  * Throw a descriptive error if the file doesn't exist.
  * Return the parsed object as ResultsFile.
  */
@@ -121,7 +121,8 @@ async function runFreshEval(
 /**
  * Log pass/fail and return true if value >= threshold.
  *
- * TODO 4: Print "[PASS] metric=X >= threshold=Y" or "[FAIL] ...".
+ * TODO 4: Print one clear line tagged PASS or FAIL that names the metric, its
+ *         value, the comparison, and the threshold.
  * Return boolean.
  */
 function checkGate(value: number, threshold: number, metric: string): boolean {

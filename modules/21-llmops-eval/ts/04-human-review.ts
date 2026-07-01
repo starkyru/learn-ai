@@ -68,10 +68,12 @@ interface EvalCase {
 /**
  * Score output with an LLM-as-judge. Return [score_0_1, reason].
  *
- * TODO 1a: Build a judge prompt with question, rubric, output.
- *          Ask for JSON: {"score": <0-10>, "reason": "<string>"}.
+ * TODO 1a: Build a judge prompt (against question, rubric, output) that asks
+ *          for ONLY a JSON object with an integer score (0–10) and a short
+ *          reason.
  * TODO 1b: provider.chat() with temperature 0.
- * TODO 1c: Parse JSON; normalise score /10. Default 0 on error.
+ * TODO 1c: Parse the JSON and normalise the score into 0–1 (divide by the 0–10
+ *          range). Default 0 on error.
  * Return [normalised_score, reason].
  */
 async function judgeOutput(
@@ -107,8 +109,10 @@ async function runAndQueue(
 /**
  * Append QueueItems to REVIEW_QUEUE_PATH as JSONL.
  *
- * TODO 3a: mkdirSync(DATA_DIR, { recursive: true }).
- * TODO 3b: appendFileSync with JSON.stringify(item) + '\n' for each item.
+ * TODO 3a: Ensure DATA_DIR exists (create it recursively).
+ * TODO 3b: Append one JSON object per line — serialise each item and terminate
+ *          it with a newline (JSONL). Use append mode so re-runs grow the queue
+ *          rather than overwrite it.
  */
 function writeQueue(items: QueueItem[]): void {
   // TODO: implement writeQueue

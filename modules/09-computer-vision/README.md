@@ -3,10 +3,10 @@
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand · 🔴 from-scratch
 
 Vision models turn pixels into understanding. This module walks you from raw
-numbers in a JPEG to a rich, flexible description from a multimodal LLM — and
-then peels back the layers to show what's happening inside a CNN.
+numbers in a JPEG to a rich, flexible description from a multimodal LLM (Large Language Model) — and
+then peels back the layers to show what's happening inside a CNN (Convolutional Neural Network).
 
-You'll classify images with a pretrained model, rank free-form labels with CLIP,
+You'll classify images with a pretrained model, rank free-form labels with CLIP (Contrastive Language-Image Pre-training),
 ask a multimodal LLM to describe and extract text from a photo, and implement
 the convolution operation that sits at the heart of every CNN.
 
@@ -21,8 +21,8 @@ blue channels), each pixel an integer 0–255. That's the raw input every vision
 model receives. The model's job is to find structure — edges, shapes, textures,
 objects — in those numbers.
 
-Early vision systems hand-crafted this structure (Sobel edges, HOG features).
-Deep learning *learns* the features from data. Task 4 in this module implements
+Early vision systems hand-crafted this structure (Sobel edges, HOG (Histogram of Oriented Gradients) features).
+Deep learning _learns_ the features from data. Task 4 in this module implements
 a hand-crafted edge detector so you feel exactly what a "feature" is before the
 learning happens.
 
@@ -81,14 +81,14 @@ Modern LLMs (GPT-4o, Claude 3+, Gemini) extend the transformer to accept images
 alongside text. The common architecture: a pretrained vision encoder (often a
 ViT-L or ViT-H) converts an image into a sequence of "image tokens", which are
 concatenated with text tokens and fed to the language model. The result is
-flexible understanding: description, Q&A, OCR, classification — all via natural
+flexible understanding: description, Q&A, OCR (Optical Character Recognition), classification — all via natural
 language.
 
 ### Going beyond the abstraction
 
 `llm_core` / `@learn-ai/llm-core` is **text-only**. Its `ChatMessage.content`
 is a plain string; there is no image field. Sending an image to Claude or GPT
-requires the raw vendor SDKs (`anthropic`, `openai`) because the multimodal
+requires the raw vendor SDKs (Software Development Kits) (`anthropic`, `openai`) because the multimodal
 message format — a list of content blocks with image data — is not part of the
 shared interface. Task 3 uses the SDKs directly for exactly this reason. That
 is not a shortcoming of `llm_core`; it is a deliberate reminder that every
@@ -103,15 +103,15 @@ engineering skill.
 
 You need at least one of:
 
-| What | Env var | Where to get it |
-|---|---|---|
-| HuggingFace token | `HF_TOKEN` | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) (free) |
-| OpenAI API key | `OPENAI_API_KEY` | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
-| Anthropic API key | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) |
+| What              | Env var             | Where to get it                                                                 |
+| ----------------- | ------------------- | ------------------------------------------------------------------------------- |
+| HuggingFace token | `HF_TOKEN`          | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) (free) |
+| OpenAI API key    | `OPENAI_API_KEY`    | [platform.openai.com/api-keys](https://platform.openai.com/api-keys)            |
+| Anthropic API key | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com)                          |
 
 Add your keys to `.env` (copy from `.env.example` at the repo root).
 
-Tasks 1 and 2 use the **HuggingFace Inference API** (free tier, `HF_TOKEN`).  
+Tasks 1 and 2 use the **HuggingFace Inference API (Application Programming Interface)** (free tier, `HF_TOKEN`).  
 Task 3 uses **OpenAI or Anthropic** for the multimodal LLM path (`OPENAI_API_KEY` or `ANTHROPIC_API_KEY`).  
 Task 4 (convolution from scratch) needs only **numpy** (already in the base install) and **Pillow** (in the `vision` extra).
 
@@ -184,6 +184,7 @@ ImageNet class labels.
    to see the same model running on your machine.
 
 **Acceptance**
+
 - Prints a ranked list of (label, score) pairs.
 - The correct class appears in the top 3.
 
@@ -213,6 +214,7 @@ to a training vocabulary — you invent it on the fly.
    even for labels it was never explicitly trained to classify.
 
 **Acceptance**
+
 - Prints each label with its cosine-similarity score.
 - The label that best describes the image ranks first.
 
@@ -247,6 +249,7 @@ inputs to any project without relying on a wrapper.
    visible in the image" (OCR-style), or "Is this indoor or outdoor?"
 
 **Acceptance**
+
 - Prints a 2-3 sentence description of the image.
 - Prints a single-word label on a `Label:` line.
 - Works with at least one of OpenAI or Anthropic.
@@ -283,6 +286,7 @@ again what a conv layer actually computes.
    whatever features reduce the loss.)
 
 **Acceptance**
+
 - `_sanity_check()` / `sanityCheck()` passes without assertion error.
 - Output feature-map images are written to `assets/` and visually make sense.
 
@@ -295,7 +299,7 @@ again what a conv layer actually computes.
 - [ ] You sent an image to a multimodal LLM (task 3) and read its description.
 - [ ] You implemented 2-D convolution from scratch (task 4) and passed the sanity check.
 - [ ] You can explain, in a sentence, the difference between a task-1 classifier,
-  CLIP zero-shot, and a multimodal LLM — when would you choose each?
+      CLIP zero-shot, and a multimodal LLM — when would you choose each?
 
 ---
 
@@ -306,7 +310,7 @@ again what a conv layer actually computes.
 - **YOLO** (You Only Look Once) — real-time object detection: bounding boxes +
   labels in a single forward pass.
   [ultralytics.com](https://docs.ultralytics.com)
-- **DETR** — detection with Transformers (Facebook AI, 2020); treats detection
+- **DETR (Detection Transformer)** — detection with Transformers (Facebook AI, 2020); treats detection
   as a set-prediction problem with no anchor boxes.
   [HuggingFace DETR](https://huggingface.co/facebook/detr-resnet-50)
 - **SAM** (Segment Anything Model, Meta 2023) — given a point or box, segments
@@ -318,13 +322,13 @@ again what a conv layer actually computes.
 
 ### ViT vs CNN: when to use each
 
-| | CNN | ViT |
-|---|---|---|
-| Inductive bias | Translation equivariance (good) | None — learns it from data |
-| Data efficiency | Better with small datasets | Needs large datasets or pretraining |
-| Global context | Expensive (deep stacking) | Cheap (attention is global by default) |
-| Throughput | Fast (optimised CUDA kernels) | Slightly slower for small images |
-| SOTA (2024) | Still competitive (ConvNeXt) | ViT-based models dominate |
+|                                | CNN                             | ViT                                    |
+| ------------------------------ | ------------------------------- | -------------------------------------- |
+| Inductive bias                 | Translation equivariance (good) | None — learns it from data             |
+| Data efficiency                | Better with small datasets      | Needs large datasets or pretraining    |
+| Global context                 | Expensive (deep stacking)       | Cheap (attention is global by default) |
+| Throughput                     | Fast (optimised CUDA kernels)   | Slightly slower for small images       |
+| SOTA (State of the Art) (2024) | Still competitive (ConvNeXt)    | ViT-based models dominate              |
 
 ### Papers and resources
 
@@ -333,4 +337,4 @@ again what a conv layer actually computes.
 - [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) — self-attention intuition that applies to ViT.
 - [Learning Transferable Visual Models From Natural Language Supervision (CLIP)](https://arxiv.org/abs/2103.00020) — the original CLIP paper.
 - [HuggingFace Vision Course](https://huggingface.co/learn/computer-vision-course/) — hands-on; covers classification, detection, generation.
-- [NVIDIA NIM vision models](https://build.nvidia.com/explore/vision) — hosted vision endpoints (CLIP, OCR, object detection) if you want an OpenAI-compatible API for vision tasks.
+- [NVIDIA NIM (NVIDIA Inference Microservices) vision models](https://build.nvidia.com/explore/vision) — hosted vision endpoints (CLIP, OCR, object detection) if you want an OpenAI-compatible API for vision tasks.

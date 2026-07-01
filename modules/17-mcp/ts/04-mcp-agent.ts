@@ -85,30 +85,18 @@ function mcpToolsToAnthropic(tools: any[]): Anthropic.Tool[] {
  * TODO 3: Implement runOpenAIMcpAgent.
  *
  * Steps:
- *   a) Create StdioClientTransport and Client, then connect.
- *   b) const { tools } = await mcpClient.listTools();
- *   c) const openaiTools = mcpToolsToOpenAI(tools);
- *   d) Standard OpenAI tool loop (module 06 Task 2):
- *      const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [{ role: "user", content: question }];
- *      while (true) {
- *          const response = await openai.chat.completions.create({ model, messages, tools: openaiTools });
- *          const choice = response.choices[0];
- *          if (choice.finish_reason === "tool_calls") {
- *              for (const tc of choice.message.tool_calls ?? []) {
- *                  const args = JSON.parse(tc.function.arguments);
- *                  // CALL MCP TOOL (not a local function):
- *                  const result = await mcpClient.callTool({ name: tc.function.name, arguments: args });
- *                  const text = (result.content as any[])
- *                      .filter((b: any) => b.type === "text").map((b: any) => b.text).join(" ");
- *                  console.log(`  [tool] ${tc.function.name}(...) -> ${text.slice(0, 120)}...`);
- *                  messages.push(choice.message as any);
- *                  messages.push({ role: "tool", tool_call_id: tc.id, content: text });
- *              }
- *          } else {
- *              await mcpClient.close();
- *              return choice.message.content ?? "";
- *          }
- *      }
+ *   a) Create a StdioClientTransport and Client (from the SERVER_COMMAND/ARGS),
+ *      then connect.
+ *   b) Discover the server's tools with mcpClient.listTools() and convert them
+ *      with mcpToolsToOpenAI(...).
+ *   c) Run the module-06 tool loop: start messages with the user question, then
+ *      loop calling openai.chat.completions.create({ model, messages, tools }).
+ *      While finish_reason === "tool_calls", for each tool call JSON.parse its
+ *      arguments and — crucially — dispatch it by awaiting mcpClient.callTool({
+ *      name, arguments }) rather than a local function. Join the "text" content
+ *      blocks of the result, push the assistant message and a { role: "tool" }
+ *      message (with tool_call_id and the text), then loop. Otherwise close the
+ *      client and return choice.message.content. Log each tool call.
  */
 async function runOpenAIMcpAgent(question: string): Promise<string> {
   throw new Error("TODO 3: implement runOpenAIMcpAgent");

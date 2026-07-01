@@ -42,14 +42,8 @@ async function main() {
   //           b) Write the chunk to stdout WITHOUT a newline so tokens appear
   //              inline: process.stdout.write(chunk)
   //           c) Append the chunk to `fullText`.
+  //         `firstTokenTime` starts null; set it once, on the first chunk only.
   // ---------------------------------------------------------------------------
-
-  // const stream = llm.chatStream([{ role: "user", content: PROMPT }]);
-  // for await (const chunk of stream) {
-  //   if (firstTokenTime === null) firstTokenTime = performance.now();
-  //   process.stdout.write(chunk);
-  //   fullText += chunk;
-  // }
 
   console.log("\nTODO: implement streaming above.");
 
@@ -59,15 +53,9 @@ async function main() {
   //   - Total time           = performance.now() - startTime  (ms)
   //   - Tokens in output     = rough estimate: fullText.split(" ").length
   //   - Tokens/second        = tokens / (totalTime / 1000)
+  //         Guard the TTFT print for the case where no chunk ever arrived
+  //         (firstTokenTime still null). `performance.now()` again for the end.
   // ---------------------------------------------------------------------------
-
-  // const totalTime = performance.now() - startTime;
-  // const ttft = firstTokenTime !== null ? firstTokenTime - startTime : null;
-  // const words = fullText.split(/\s+/).filter(Boolean).length;
-  // console.log("\n--- stats ---");
-  // console.log(`TTFT:        ${ttft?.toFixed(0) ?? "N/A"} ms`);
-  // console.log(`Total time:  ${totalTime.toFixed(0)} ms`);
-  // console.log(`~Words out:  ${words}  (~${(words / (totalTime / 1000)).toFixed(1)} words/s)`);
 
   // ---------------------------------------------------------------------------
   // TODO 4 (stretch): Try the same prompt with llm.chat() (non-streaming) and

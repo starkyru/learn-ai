@@ -96,6 +96,20 @@ def get_provider(name: str | None = None) -> LLMProvider:
             embed_model=os.getenv("LMSTUDIO_EMBED_MODEL", "text-embedding-nomic-embed-text-v1.5"),
         )
 
+    if provider == "gemini":
+        # Google Gemini exposes an OpenAI-compatible endpoint, so it slots into
+        # the same adapter — just a different base_url + key + model ids.
+        return OpenAICompatibleProvider(
+            name="gemini",
+            api_key=_need(os.getenv("GEMINI_API_KEY"), "GEMINI_API_KEY"),
+            base_url=os.getenv(
+                "GEMINI_BASE_URL",
+                "https://generativelanguage.googleapis.com/v1beta/openai/",
+            ),
+            chat_model=os.getenv("GEMINI_CHAT_MODEL", "gemini-2.5-flash"),
+            embed_model=os.getenv("GEMINI_EMBED_MODEL", "gemini-embedding-001"),
+        )
+
     raise RuntimeError(
-        f'Unknown provider "{provider}". Use one of: openai, anthropic, ollama, nvidia, lmstudio.'
+        f'Unknown provider "{provider}". Use one of: openai, anthropic, ollama, nvidia, lmstudio, gemini.'
     )

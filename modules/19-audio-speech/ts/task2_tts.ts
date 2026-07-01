@@ -64,13 +64,11 @@ async function synthesise(
   const client = new OpenAI({ apiKey });
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
-  // TODO 1: Call client.audio.speech.create({
-  //   model, voice, input: text, speed, response_format: "mp3",
-  // }) to get the response, then write it to outputPath.
-  //
-  // HINT: The openai SDK returns an object with a .arrayBuffer() method.
-  //   const buffer = Buffer.from(await response.arrayBuffer());
-  //   fs.writeFileSync(outputPath, buffer);
+  // TODO 1: Call `client.audio.speech.create({ ... })` passing the `model`,
+  //   `voice`, the text as `input:`, the `speed`, and `response_format: "mp3"`.
+  //   Then persist the audio to `outputPath` and return `outputPath`.
+  //   HINT: the response exposes `.arrayBuffer()`; wrap it in a `Buffer` and
+  //   write it to disk with the fs API.
   throw new Error("TODO 1: call client.audio.speech.create()");
 }
 
@@ -101,13 +99,11 @@ async function synthesiseStreaming(
   const client = new OpenAI({ apiKey });
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
-  // TODO 2 (stretch): Use client.audio.speech.with_streaming_response (or the
-  // streaming fetch approach) to pipe audio chunks directly to a write stream.
-  //
-  // HINT: The openai Node SDK exposes:
-  //   const response = await client.audio.speech.create({...});
-  //   const stream = response.body;  // Node ReadableStream / Web ReadableStream
-  //   Then pipe stream into fs.createWriteStream(outputPath).
+  // TODO 2 (stretch): Same output as synthesise(), but stream the bytes to disk
+  //   instead of buffering the whole response. Call `client.audio.speech.create`
+  //   as before, then pipe the response's readable body into a write stream over
+  //   `outputPath` (e.g. `fs.createWriteStream(...)`). Return `outputPath`.
+  //   HINT: the response object exposes its stream via `response.body`.
   throw new Error("TODO 2 (stretch): implement streaming TTS");
 }
 

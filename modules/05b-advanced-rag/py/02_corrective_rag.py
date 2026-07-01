@@ -99,12 +99,12 @@ def grade_retrieval(query: str, chunks: list[Chunk], provider: Any) -> Grade:
     TODO: implement this.
 
     Steps:
-      1. For each chunk, ask the LLM for a single relevance number 0..1:
-           system: "You are a retrieval evaluator. Output ONLY a number between
-                    0 and 1 for how well the passage helps answer the question."
-           user:   f"Question: {query}\\nPassage: {chunk.text}\\nRelevance (0-1):"
-         options = ChatOptions(temperature=0, max_tokens=5)
-         Parse with float(...); on ValueError use 0.0; clamp into [0,1].
+      1. For each chunk, ask the LLM for a single relevance number 0..1. Build a
+         list[ChatMessage]: a system message telling the model to act as a retrieval
+         evaluator and output ONLY a number between 0 and 1 for how well the passage
+         helps answer the question, and a user message carrying the query and the
+         chunk text. Use ChatOptions(temperature=0, max_tokens=...) with a tiny cap.
+         Parse the reply with float(...); on ValueError use 0.0; clamp into [0,1].
          (You may loop sequentially, or parallelise with ThreadPoolExecutor.)
       2. Compute the verdict from max(scores) using the buckets above
          (empty list -> "Incorrect").
@@ -126,12 +126,12 @@ def rewrite_query(query: str, provider: Any) -> str:
     TODO: implement this.
 
     Steps:
-      1. messages:
-           system: "Rewrite the user's question into a concise web search query.
-                    Output only the query."
-           user:   query
-      2. result = provider.chat(messages, ChatOptions(temperature=0, max_tokens=30))
-      3. return result.text.strip()
+      1. Build a list[ChatMessage]: a system message asking the model to rewrite the
+         user's question into a concise web search query and output only the query,
+         plus a user message with the query.
+      2. result = provider.chat(messages, ChatOptions(temperature=0, max_tokens=...))
+         — a short cap is enough.
+      3. Return the reply text, stripped.
     """
     raise NotImplementedError("TODO: implement rewrite_query()")
 
@@ -174,16 +174,15 @@ def corrective_rag(query: str, corpus: list[Chunk], provider: Any) -> CragResult
     TODO: implement this.
 
     Steps:
-      1. chunks = lexical_retrieve(query, corpus, k=2)
-      2. grade = grade_retrieval(query, chunks, provider)
-      3. Branch on grade.verdict:
-         - "Correct":   context = the chunk texts joined; branch = "kept-chunks"
-         - "Incorrect": rq = rewrite_query(...); context = web_search_stub(rq);
+      1. Retrieve with lexical_retrieve(...), then grade_retrieval(...) for the verdict.
+      2. Branch on grade.verdict to assemble `context` and the `branch` label:
+         - "Correct":   the kept chunk texts joined;      branch = "kept-chunks"
+         - "Incorrect": rewrite_query(...) then feed that to web_search_stub(...);
                         branch = "fallback"
-         - "Ambiguous": context = chunk texts + "\\n" + web_search_stub(rewrite...);
+         - "Ambiguous": merge the chunk texts with the fallback search result;
                         branch = "both"
-      4. answer = _generate(query, context, provider)
-      5. return CragResult(answer, grade.verdict, branch, context)
+      3. Generate the answer over that context with _generate(...) and return a
+         CragResult carrying the answer, verdict, branch, and the context you used.
     """
     raise NotImplementedError("TODO: implement corrective_rag()")
 

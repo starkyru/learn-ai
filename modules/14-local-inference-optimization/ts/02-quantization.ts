@@ -55,15 +55,13 @@ interface TimedResult {
  * Returns { parameter_size, quantization, family }.
  *
  * TODO:
- *   1. POST to OLLAMA_BASE_URL + "/api/show" with body { name: modelName }.
- *      Use the global fetch() (Node 18+) or import node-fetch.
- *   2. Parse JSON response.
- *   3. Extract:
- *        quant = data.details?.quantization_level ?? "unknown"
- *        family = data.details?.family ?? "unknown"
- *        paramSize = data.details?.parameter_size ?? "unknown"
- *   4. Return { parameter_size: paramSize, quantization: quant, family }.
- *   5. On any error, return all fields as "unknown".
+ *   1. POST to OLLAMA_BASE_URL + "/api/show" with a JSON body naming the model
+ *      ({ name: modelName }). Use the global fetch() (Node 18+).
+ *   2. Await response.json().
+ *   3. The fields you need live under data.details: the quantization level, the
+ *      family, and the parameter size. Read each, defaulting to "unknown".
+ *   4. Return the ModelInfo ({ parameter_size, quantization, family }).
+ *   5. On any error, return every field as "unknown".
  */
 async function getModelInfo(modelName: string): Promise<ModelInfo> {
   // TODO: implement getModelInfo
@@ -80,13 +78,12 @@ async function getModelInfo(modelName: string): Promise<ModelInfo> {
  * Returns { text, tokensOut, elapsedS, tokensPerS }.
  *
  * TODO:
- *   1. Create an OpenAICompatibleProvider with:
- *        name: "ollama", apiKey: "ollama",
- *        baseURL: OLLAMA_BASE_URL + "/v1",
- *        chatModel: modelName,
- *        embedModel: "nomic-embed-text"
- *   2. Measure elapsed time (performance.now()) around provider.chat().
- *   3. Return the timed result.
+ *   1. Construct an OpenAICompatibleProvider pointed at Ollama's OpenAI-shim
+ *      endpoint (OLLAMA_BASE_URL + "/v1"), with chatModel set to modelName.
+ *      The apiKey can be any placeholder; set an embedModel too.
+ *   2. Time a single provider.chat() call with performance.now() before/after
+ *      (one "user" message, options with a bounded maxTokens).
+ *   3. Return the TimedResult (text / tokensOut / elapsedS / tokensPerS).
  */
 async function runTimedPrompt(modelName: string, prompt: string): Promise<TimedResult> {
   // TODO: implement runTimedPrompt

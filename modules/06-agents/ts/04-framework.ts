@@ -19,48 +19,38 @@
  */
 
 import "dotenv/config";
-// TODO 1: Import the LangGraph building blocks you'll use.
-//         Key imports from @langchain/langgraph:
-//           StateGraph, END, START, MemorySaver, Annotation
-//         Key imports from @langchain/core/messages:
-//           HumanMessage, AIMessage, ToolMessage, SystemMessage
-//         Key imports from @langchain/core/tools:
-//           tool (the function to declare tools)
-//         You'll also need the ChatOpenAI or ChatAnthropic model from
+// TODO 1: Import the LangGraph building blocks you'll wire together below.
+//         From @langchain/langgraph you'll need the graph builder, the START /
+//         END sentinels, the checkpointer (stretch TODO 9), and the `Annotation`
+//         helper used to declare state (TODO 2).
+//         From @langchain/core/messages you'll need the message classes you
+//         construct/inspect (Human / AI / Tool).
+//         From @langchain/core/tools you'll need the `tool` declaration helper.
+//         You'll also need a ChatOpenAI or ChatAnthropic model from
 //         @langchain/openai or @langchain/anthropic — but those require
 //         separate installs. Alternatively, build a thin adapter that wraps
 //         the llm-core provider (see TODO 2).
-
-// import { StateGraph, END, START, Annotation } from "@langchain/langgraph";
-// import { HumanMessage, AIMessage, ToolMessage } from "@langchain/core/messages";
 
 // ---------------------------------------------------------------------------
 // State definition
 // LangGraph agents carry a state object that gets updated at each node.
 // ---------------------------------------------------------------------------
 
-// TODO 2: Define the agent state using Annotation.Root.
-//         The standard ReAct agent state is just a list of messages.
-//         LangGraph knows how to reduce/append them automatically.
-//
-// const AgentState = Annotation.Root({
-//   messages: Annotation<BaseMessage[]>({
-//     reducer: (x, y) => x.concat(y),
-//   }),
-// });
+// TODO 2: Define the agent state with `Annotation.Root({...})`. It needs a single
+//         `messages` channel typed as BaseMessage[], declared with an
+//         `Annotation<...>` whose reducer CONCATENATES the previous and new
+//         messages (so each node's output is appended, not replaced).
 
 // ---------------------------------------------------------------------------
 // Tool definitions
 // ---------------------------------------------------------------------------
 
-// TODO 3: Define the same tools as Task 1 using LangGraph's `tool()` helper.
-//         Each tool takes a zod schema for its inputs and returns a string.
-//
-// import { z } from "zod";
-// const calculatorTool = tool(
-//   async ({ expression }) => { /* ... */ },
-//   { name: "calculator", description: "...", schema: z.object({ expression: z.string() }) }
-// );
+// TODO 3: Define the same tools as Task 1 (calculator, search) with the `tool()`
+//         helper. Each call takes an async implementation whose argument is the
+//         validated input object, plus a config object with `name`, `description`,
+//         and a zod `schema` describing each argument. Name the schema fields to
+//         match what your implementations destructure. Reuse Task 1's calculator
+//         (eval-in-try/catch) and search (canned lookup) logic.
 
 const tools: unknown[] = [
   // TODO: add your tool objects here
@@ -70,53 +60,28 @@ const tools: unknown[] = [
 // Graph nodes
 // ---------------------------------------------------------------------------
 
-// TODO 4: Implement the agent node.
-//         It receives the current state, calls the LLM (with tools bound),
-//         and returns the new message(s) to add to state.
-//
-// async function agentNode(state: typeof AgentState.State) {
-//   const response = await modelWithTools.invoke(state.messages);
-//   return { messages: [response] };
-// }
+// TODO 4: Implement the agent node — an async function taking the state, that
+//         invokes the tools-bound model on `state.messages` and returns
+//         `{ messages: [response] }` (the reducer appends it).
 
-// TODO 5: Implement the tools node.
-//         It finds all ToolCall objects in the last AI message, executes each
-//         tool, and returns ToolMessage objects with the results.
-//
-// async function toolsNode(state: typeof AgentState.State) {
-//   const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
-//   const toolMessages: ToolMessage[] = [];
-//   for (const toolCall of lastMessage.tool_calls ?? []) {
-//     const tool = toolsByName[toolCall.name];
-//     const result = await tool.invoke(toolCall.args);
-//     toolMessages.push(new ToolMessage({ content: result, tool_call_id: toolCall.id! }));
-//   }
-//   return { messages: toolMessages };
-// }
+// TODO 5: Implement the tools node. Take the last message (the AI message with
+//         tool_calls). Build a name->tool lookup, then for each tool_call invoke
+//         the matching tool on its args and wrap the result in a `ToolMessage`
+//         tagged with that call's id. Return them under `messages`.
 
-// TODO 6: Implement the routing function (conditional edge).
-//         If the last message has tool_calls, go to "tools".
-//         Otherwise, go to END.
-//
-// function shouldContinue(state: typeof AgentState.State): "tools" | typeof END {
-//   const last = state.messages[state.messages.length - 1] as AIMessage;
-//   return last.tool_calls?.length ? "tools" : END;
-// }
+// TODO 6: Implement the routing function used by the conditional edge: inspect
+//         the last message — if it carries tool_calls, return "tools", otherwise
+//         return END. Type its return as "tools" | typeof END.
 
 // ---------------------------------------------------------------------------
 // Build the graph
 // ---------------------------------------------------------------------------
 
-// TODO 7: Wire up the graph.
-//
-// const workflow = new StateGraph(AgentState)
-//   .addNode("agent", agentNode)
-//   .addNode("tools", toolsNode)
-//   .addEdge(START, "agent")
-//   .addConditionalEdges("agent", shouldContinue)
-//   .addEdge("tools", "agent");
-//
-// const app = workflow.compile();
+// TODO 7: Wire up the graph. Construct a `new StateGraph(AgentState)`, add the
+//         "agent" and "tools" nodes, then add the edges forming the cycle:
+//           START -> "agent", a CONDITIONAL edge from "agent" (using
+//           shouldContinue) to "tools" or END, and "tools" -> "agent".
+//         Compile it into an `app`.
 
 // ---------------------------------------------------------------------------
 // Main
@@ -128,15 +93,10 @@ async function main() {
 
   console.log(`Question: ${question}\n`);
 
-  // TODO 8: Invoke the compiled graph with an initial HumanMessage and stream
-  //         or await the result. Print each step as it happens.
-  //
-  // const stream = await app.stream({
-  //   messages: [new HumanMessage(question)],
-  // });
-  // for await (const step of stream) {
-  //   console.log(JSON.stringify(step, null, 2));
-  // }
+  // TODO 8: Invoke the compiled graph with an initial state whose `messages` is a
+  //         single HumanMessage(question). Prefer `app.stream(...)` and iterate the
+  //         async stream with `for await`, printing each yielded step so you can
+  //         watch the agent -> tools -> agent cycle happen.
 
   console.log("TODO: compile the graph and invoke it.");
 

@@ -126,44 +126,27 @@ async function runOpenAIToolLoop(question: string): Promise<void> {
   console.log(`Question: ${question}\n`);
 
   // -------------------------------------------------------------------------
-  // TODO 2: Send the initial request with the tool definition.
-  //         Use client.chat.completions.create({ model, messages, tools, tool_choice: "auto" })
+  // TODO 2: Send the initial request. Start a `messages` array (typed
+  //         OpenAI.Chat.Completions.ChatCompletionMessageParam[]) with the user's
+  //         question, then call client.chat.completions.create({ ... }) passing
+  //         `model`, `messages`, your `tools: [weatherToolDefinition]`, and
+  //         tool_choice: "auto". Read the reply off response.choices[0].message
+  //         and inspect response.choices[0].finish_reason.
   // -------------------------------------------------------------------------
-  // const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-  //   { role: "user", content: question },
-  // ];
-  // let response = await client.chat.completions.create({
-  //   model,
-  //   messages,
-  //   tools: [weatherToolDefinition],
-  //   tool_choice: "auto",
-  // });
-  // let message = response.choices[0].message;
-  // console.log("First response finish_reason:", response.choices[0].finish_reason);
 
   // -------------------------------------------------------------------------
-  // TODO 3: Check if finish_reason === "tool_calls". If so:
-  //         a) Append the assistant message to `messages`.
-  //         b) For each tool_call in message.tool_calls:
-  //            - Parse the arguments JSON.
-  //            - Call getWeather() with those args.
-  //            - Append a { role: "tool", tool_call_id, content: result } message.
-  //         c) Call the API again with the updated messages.
-  //         d) Print the final text response.
+  // TODO 3: If finish_reason indicates a tool call ("tool_calls"):
+  //         a) Push the assistant message onto `messages` as-is (it holds the
+  //            tool_calls the follow-up must answer).
+  //         b) For each entry in message.tool_calls: JSON.parse its
+  //            function.arguments, call getWeather() with them, and push a
+  //            { role: "tool", tool_call_id, content } message carrying the result
+  //            (tool_call_id must match the call's id so the model pairs them up).
+  //         c) Call the API a second time with the extended `messages`.
+  //         d) Print the final message.content.
+  //         (A robust version would loop until finish_reason is no longer a tool
+  //         call; one round-trip is enough for this exercise.)
   // -------------------------------------------------------------------------
-  // if (message.tool_calls && response.choices[0].finish_reason === "tool_calls") {
-  //   messages.push(message);
-  //   for (const toolCall of message.tool_calls) {
-  //     const args = JSON.parse(toolCall.function.arguments);
-  //     const result = getWeather(args.location, args.unit);
-  //     console.log(`Tool called: ${toolCall.function.name}(${toolCall.function.arguments})`);
-  //     console.log(`Tool result: ${result}\n`);
-  //     messages.push({ role: "tool", tool_call_id: toolCall.id, content: result });
-  //   }
-  //   response = await client.chat.completions.create({ model, messages, tools: [weatherToolDefinition] });
-  //   message = response.choices[0].message;
-  // }
-  // console.log("Final answer:", message.content);
 
   console.log("TODO: implement the tool loop above.");
 }
@@ -184,14 +167,11 @@ async function runAnthropicToolLoop(question: string): Promise<void> {
   console.log(`Question: ${question}\n`);
 
   // -------------------------------------------------------------------------
-  // TODO 4: Define the Anthropic tool. Format differs from OpenAI:
-  //         { name, description, input_schema: { type: "object", properties, required } }
+  // TODO 4: Define the Anthropic tool (type Anthropic.Tool). Same information as
+  //         the OpenAI one, but the fields are flatter: `name`, `description`, and
+  //         `input_schema` (the JSON Schema object) — no nested "function" wrapper,
+  //         and the schema key is input_schema rather than parameters.
   // -------------------------------------------------------------------------
-  // const tool: Anthropic.Tool = {
-  //   name: "get_weather",
-  //   description: "...",
-  //   input_schema: { type: "object", properties: { ... }, required: [...] },
-  // };
 
   // -------------------------------------------------------------------------
   // TODO 5: Send the initial request.

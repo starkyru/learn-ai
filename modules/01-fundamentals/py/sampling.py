@@ -44,9 +44,11 @@ def sample_temperature(logits: list[float], temperature: float, rng: random.Rand
     """Sample an index from softmax(logits / temperature).
 
     TODO:
-      1. probs = softmax(logits, temperature)
-      2. Sample an index according to `probs`. (Hint: rng.random() then walk a
-         cumulative sum, or use rng.choices(range(len(probs)), weights=probs)[0].)
+      1. Turn the logits into probabilities with the provided `softmax`, passing
+         `temperature` through.
+      2. Draw one index at random according to those probabilities. (Either draw
+         `rng.random()` and walk a cumulative sum until it's exceeded, or lean on
+         `rng.choices(...)` with the probabilities as `weights`.)
     Lower T -> sharper distribution -> picks the top token more often.
     """
     raise NotImplementedError("Implement temperature sampling — see the TODOs.")

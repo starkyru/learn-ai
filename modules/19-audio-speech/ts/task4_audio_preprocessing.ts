@@ -114,11 +114,12 @@ function energyVad(
   const frameSize = Math.floor((sampleRate * frameMs) / 1000);
   const nFrames = Math.floor(samples.length / frameSize);
 
-  // TODO 1: Compute RMS per frame, find maxRms, then return the label array.
-  //   For each frame i:
-  //     const frame = samples.subarray(i * frameSize, (i + 1) * frameSize);
-  //     const rms = Math.sqrt(frame.reduce((s, x) => s + x * x, 0) / frame.length);
-  //   Then: return rmsValues.map(r => r > thresholdRatio * maxRms);
+  // TODO 1: Return one boolean per frame (`nFrames` total).
+  //   - For each frame, take its slice of `samples` (length `frameSize`) and
+  //     compute the RMS energy: root-mean-square of the samples (square, average,
+  //     sqrt via Math.sqrt).
+  //   - Find the peak RMS across all frames.
+  //   - Map each frame's RMS to `true` when it clears `thresholdRatio * maxRms`.
   throw new Error("TODO 1: implement energy-based VAD");
 }
 
@@ -137,11 +138,13 @@ function energyVad(
 function trimSilence(data: WavData, frameMs = 30, thresholdRatio = 0.05): WavData {
   const frameSize = Math.floor((data.sampleRate * frameMs) / 1000);
 
-  // TODO 2: Call energyVad to get frameLabels.
-  //   Find startFrame = first index where frameLabels[i] === true.
-  //   Find endFrame   = last  index where frameLabels[i] === true.
-  //   Return { ...data, samples: data.samples.slice(startFrame * frameSize,
-  //                                                 (endFrame + 1) * frameSize) }.
+  // TODO 2: Use `energyVad(...)` to label frames, then keep only the speech span.
+  //   - Find the first and last frame index marked `true` (the speech bounds); if
+  //     nothing is speech, pick a sensible fallback (e.g. return `data` unchanged).
+  //   - Convert those frame indices to sample offsets via `frameSize` and slice
+  //     `data.samples` between them (include the final speech frame).
+  //   - Return a `WavData` with the trimmed samples and the original sampleRate /
+  //     nChannels.
   throw new Error("TODO 2: implement silence trimming");
 }
 

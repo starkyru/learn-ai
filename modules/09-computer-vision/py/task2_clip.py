@@ -77,19 +77,20 @@ def clip_classify_hosted(image_path: Path, labels: list[str]) -> list[dict]:
     with open(image_path, "rb") as f:
         image_bytes = f.read()
 
-    # TODO (exercise): call client.zero_shot_image_classification() with:
-    #   - image=image_bytes
-    #   - candidate_labels=labels
-    #   - model=HF_CLIP_MODEL
-    # The return type is list[ClassificationOutput] with .label / .score.
-    results = None  # replace with the actual API call
+    # TODO (exercise): run zero-shot classification via the client.
+    #   - Call `client.zero_shot_image_classification(...)`, passing the raw
+    #     `image_bytes`, the `candidate_labels` (the `labels` argument), and which
+    #     `model` to use (HF_CLIP_MODEL).
+    #   - The return type is a list[ClassificationOutput] with `.label` / `.score`.
+    results = None  # replace with the API call
 
     raise NotImplementedError(
         "Complete the TODO: call client.zero_shot_image_classification() "
         "and assign results. Then remove the raise."
     )
 
-    # TODO (exercise): return sorted results as plain dicts.
+    # TODO (exercise): return `results` as plain `{"label": ..., "score": ...}`
+    # dicts, sorted by score descending.
     return results  # type: ignore[return-value]
 
 
@@ -99,19 +100,13 @@ def clip_classify_hosted(image_path: Path, labels: list[str]) -> list[dict]:
 
 def clip_classify_local(image_path: Path, labels: list[str]) -> list[dict]:
     """Classify using a local CLIP model. Downloads ~600 MB on first run."""
-    # TODO (optional exercise): uncomment and complete.
-    #
-    # from transformers import pipeline
-    # from PIL import Image
-    #
-    # pipe = pipeline(
-    #     "zero-shot-image-classification",
-    #     model=HF_CLIP_MODEL,
-    # )
-    # image = Image.open(image_path).convert("RGB")
-    # results = pipe(image, candidate_labels=labels)
-    # # results is already sorted by score descending.
-    # return [{"label": r["label"], "score": r["score"]} for r in results]
+    # TODO (optional exercise): implement the offline path.
+    #   - From `transformers`, build a "zero-shot-image-classification"
+    #     `pipeline(...)` pointed at HF_CLIP_MODEL; open the file with PIL's
+    #     `Image.open(...)` and convert it to "RGB".
+    #   - Run the pipeline on the image, passing `candidate_labels=labels`. It
+    #     returns a list already sorted by score descending; reshape each entry
+    #     into a `{"label": ..., "score": ...}` dict and return them.
 
     raise NotImplementedError("Local path not yet implemented — see the TODO above.")
 

@@ -1,6 +1,6 @@
 # Module 06 — Agents
 
-An agent is not a new type of model. It's a **loop**: the LLM decides what to
+An agent is not a new type of model. It's a **loop**: the LLM (Large Language Model) decides what to
 do, a tool runs, the result comes back as an observation, and the LLM decides
 again — until it has enough information to answer.
 
@@ -43,7 +43,7 @@ Then you (the agent loop) run the tool and inject the result:
 Observation: The Eiffel Tower is 330 metres tall.
 ```
 
-And the loop continues. The model's text *is* the control flow. This works on
+And the loop continues. The model's text _is_ the control flow. This works on
 any model that can follow instructions — including local Ollama models. The cost
 is that free-text parsing is fragile: the model might spell `Action Input:` as
 `Action input:` or skip the format entirely on the first try. You'll feel this
@@ -51,8 +51,8 @@ in Task 1.
 
 ### Native tool calling — structured vs. parsed
 
-OpenAI and Anthropic added first-class tool support to their APIs. Instead of
-returning free text you parse, the model returns a structured JSON object:
+OpenAI and Anthropic added first-class tool support to their APIs (Application Programming Interfaces). Instead of
+returning free text you parse, the model returns a structured JSON (JavaScript Object Notation) object:
 
 ```json
 { "name": "search", "arguments": { "query": "eiffel tower height" } }
@@ -60,18 +60,18 @@ returning free text you parse, the model returns a structured JSON object:
 
 More reliable, but you're now tied to providers that support it. The `llm_core`
 abstraction intentionally does **not** expose this — advanced API features are
-taught at the SDK level so you see the real shape of each provider (same
+taught at the SDK (Software Development Kit) level so you see the real shape of each provider (same
 rationale as module 02).
 
 ### Memory
 
 LLMs are stateless. "Memory" is something you build:
 
-| Kind | How | Limit |
-|------|-----|-------|
-| In-context | append messages to the history list | context window |
-| Persistent | read/write a file or DB | unlimited (latency cost) |
-| Summarised | compress old turns so they fit | quality loss on compression |
+| Kind       | How                                 | Limit                       |
+| ---------- | ----------------------------------- | --------------------------- |
+| In-context | append messages to the history list | context window              |
+| Persistent | read/write a file or DB (Database)  | unlimited (latency cost)    |
+| Summarised | compress old turns so they fit      | quality loss on compression |
 
 A **scratchpad** is a middle ground: the agent writes structured notes (not the
 full conversation) to a file, and the system prompt injects those notes at the
@@ -128,6 +128,7 @@ pnpm install
 ```
 
 **Note on providers:**
+
 - Tasks 1, 3, 5: work with any provider including Ollama (`LLM_PROVIDER=ollama`).
 - Task 2: requires `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` (native tool calling).
 - Task 4: requires a LangChain-compatible chat model (install `langchain-openai`
@@ -143,6 +144,7 @@ pnpm install
 parsing. No SDKs, no frameworks — just the loop.
 
 **Steps (Python):**
+
 1. Open `py/01_react_loop.py`. Read the tool definitions, system prompt, and
    loop skeleton.
 2. Implement `calculator`, `fake_search`, `retrieve` (TODOs 1–3).
@@ -154,12 +156,14 @@ parsing. No SDKs, no frameworks — just the loop.
 6. Watch it reason through a multi-step problem. Notice when the format breaks.
 
 **Steps (TypeScript):**
+
 1. Open `ts/01-react-loop.ts`. Implement the same three tools (TODO 1).
 2. Implement `parseModelOutput` (TODO 2).
 3. Implement the loop body in `runReActAgent` (TODO 3).
 4. Run: `pnpm tsx modules/06-agents/ts/01-react-loop.ts`
 
 **Acceptance:**
+
 - The agent finds the Eiffel Tower height via `search`, converts it via
   `calculator`, and returns a Final Answer in 3–6 steps.
 - You can trace every Thought / Action / Observation in the output.
@@ -172,6 +176,7 @@ parsing. No SDKs, no frameworks — just the loop.
 API. Compare reliability and ergonomics to Task 1.
 
 **Steps (Python):**
+
 1. Open `py/02_native_tools.py`.
 2. Declare the tool schemas in OpenAI format (TODO 4) and Anthropic format
    (TODO 6). Note how they differ.
@@ -182,11 +187,13 @@ API. Compare reliability and ergonomics to Task 1.
 5. Run both: `LLM_PROVIDER=openai uv run python modules/06-agents/py/02_native_tools.py`
 
 **Steps (TypeScript):**
+
 1. Open `ts/02-native-tools.ts`. Declare `openAITools` (TODO 1).
 2. Implement `runOpenAIAgent` (TODO 3) and `runAnthropicAgent` (TODO 4).
 3. Run: `LLM_PROVIDER=openai pnpm tsx modules/06-agents/ts/02-native-tools.ts`
 
 **Acceptance:**
+
 - Both providers reach a correct Final Answer.
 - You can articulate the structural difference between OpenAI's `tool_calls`
   and Anthropic's `tool_use` content blocks.
@@ -199,6 +206,7 @@ API. Compare reliability and ergonomics to Task 1.
 turns and across restarts.
 
 **Steps (Python):**
+
 1. Open `py/03_memory.py`.
 2. Implement `read_scratchpad` and `write_scratchpad` (TODO 1).
 3. Implement `trim_history` to prevent context overflow (TODO 2).
@@ -208,11 +216,13 @@ turns and across restarts.
 7. Run and chat for a few turns, type `scratchpad` to inspect it.
 
 **Steps (TypeScript):**
+
 1. Open `ts/03-memory.ts`. Implement `readScratchpad`, `writeScratchpad` (TODO 1).
 2. Implement `trimHistory` (TODO 2), `buildSystemPrompt` (TODO 3),
    `processResponse` (TODO 4), and the loop body (TODO 5).
 
 **Acceptance:**
+
 - The agent uses `SCRATCHPAD: <note>` to save information.
 - Restart the script — the scratchpad persists and the new session sees it.
 - History never exceeds `MAX_HISTORY_TURNS` pairs.
@@ -225,6 +235,7 @@ turns and across restarts.
 Contrast how much less code you write vs. what you give up in control.
 
 **Steps (Python):**
+
 1. Run `uv sync --extra agents` to install LangGraph.
 2. Open `py/04_framework.py`. Follow TODOs 1–9 in order:
    - Import LangGraph + a LangChain chat model (install `langchain-openai` or
@@ -234,12 +245,14 @@ Contrast how much less code you write vs. what you give up in control.
 3. Run: `uv run python modules/06-agents/py/04_framework.py`
 
 **Steps (TypeScript):**
+
 1. `@langchain/langgraph` and `@langchain/core` are in `ts/package.json`.
    Run `pnpm install`.
 2. Open `ts/04-framework.ts`. Follow TODOs 1–9.
 3. Run: `pnpm tsx modules/06-agents/ts/04-framework.ts`
 
 **Acceptance:**
+
 - The compiled LangGraph app solves the same question as Task 1.
 - You can point to the part of the graph that corresponds to each step of your
   from-scratch loop.
@@ -252,6 +265,7 @@ Contrast how much less code you write vs. what you give up in control.
 question and delegates subtasks to specialised worker agents.
 
 **Steps (Python):**
+
 1. Open `py/05_multi_agent.py`.
 2. Write the planner prompt (TODO 1) and implement `run_planner` to parse its
    JSON output (TODO 2).
@@ -261,10 +275,12 @@ question and delegates subtasks to specialised worker agents.
 5. Run: `uv run python modules/06-agents/py/05_multi_agent.py`
 
 **Steps (TypeScript):**
+
 1. Open `ts/05-multi-agent.ts`. Implement `runPlanner` (TODO 2), `runWorker`
    (TODO 4), `runSynthesiser` (TODO 5), `runMultiAgent` (TODO 6).
 
 **Acceptance:**
+
 - The planner produces a valid JSON task list with 2–4 subtasks.
 - Each worker produces a useful result.
 - The synthesiser produces a final answer that incorporates all worker results.
@@ -279,7 +295,7 @@ question and delegates subtasks to specialised worker agents.
 - [ ] Task 3: the agent writes/reads a scratchpad file that persists across runs.
 - [ ] Task 4: the same ReAct behaviour reproduced with LangGraph.
 - [ ] Task 5: planner decomposes a question, workers solve subtasks, synthesiser
-       combines results.
+      combines results.
 
 ---
 

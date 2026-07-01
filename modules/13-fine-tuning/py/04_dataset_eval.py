@@ -124,12 +124,12 @@ def split_dataset(
     The splits must be non-overlapping and their sizes must sum to len(examples).
 
     TODO:
-      1. Shuffle a copy of examples using random.seed(seed) + random.shuffle().
-      2. Compute split indices:
-           n_train = round(len * train_frac)
-           n_val   = round(len * val_frac)
-           The rest goes to test.
-      3. Slice and return (train, val, test).
+      1. Shuffle a COPY of examples deterministically — seed with `seed` first,
+         then random.shuffle() the copy (don't mutate the caller's list).
+      2. Compute the split sizes from the fractions: round(n * train_frac) for
+         train and round(n * val_frac) for val; everything left over is test.
+      3. Slice the shuffled list into the three non-overlapping parts and return
+         (train, val, test).
     """
     # TODO: implement split_dataset
     raise NotImplementedError("TODO: implement split_dataset()")
@@ -154,15 +154,18 @@ def eval_on_split(
     Return the mean score across sampled examples.
 
     TODO:
-      1. Sample min(n_samples, len(examples)) examples (random, seed=0).
-      2. For each example:
-         a. Call provider.chat() with a system message ("Rewrite as formal business English")
-            and user message (example["informal"]).
-         b. Ask a second provider.chat() call to judge:
-              "Rate 1-5 how well this rewrite achieves formal business English.
-               Reference: <formal>. Candidate: <output>. Reply with a single digit only."
-         c. Parse the digit (fallback to 3).
-      3. Return mean score.
+      1. Sample min(n_samples, len(examples)) examples (random, seed=0 for
+         reproducibility).
+      2. For each sampled example:
+         a. Rewrite step — call provider.chat() with a system message telling the
+            model to rewrite text as formal business English and a user message
+            holding example["informal"].
+         b. Judge step — a SECOND provider.chat() call that asks the model to
+            rate 1–5 how well the candidate rewrite matches the reference formal
+            version (pass both example["formal"] and the step-a output), replying
+            with a single digit only.
+         c. Parse the first digit out of the judge's reply; fall back to 3.
+      3. Return the mean score over the sampled examples.
 
     Note: this is slow (2 LLM calls per sample). Keep n_samples small.
     """

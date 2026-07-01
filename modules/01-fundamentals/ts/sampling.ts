@@ -62,7 +62,9 @@ export function greedy(_logits: number[]): number {
 
 /**
  * Sample from softmax(logits / temperature).
- * TODO: probs = softmax(logits, temperature); return sampleFromProbs(probs, rng).
+ * TODO: turn the logits into probabilities with the provided `softmax` (pass
+ *   `temperature` through), then draw one index from them with the provided
+ *   `sampleFromProbs` helper.
  * Lower T -> sharper distribution -> picks the top token more often.
  */
 export function sampleTemperature(_logits: number[], _temperature: number, _rng: () => number): number {

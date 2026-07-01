@@ -2,9 +2,9 @@
 
 > **Depth tags** 🟢 app-level · 🟡 build-one-piece-by-hand · 🔴 from-scratch
 
-Classification is the bread-and-butter ML task: given a piece of text, assign it
+Classification is the bread-and-butter ML (Machine Learning) task: given a piece of text, assign it
 one label from a fixed set. This module does it three ways so you feel the
-real trade-offs between prompting an LLM and training a model.
+real trade-offs between prompting an LLM (Large Language Model) and training a model.
 
 Dataset: `data/texts.json` — 50 news snippets across six categories
 (technology, science, business, sports, health, politics). Small enough to run
@@ -16,18 +16,18 @@ offline; large enough to measure meaningful accuracy differences.
 
 ### What is classification?
 
-Classification maps an input to one of *C* discrete labels. For text that means
+Classification maps an input to one of _C_ discrete labels. For text that means
 "is this spam?", "what topic is this article?", or "is this review positive?"
 The hard part is representation: how do you turn words into something a
 mathematical model can learn from?
 
 ### Three approaches (and when to use each)
 
-| Approach | How it works | Needs labelled data? | Inference cost |
-| --- | --- | --- | --- |
-| LLM zero/few-shot | Prompt the model with the label set; let it "understand" | No (few-shot needs examples, not labels) | High — one LLM call per item |
-| Embeddings + trained head | Embed text → float vector → train LR or kNN | Yes — ~20+ per class | Low — dot products only |
-| From scratch | Embed text → train softmax LR with gradient descent | Yes | Low |
+| Approach                  | How it works                                                                            | Needs labelled data?                     | Inference cost               |
+| ------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------- | ---------------------------- |
+| LLM zero/few-shot         | Prompt the model with the label set; let it "understand"                                | No (few-shot needs examples, not labels) | High — one LLM call per item |
+| Embeddings + trained head | Embed text → float vector → train LR (Logistic Regression) or kNN (k-Nearest Neighbors) | Yes — ~20+ per class                     | Low — dot products only      |
+| From scratch              | Embed text → train softmax LR with gradient descent                                     | Yes                                      | Low                          |
 
 The key insight: **embeddings decouple "understanding text" from "making a decision"**.
 The embedding model does the semantic heavy lifting at embedding time. At inference time
@@ -66,12 +66,13 @@ That's it. The gradient at each position is just (predicted probability) − (tr
 This falls out naturally when you differentiate softmax + cross-entropy jointly.
 
 From this:
+
 ```
 dL/dW = Xᵀ @ dL/dz / N
 dL/db = mean(dL/dz, axis=0)
 ```
 
-**Why the harmonic mean for F1?**
+**Why the harmonic mean for F1 (F1 score — harmonic mean of precision and recall)?**
 
 Arithmetic mean of precision and recall can mislead: a classifier with precision=1.0
 and recall=0.0 would score 0.5 on arithmetic average but is useless (it never predicts anything).
@@ -92,6 +93,7 @@ P=1.0, R=0.0 → F1 = 0. That's the right answer.
 **Goal:** Use a chat LLM as a classifier with no training data.
 
 **Files:**
+
 - `py/01_llm_classifier.py`
 - `ts/01-llm-classifier.ts`
 
@@ -111,6 +113,7 @@ P=1.0, R=0.0 → F1 = 0. That's the right answer.
 
 4. Implement `few_shot_prompt()` / `buildFewShotPrompt()` — same structure but
    prepend labelled examples before the query. Format:
+
    ```
    Text: <example>
    Label: <label>
@@ -122,6 +125,7 @@ P=1.0, R=0.0 → F1 = 0. That's the right answer.
 5. Implement `classify_few_shot()` / `classifyFewShot()` — same call pattern.
 
 **Acceptance:**
+
 - Zero-shot achieves ≥ 60% accuracy on the first 10 samples.
 - Few-shot achieves ≥ 70% accuracy on the first 10 samples.
 - `parse_label("The answer is TECHNOLOGY", labels)` returns `"technology"`.
@@ -137,6 +141,7 @@ benefit from seeing how you want edge cases handled.
 **Goal:** Embed the texts, split into train/test, train a classifier on vectors.
 
 **Files:**
+
 - `py/02_embedding_classifier.py` (sklearn LogisticRegression + hand-rolled kNN)
 - `ts/02-embedding-classifier.ts` (hand-rolled kNN only)
 
@@ -148,6 +153,7 @@ benefit from seeing how you want edge cases handled.
    of 32 (providers may have batch limits). Return shape (50, D).
 
 2. Implement `cosine_similarity()` / `cosineSimilarity()`:
+
    ```
    cosine(a, b) = dot(a, b) / (||a|| * ||b||)
    ```
@@ -165,6 +171,7 @@ benefit from seeing how you want edge cases handled.
    with `metric="cosine"`. They should be very close.
 
 **Acceptance:**
+
 - Test accuracy ≥ 60% for kNN (k=5).
 - Hand-rolled kNN and sklearn kNN agree on ≥ 80% of predictions.
 - Train/test split is 80/20 stratified (same random seed = 42).
@@ -180,6 +187,7 @@ articles cluster together; "health" articles form another cluster. kNN just asks
 **Goal:** Compute precision, recall, F1, confusion matrix; compare classifiers.
 
 **Files:**
+
 - `py/03_evaluation.py`
 - `ts/03-evaluation.ts`
 
@@ -208,6 +216,7 @@ articles cluster together; "health" articles form another cluster. kNN just asks
 7. Print a comparison table: embedding classifier vs LLM, side by side.
 
 **Acceptance:**
+
 - Metrics are implemented by hand (Python may additionally use `sklearn.metrics` to check).
 - Both classifiers run on the EXACT SAME test set (same 80/20 stratified split, seed=42).
 - A per-class table and confusion matrix print for each classifier.
@@ -225,6 +234,7 @@ shows you WHICH classes get confused — e.g. "health" often confused with "scie
 only numpy (Python) / plain arrays (TypeScript).
 
 **Files:**
+
 - `py/04_logistic_scratch.py`
 - `ts/04-logistic-scratch.ts`
 
@@ -233,6 +243,7 @@ only numpy (Python) / plain arrays (TypeScript).
 The data loading, train/test split, and training loop are provided. You implement:
 
 1. `softmax(z)` — row-wise numerically stable softmax:
+
    ```python
    z_stable = z - z.max(axis=1, keepdims=True)
    exp_z = np.exp(z_stable)
@@ -257,6 +268,7 @@ The data loading, train/test split, and training loop are provided. You implemen
    ```
 
 **Acceptance:**
+
 - Loss decreases monotonically over the first 50 epochs.
 - Test accuracy after 300 epochs is ≥ 50% (embedding features make this achievable).
 - `softmax([[1, 2, 3]])` sums to approximately 1.0 per row.
@@ -285,15 +297,15 @@ universal standard for classification.
 
 ## When to use which approach
 
-| Situation | Recommended approach |
-| --- | --- |
-| No labelled data, flexible or changing labels | LLM zero-shot |
-| A handful of examples per class (< 10) | LLM few-shot |
-| 20–100+ labelled examples per class, fixed label set | Embeddings + trained head (LR or kNN) |
-| Need sub-millisecond latency or very high throughput | Embeddings + trained head |
-| Labels are costly to collect but you have a chat model | LLM few-shot as a labelling oracle, then train a head |
-| You want to understand what the model is actually doing | From scratch (Task 4) |
-| Multi-billion parameter model, many task variations | Fine-tune (beyond this module) |
+| Situation                                               | Recommended approach                                  |
+| ------------------------------------------------------- | ----------------------------------------------------- |
+| No labelled data, flexible or changing labels           | LLM zero-shot                                         |
+| A handful of examples per class (< 10)                  | LLM few-shot                                          |
+| 20–100+ labelled examples per class, fixed label set    | Embeddings + trained head (LR or kNN)                 |
+| Need sub-millisecond latency or very high throughput    | Embeddings + trained head                             |
+| Labels are costly to collect but you have a chat model  | LLM few-shot as a labelling oracle, then train a head |
+| You want to understand what the model is actually doing | From scratch (Task 4)                                 |
+| Multi-billion parameter model, many task variations     | Fine-tune (beyond this module)                        |
 
 **The rule of thumb:** LLM zero/few-shot is the right starting point — no data
 required and often surprisingly accurate. If you have labelled data and need

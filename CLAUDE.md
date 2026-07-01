@@ -41,6 +41,15 @@ The module map (24 modules): 00 Setup & Providers · 01 LLM Fundamentals ·
 (`modules/05b-advanced-rag/`, extends module 05 — Contextual Retrieval, CRAG,
 Self-RAG, GraphRAG; reference: `docs/ADVANCED_RAG.md`) and **06b LangGraph**
 (`modules/06b-langgraph/`, extends module 06; reference: `docs/LANGGRAPH.md`).
+Four more companions extend module 01 and 06: **01b Classic ML Foundations**
+(`modules/01b-ml-foundations/` — regression, bias–variance, regularisation,
+ROC/AUC, k-means), **01c Deep Learning Essentials** (`modules/01c-deep-learning/`
+— autograd/backprop, optimizers, initialisation, regularisation, RNN+BPTT), and
+**01d Transformer Architecture** (`modules/01d-transformer/` — multi-head
+attention, masking, positional encoding, LayerNorm/residuals, KV cache) are all
+pure-from-scratch (numpy + TS, no provider); **06c Agent Frameworks**
+(`modules/06c-agent-frameworks/` — LangChain/CrewAI/AutoGen, extends 06/06b) is
+offline via a `--stub` model.
 **Each module's `README.md` is the source of
 truth** for what the learner is studying — read it before tutoring or quizzing on a topic.
 (Some module READMEs may not be written yet; if one is missing, fall back to the root
@@ -69,12 +78,15 @@ provider or an SDK call in exercise code:
   `provider.chat_stream(...)`, `provider.embed(...)`.
 - TypeScript: `getProvider()` from `@learn-ai/llm-core`.
 
-The provider swaps between OpenAI / Anthropic / Ollama / NVIDIA / LM Studio
-(local, OpenAI-compatible) via one env var. Note: **Anthropic has no embeddings
-endpoint** — `embed()` raises there; use `LLM_PROVIDER=openai` (or
-`ollama`/`nvidia`/`lmstudio`) for embedding/RAG exercises. The
+The provider swaps between OpenAI / Anthropic / Ollama / NVIDIA / LM Studio /
+Gemini (six providers) via one env var — `OpenAICompatibleProvider` now covers
+five of them (OpenAI, Ollama, NVIDIA, LM Studio, Gemini, all via the OpenAI-compatible
+endpoint shape); only Anthropic needs its own adapter. Note: **Anthropic has no
+embeddings endpoint** — `embed()` raises there; use `LLM_PROVIDER=openai` (or
+`ollama`/`nvidia`/`lmstudio`/`gemini`) for embedding/RAG exercises. The
 zero-cost path is Ollama (`ollama pull llama3.2 && ollama pull nomic-embed-text`)
-or LM Studio (load a model, Start Server on port 1234).
+or LM Studio (load a model, Start Server on port 1234). Gemini
+(`LLM_PROVIDER=gemini`, `GEMINI_API_KEY`) has a free tier and does support embeddings.
 
 ## How to run things
 
@@ -97,9 +109,34 @@ or LM Studio (load a model, Start Server on port 1234).
   `uv run python -m tutor ask` and `uv run python -m tutor exam --module 04`
   (in `projects/tutor/`). See `docs/TUTOR_AND_EXAM.md` for when to use which.
 
+## Course-maintenance skills
+
+- **`jd-gap-analysis`** (`.claude/skills/jd-gap-analysis/SKILL.md`) — give it a job
+  description (pasted text or a URL) and it extracts the **AI/ML/GenAI** requirements,
+  maps them against `CURRICULUM.md`, and reports the AI-only gaps (ranked, with suggested
+  house-style modules). Use it to keep the course aligned to what employers ask for.
+
 ## When you help
 
 - Be a tutor first: prefer hints, structure, and the next concrete step over dumping a
   full solution — unless the learner explicitly asks for the solution.
 - Anchor answers to the module README, not to your own memory of how a tool behaves.
 - Keep exercise code going through `llm_core` / `@learn-ai/llm-core`.
+
+## Writing exercise scaffolds (TODO stubs)
+
+Exercise files leave the pedagogically-core function as a stub (`raise NotImplementedError`
+/ `throw new Error("TODO: ...")`). The TODO comment must **hint, not hand over a
+copy-paste solution** — the learner should have to write the code, not just uncomment it.
+
+- **Keep** (good hints): the value's TYPE (e.g. "build a `ChatMessage[]`", Python type
+  hints), the return/object SHAPE, WHICH functions to call (`provider.chat`, `isYes`,
+  `Promise.all`, `np.linalg.solve`, …), WHICH parameters matter (`temperature: 0`, a small
+  `maxTokens`, `axis=1` — you may replace a giveaway magic value with `...`), and the
+  concept / numbered steps / math formulas in the header docstring.
+- **Remove** (spoilers): fully-assembled object/array literals, exact prompt STRINGS
+  (describe their intent instead), the final `return <expression>`, and copy-paste chains
+  like `xs.map(...).join(...)` (describe them in words). No line-for-line commented-out
+  solution.
+- Only edit comments on **unimplemented** stubs; never alter code the learner may have
+  already solved. Keep the Python and TypeScript hints parallel.

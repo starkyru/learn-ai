@@ -52,10 +52,11 @@ def build_bm25(docs: list[dict[str, str]]) -> BM25Okapi:
     """
     Build a BM25Okapi index from the corpus.
 
-    TODO: tokenise each document and pass the result to BM25Okapi().
+    TODO: tokenise each document, then construct and return a `BM25Okapi(...)`
+    over the tokenised corpus.
 
-    Tokenisation: lowercase, split on whitespace.
-      tokenised = [doc["text"].lower().split() for doc in docs]
+    Tokenisation: for each doc lowercase its text and split on whitespace, so you
+    end up with a `list[list[str]]` (one token list per document).
 
     BM25Okapi uses Okapi BM25 (the most common variant, k1=1.5, b=0.75).
     """
