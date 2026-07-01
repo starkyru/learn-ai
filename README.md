@@ -63,13 +63,27 @@ they're where the real understanding lives.
 
 > **Foundations companions — [`modules/01b-ml-foundations/`](modules/01b-ml-foundations/),
 > [`modules/01c-deep-learning/`](modules/01c-deep-learning/),
-> [`modules/01d-transformer/`](modules/01d-transformer/):** extend module 01 with the
-> classic-ML / deep-learning / transformer theory interviews probe — pure from-scratch
-> numpy + TS, no provider needed. **01b** covers regression, bias–variance, ridge,
-> cross-validation, ROC/AUC, and k-means; **01c** builds a scalar autograd engine + MLP,
-> optimizers (SGD/Momentum/Adam), initialisation, regularisation, and an RNN with BPTT;
-> **01d** assembles a GPT-style decoder — multi-head attention with causal masking,
-> sinusoidal positional encoding, LayerNorm/GELU/FFN pre-LN blocks, and a KV cache.
+> [`modules/01d-transformer/`](modules/01d-transformer/),
+> [`modules/01e-trees-ensembles/`](modules/01e-trees-ensembles/),
+> [`modules/01f-stats-foundations/`](modules/01f-stats-foundations/):** extend module 01
+> with the classic-ML / deep-learning / transformer theory interviews probe — pure
+> from-scratch numpy + TS, no provider needed. **01b** covers regression, bias–variance,
+> ridge, cross-validation, ROC/AUC, and k-means; **01c** builds a scalar autograd engine +
+> MLP, optimizers (SGD/Momentum/Adam), initialisation, regularisation, and an RNN with
+> BPTT; **01d** assembles a GPT-style decoder — multi-head attention with causal masking,
+> sinusoidal positional encoding, LayerNorm/GELU/FFN pre-LN blocks, a KV cache, and an
+> encoder-vs-decoder (BERT vs GPT) comparison, plus interview notes on RoPE, GQA/MQA,
+> FlashAttention, MoE, and scaling laws; **01e** builds decision trees (CART), random
+> forests, gradient boosting, and an empirical bias–variance decomposition; **01f** covers
+> Bayes & naive Bayes, MLE (and why cross-entropy _is_ MLE), hypothesis testing / A/B
+> tests, and PCA from scratch.
+
+> **Deep dive — [`modules/13b-alignment/`](modules/13b-alignment/):** extends module 13
+> with **post-training & alignment** — the "how is ChatGPT actually trained?" interview
+> answer, built from scratch on toy models (TS + Py, fully offline): preference data +
+> Elo/win rates, a Bradley–Terry reward model, RLHF with REINFORCE including a **reward
+> hacking** (Goodhart) demo with and without the KL leash, and **DPO** from scratch with
+> its derivation.
 
 > **Deep dive — [`modules/06c-agent-frameworks/`](modules/06c-agent-frameworks/):**
 > extends modules 06/06b with the five framework names interviews drop —

@@ -225,6 +225,43 @@ or explode in vanilla RNNs — the motivation for LSTMs (Long Short-Term Memory)
 Trained on a short repeating string, the RNN learns the pattern and predicts the next
 character far better than random (1/vocab).
 
+### 5. LSTM and GRU: gating, in enough depth to interview on (concept only)
+
+Task 4 shows the disease — repeated multiplication by `Whh` makes long-range
+gradients vanish or explode. The **LSTM (Long Short-Term Memory)** is the classic
+cure, and "why does an LSTM fix vanishing gradients?" is a perennial interview
+question. The trick: add a **cell state** `c_t`, a separate memory lane that is
+updated **additively**, with three learned sigmoid **gates** (values in `(0,1)`)
+deciding what flows:
+
+```
+f_t = σ(W_f·[h_{t-1}, x_t] + b_f)        # forget gate: what to erase from c
+i_t = σ(W_i·[h_{t-1}, x_t] + b_i)        # input gate:  what new info to write
+c̃_t = tanh(W_c·[h_{t-1}, x_t] + b_c)     # candidate content
+c_t = f_t ⊙ c_{t-1} + i_t ⊙ c̃_t          # ← the additive highway
+o_t = σ(W_o·[h_{t-1}, x_t] + b_o)        # output gate: what to reveal
+h_t = o_t ⊙ tanh(c_t)
+```
+
+The key line is the cell update: `c_t = f_t ⊙ c_{t-1} + i_t ⊙ c̃_t`. Backprop
+through it multiplies the gradient by `f_t` (a value the network can learn to
+hold near 1), **not** by `Whh` over and over — so gradients can flow across many
+timesteps unattenuated. That additive-shortcut idea is the same one you meet as
+**residual connections** in module 01d.
+
+The **GRU (Gated Recurrent Unit)** is the budget LSTM: it merges the cell and
+hidden state and uses two gates (update `z_t`, reset `r_t`) instead of three —
+fewer parameters, usually similar quality:
+
+```
+h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t    # interpolate old state and candidate
+```
+
+Interview sound bites: LSTM fixes vanishing gradients via an additively-updated,
+gate-protected cell state; GRU is a cheaper 2-gate variant; both still process
+tokens **sequentially** (no parallelism over the time axis), which is the
+bottleneck transformers removed by replacing recurrence with attention.
+
 ---
 
 ## Tasks

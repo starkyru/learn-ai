@@ -102,6 +102,26 @@ Three metrics, inspired by [RAGAS](https://docs.ragas.io/):
 All three use the LLM to judge — which means the judge can be fooled by
 plausible-sounding but wrong text. Treat scores as signal, not ground truth.
 
+### Retrieval metrics: recall@k, MRR, NDCG (interview notes)
+
+LLM-as-judge scores the _generation_; the retriever itself is scored with classic
+ranking metrics over a labelled set of (query → relevant chunks):
+
+- **Recall@k** — fraction of queries whose relevant chunk appears anywhere in the
+  top k. The first number to tune: if the right chunk isn't in the top k, nothing
+  downstream can save you.
+- **MRR (Mean Reciprocal Rank)** — average of `1/rank` of the _first_ relevant
+  result (1.0 = always first, 0.5 = typically second). Right metric when one good
+  chunk is enough — which is most RAG.
+- **NDCG (Normalized Discounted Cumulative Gain)** — sums graded relevance
+  discounted by `1/log₂(rank+1)`, normalized by the ideal ordering. Right metric
+  when relevance is graded (very/somewhat/not) and several results matter.
+
+Practical recipe: measure recall@k to choose k and the retriever, MRR to judge
+the reranker (module 05 Task 2 should raise MRR), and quote NDCG when someone
+asks "how do you evaluate search?" in an interview. The capstone's M2 milestone
+uses MRR@5 for exactly this reason.
+
 ### Citations
 
 Citations make RAG auditable. Instead of one opaque answer, you get a list of

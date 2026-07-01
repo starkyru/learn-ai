@@ -6,6 +6,9 @@ Module 01 gave you a single toy attention head. This deep-dive companion builds 
 **whole decoder** the way GPT (Generative Pre-trained Transformer)-style models are actually assembled: multi-head
 self-attention with causal masking, sinusoidal positional encodings, a pre-LN (pre-Layer Normalization) block
 (LayerNorm (Layer Normalization) + residual + feed-forward), and the KV cache (Key-Value cache) that makes generation fast.
+A fifth task then contrasts the decoder you built with BERT (Bidirectional Encoder
+Representations from Transformers)-style **encoders** — same attention, different mask,
+different training objective.
 
 Everything here is **pure numpy (Python) / plain arrays (TypeScript)**, offline, and
 deterministic. No provider, no network, no ML (Machine Learning) framework — the point is to see the
@@ -150,6 +153,42 @@ cached : n key projections          (one new key per step)
 Identical outputs, linear instead of quadratic work. This is why real LLM (Large Language Model) inference is
 fast — and why longer context costs proportionally more memory (the cache grows).
 
+### 7. Encoder vs decoder — BERT vs GPT
+
+The classic interview question "what's the difference between BERT and GPT?" has a
+surprisingly small answer: **both are stacks of exactly the transformer blocks you
+built above**. What differs is the **attention mask** and the **training objective**
+— and everything else (what each is good at) follows from those two choices.
+
+- **Encoder-only (BERT).** No mask: attention is **bidirectional**, every position
+  sees the whole sequence, left _and_ right. Trained with a **masked-LM** objective —
+  hide ~15% of tokens, predict them from full two-sided context. The result is
+  excellent contextual _representations_ (each position summarises its whole
+  neighbourhood), but the model can't generate text left-to-right: producing token
+  `t` bidirectionally would require already knowing tokens `> t`.
+- **Decoder-only (GPT).** The **causal mask** from Task 1: position `i` sees only
+  `j ≤ i`. Trained with the **next-token** objective — predict token `t+1` from
+  tokens `0..t`. That's precisely what makes autoregressive generation possible
+  (and what the KV cache from Task 4 accelerates), at the price of never using
+  right context when representing a position.
+- **Encoder–decoder (T5, the original transformer).** A bidirectional encoder reads
+  the input; a causal decoder generates the output while **cross-attending** to the
+  encoder's representations. Natural for sequence-to-sequence jobs — translation,
+  summarization — where the whole source is known up front.
+
+| Architecture    | Mask                                              | Training objective          | Great at                              | Example models                       |
+| --------------- | ------------------------------------------------- | --------------------------- | ------------------------------------- | ------------------------------------ |
+| Encoder-only    | none (bidirectional)                              | masked-LM (cloze)           | embeddings, classification, retrieval | BERT, RoBERTa, most embedding models |
+| Decoder-only    | causal (`j ≤ i`)                                  | next-token prediction       | text generation, chat, agents         | GPT-4, Llama, Claude                 |
+| Encoder–decoder | none in encoder, causal in decoder (+ cross-attn) | denoising / span corruption | translation, summarization            | T5, BART, original transformer       |
+
+One practical consequence you'll meet again: the **embedding models** used in
+modules 04/05 (`text-embedding-3-small`, `nomic-embed-text`) are encoder-style —
+bidirectional context is exactly what makes a good sentence representation — while
+every **chat model** you call through `llm_core` is a decoder. Task 5 makes the
+difference measurable: replace one token with `[MASK]` and only the bidirectional
+model can use the disambiguating word to the mask's _right_.
+
 ---
 
 ## Tasks
@@ -292,6 +331,51 @@ truth. You implement the cached path.
 
 ---
 
+### Task 5 🟡 — Encoder vs decoder (BERT vs GPT)
+
+**Goal:** Show that BERT and GPT share the exact same attention machinery and differ
+only in the mask (and the training objective that mask allows) — then prove it with a
+masked-token experiment where the answer sits to the mask's _right_.
+
+**Files:**
+
+- `py/05_encoder_vs_decoder.py`
+- `ts/05-encoder-vs-decoder.ts`
+
+The toy vocabulary/embedding table, the five masked sentences, and the stable
+`softmax` helper are **provided** — the file is self-contained.
+
+**Steps:**
+
+1. Implement `full_attention(Q, K, V)` / `fullAttention(Q, K, V)` — bidirectional
+   (encoder-style) scaled dot-product attention: exactly Task 1's SDPA with the mask
+   branch deleted. Return `(output, weights)`.
+
+2. Implement `causal_attention(Q, K, V)` / `causalAttention(Q, K, V)` — the same, but
+   build and add Task 1's additive causal mask (`0` for `j ≤ i`, `−∞` for `j > i`)
+   before the softmax.
+
+3. Implement `attention_mass_on_future(weights)` / `attentionMassOnFuture(weights)` —
+   for each row `i`, sum the weights strictly above the diagonal (`j > i`), then
+   average over rows. This measures how much a weight matrix "looks right".
+
+4. Implement `nearest_token(repr, E)` / `nearestToken(repr, E)` — cosine-similarity
+   argmax of a contextual representation against the embedding table.
+
+5. The harness runs the **masked-token readout**: each sentence is
+   `the big [MASK] <sound> today`, where only the sound (to the **right** of the
+   mask) says which animal is hidden. It computes the mask position's representation
+   under both attention types and reads out the nearest vocabulary token.
+
+**Acceptance:**
+
+- Causal future mass is **exactly** `0.0`; bidirectional future mass is `> 0.2`.
+- Bidirectional attention recovers the true masked token in **≥ 4/5** sentences.
+- Causal attention recovers **strictly fewer** (the left context is identical across
+  all five sentences, so its prediction can't depend on the hidden animal).
+
+---
+
 ## Done when
 
 - [ ] `01_attention` / `01-attention` runs: weight rows sum to 1, the causal mask zeroes
@@ -303,6 +387,12 @@ truth. You implement the cached path.
       shape-preserving block, and a finite output from a 3-block stack.
 - [ ] `04_kv_cache` / `04-kv-cache` shows identical per-step logits and prints the
       `n` vs `n(n+1)/2` key-projection counts.
+- [ ] `05_encoder_vs_decoder` / `05-encoder-vs-decoder` shows exactly-zero causal
+      future mass vs `> 0.2` bidirectional, and the masked-token readout: the
+      bidirectional model recovers ≥ 4/5 hidden tokens, the causal model strictly
+      fewer.
+- [ ] You can answer, in one breath: "BERT vs GPT — what's actually different?"
+      (mask + objective; the blocks are the same).
 
 ---
 
@@ -316,6 +406,77 @@ truth. You implement the cached path.
 | `sinusoidal_encoding`          | Replaced in modern models by RoPE (Rotary Positional Embedding) / ALiBi, but the "add order info" idea is identical |
 | pre-LN `TransformerBlock`      | The repeated unit; GPT-2 = 12 layers, GPT-3 = 96                                                                    |
 | KV cache                       | Exactly what `use_cache=True` / paged-attention servers do at inference                                             |
+
+---
+
+## Beyond this module — the modern LLM stack (interview notes)
+
+Five upgrades that separate the decoder you just built from a 2024+ production model.
+These are **notes, not tasks** — read them so the names don't surprise you in an
+interview or a model card.
+
+### RoPE — rotary positional embeddings
+
+Task 2 **added** a position vector to each embedding (absolute positions). RoPE (Rotary
+Positional Embedding) instead **rotates** each 2-D pair of query/key dimensions by a
+position-dependent angle: pair `i` at position `pos` is rotated by `θ_i · pos`, with
+`θ_i = 10000^(−2i/d)` — the same geometric frequency ladder as your sinusoids, applied
+as a rotation instead of an addition. Because a dot product between two rotated vectors
+depends only on the _difference_ of their angles, the attention score `q_m · k_n`
+depends only on the **relative offset** `m − n`, not on absolute positions — which is
+what you actually want for language. RoPE is the standard in Llama, Qwen, and DeepSeek,
+and it enables context-window extension via NTK-aware / YaRN scaling: stretch the
+rotation frequencies so pretrained relative-position behaviour covers longer sequences.
+
+### GQA / MQA — grouped-query and multi-query attention
+
+In your Task 1 MHA, every one of the `h` query heads has its own K and V head — so the
+Task 4 KV cache stores `h` keys and `h` values per token per layer. MQA (Multi-Query
+Attention) keeps all `h` query heads but shares **one** K/V head among them; GQA
+(Grouped-Query Attention) is the middle ground — `g` K/V heads, each shared by `h/g`
+query heads (Llama-3-70B: 64 query heads, 8 KV heads). The KV cache shrinks by exactly
+the sharing factor (`h/g`, e.g. 8×). The motivation is **inference memory and memory
+bandwidth, not FLOPs** — at generation time the cache is what fills GPU memory and what
+each new token must stream through, so shrinking it directly buys longer contexts and
+bigger batches at nearly no quality cost.
+
+### FlashAttention — exact attention, IO-aware
+
+FlashAttention computes **exactly** the same softmax attention you implemented — it is
+_not_ an approximation. The insight is that attention on GPUs (Graphics Processing Units) is
+**memory-bandwidth-bound**, not compute-bound: the naive implementation writes the full
+`n × n` score matrix to slow HBM (High-Bandwidth Memory), reads it back for the softmax,
+writes the weights, reads them again for `· V`. FlashAttention tiles Q, K, V into blocks
+that fit in fast on-chip SRAM and fuses `QKᵀ → softmax → · V` into one kernel using the
+**online softmax** trick (maintain the running row max and running normaliser as blocks
+stream by — the same `subtract-the-max` stabilisation you wrote, computed incrementally).
+The `n × n` matrix never materialises in HBM; memory drops from `O(n²)` to `O(n)` and
+wall-clock speed jumps several-fold at long sequence lengths.
+
+### MoE — mixture-of-experts FFNs
+
+In an MoE (Mixture of Experts) block, the single FFN from Task 3 is replaced by `E`
+independent FFNs ("experts") plus a tiny **router**: for each token, the router scores
+all experts and sends the token through only the **top-k** (typically `k = 2`), summing
+their outputs weighted by the router probabilities. This splits **total** from
+**active** parameters — Mixtral 8×7B has ≈ 47 B parameters in total but only ~13 B are
+active per token — so you get big-model capacity at small-model FLOPs (Floating-Point
+Operations) per token. A **load-balancing** auxiliary loss nudges the router to spread
+tokens evenly across experts, otherwise it collapses onto a favourite few. The trade:
+all experts must still sit in memory, and routing complicates serving.
+
+### Scaling laws — Kaplan and Chinchilla
+
+Kaplan et al. (2020) showed loss falls as smooth **power laws** in parameters `N`,
+dataset tokens `D`, and compute `C` (`L ∝ N^−α`, roughly `α ≈ 0.076` for parameters) —
+predictable enough to extrapolate from cheap runs to expensive ones. Chinchilla (2022)
+re-derived the compute-optimal allocation and found earlier models badly undertrained:
+for a fixed training budget you should scale `N` and `D` **together**, landing near
+**≈ 20 training tokens per parameter** (Chinchilla: 70 B params × 1.4 T tokens beat the
+4× larger Gopher). Modern models deliberately "overtrain" far past that ratio (e.g.
+Llama-3-8B saw ~15 T tokens, ≈ 1 900 per parameter) because the Chinchilla optimum only
+minimises _training_ compute — once **inference cost dominates** a model's lifetime, a
+smaller model trained on far more tokens is cheaper to serve at equal quality.
 
 ---
 

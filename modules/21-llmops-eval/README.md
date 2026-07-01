@@ -86,6 +86,39 @@ _health_. Track:
 
 The JSONL (JSON Lines) log format from module 07 task 2 feeds directly into task 5's monitor.
 
+### Drift: why a model that passed eval degrades anyway (interview notes)
+
+"Model performance dropped in production but you changed nothing — what
+happened?" is a standard MLOps interview probe. The vocabulary:
+
+- **Data drift (covariate shift)** — the input distribution `P(x)` moves: new
+  topics, new user segments, a new document format in the RAG corpus. The model
+  is unchanged but increasingly answers out-of-distribution questions.
+- **Concept drift** — the input→output relationship `P(y|x)` moves: the correct
+  answer changed (pricing, policies, APIs) while the corpus or model stayed
+  frozen. Stale RAG corpora are concept drift you built yourself.
+- **Upstream/model drift (LLM-specific)** — a hosted provider silently updates
+  the model behind an alias like `-latest`, or a prompt/tool change shifts
+  behaviour. Same eval set, different model → different outputs.
+
+Detection is distribution comparison between a reference window (what the eval
+set represents) and a live window:
+
+- **Numeric signals** (latency, token counts, confidence/judge scores): compare
+  histograms — PSI (Population Stability Index) or a KS test; PSI > 0.2 is the
+  conventional "investigate" threshold.
+- **Text inputs**: embed both windows (module 04) and compare — centroid cosine
+  distance or the share of live queries whose nearest reference neighbour is
+  below a similarity floor. Rising distance = users asking things your eval set
+  never covered.
+- **Outputs**: track judge-score and refusal-rate trends over time (task 5's
+  report is the natural home); a step change without a deploy is upstream drift.
+
+Response playbook: data drift → sample the new inputs into the eval set (task 4's
+feedback loop) and re-tune retrieval; concept drift → refresh the corpus /
+re-label; upstream drift → pin model versions and re-run the regression gate
+(task 3) on every pin bump.
+
 ---
 
 ## Setup

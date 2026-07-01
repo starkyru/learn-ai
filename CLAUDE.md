@@ -41,15 +41,22 @@ The module map (24 modules): 00 Setup & Providers · 01 LLM Fundamentals ·
 (`modules/05b-advanced-rag/`, extends module 05 — Contextual Retrieval, CRAG,
 Self-RAG, GraphRAG; reference: `docs/ADVANCED_RAG.md`) and **06b LangGraph**
 (`modules/06b-langgraph/`, extends module 06; reference: `docs/LANGGRAPH.md`).
-Four more companions extend module 01 and 06: **01b Classic ML Foundations**
+Seven more companions extend modules 01, 06, and 13: **01b Classic ML Foundations**
 (`modules/01b-ml-foundations/` — regression, bias–variance, regularisation,
 ROC/AUC, k-means), **01c Deep Learning Essentials** (`modules/01c-deep-learning/`
-— autograd/backprop, optimizers, initialisation, regularisation, RNN+BPTT), and
+— autograd/backprop, optimizers, initialisation, regularisation, RNN+BPTT),
 **01d Transformer Architecture** (`modules/01d-transformer/` — multi-head
-attention, masking, positional encoding, LayerNorm/residuals, KV cache) are all
-pure-from-scratch (numpy + TS, no provider); **06c Agent Frameworks**
-(`modules/06c-agent-frameworks/` — LangChain/CrewAI/AutoGen, extends 06/06b) is
-offline via a `--stub` model.
+attention, masking, positional encoding, LayerNorm/residuals, KV cache,
+encoder-vs-decoder/BERT-vs-GPT, plus RoPE/GQA/FlashAttention/MoE/scaling-laws
+interview notes), **01e Trees & Ensembles** (`modules/01e-trees-ensembles/` —
+CART decision trees, random forests, gradient boosting, bias–variance
+decomposition), **01f Probability, Statistics & PCA**
+(`modules/01f-stats-foundations/` — Bayes/naive Bayes, MLE ↔ cross-entropy,
+hypothesis testing/A-B tests, PCA), and **13b Post-training & Alignment**
+(`modules/13b-alignment/`, extends 13 — preference data/Elo, Bradley–Terry
+reward model, RLHF + reward hacking, DPO) are all pure-from-scratch (numpy + TS,
+no provider); **06c Agent Frameworks** (`modules/06c-agent-frameworks/` —
+LangChain/CrewAI/AutoGen, extends 06/06b) is offline via a `--stub` model.
 **Each module's `README.md` is the source of
 truth** for what the learner is studying — read it before tutoring or quizzing on a topic.
 (Some module READMEs may not be written yet; if one is missing, fall back to the root

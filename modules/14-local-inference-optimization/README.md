@@ -85,6 +85,43 @@ the batching benefit — total time grows much slower than N×single.
 
 Rule of thumb: Ollama for local experiments, vLLM for serving at scale.
 
+### Inside a serving engine: continuous batching, PagedAttention, speculative decoding (interview notes)
+
+Three techniques explain most of the gap between "naive transformers loop" and
+vLLM-class throughput. LLM-infra interviews expect all three:
+
+**Continuous batching (a.k.a. in-flight batching).** Static batching waits to
+assemble a batch, runs it, and returns everything when the _longest_ sequence
+finishes — short requests idle behind long ones. Continuous batching schedules at
+the **iteration level**: after every decode step, finished sequences leave the
+batch and queued requests join immediately. The GPU stays full, TTFT drops, and
+throughput rises several-fold on mixed-length traffic. This is the single biggest
+win in vLLM/TGI; Task 3's concurrency experiment is the client-visible shadow of it.
+
+**PagedAttention.** The KV cache (Task 5) is the memory hog, and naive engines
+allocate each request one contiguous slab sized for its _maximum_ possible length
+— most of it wasted internal fragmentation. vLLM applies virtual memory's trick:
+the cache is split into fixed-size **blocks (pages)**, a per-request block table
+maps logical to physical blocks, blocks are allocated on demand and freed on
+completion. Waste falls from ~60–80% to <4%, so far more sequences fit → bigger
+effective batches → the throughput continuous batching needs. Bonus: shared
+prefixes (same system prompt) can point at the same physical blocks —
+copy-on-write prompt caching.
+
+**Speculative decoding.** Decode is memory-bandwidth-bound: each step moves all
+the weights to produce _one_ token. Let a small **draft model** propose k tokens
+cheaply, then have the target model verify all k **in one parallel forward pass**
+— accept the longest prefix the target agrees with (plus one corrected token). A
+rejection-sampling rule makes the output distribution **exactly** the target
+model's — it's lossless, unlike quantization. Typical 2–3× decode speedup when
+the draft's acceptance rate is high; degenerates gracefully when it isn't.
+Variants to name-drop: Medusa (extra decoding heads instead of a draft model)
+and n-gram/prompt-lookup drafting.
+
+One-liner summary for interviews: continuous batching keeps the GPU busy,
+PagedAttention makes the batches big, speculative decoding cuts per-token
+latency — and all three compose.
+
 ---
 
 ## Tasks

@@ -84,6 +84,42 @@ F1 = 2 * P * R / (P + R)
 
 P=1.0, R=0.0 → F1 = 0. That's the right answer.
 
+### Class imbalance, calibration, and PR vs ROC (interview notes)
+
+Three practical-ML questions that come up in nearly every interview and are easy
+to get wrong:
+
+**Class imbalance.** With a 99:1 split, "always predict the majority class" scores
+99% accuracy — which is why accuracy is the wrong metric there (use per-class
+precision/recall/F1, exactly what Task 3 builds). Fixes, in the order to try them:
+
+1. **Do nothing to the data, fix the metric and the threshold** — score with F1 or
+   PR-AUC and move the decision threshold instead of retraining.
+2. **Class weights** — scale each class's loss term by `N / (K · N_class)` so rare
+   classes contribute equally to the gradient (one line in the cross-entropy).
+3. **Resampling** — oversample the minority (duplicate or synthesize, e.g. SMOTE
+   interpolates between minority neighbours) or undersample the majority. Resample
+   **only the training split** — resampling before the split leaks duplicated rows
+   into the test set.
+
+**Calibration.** A classifier is _calibrated_ when its scores are probabilities:
+among samples given `p = 0.8`, ~80% are actually positive. Modern neural nets are
+typically **overconfident**; check with a reliability diagram (bin by predicted
+probability, plot bin accuracy vs bin confidence) and fix post-hoc with **Platt
+scaling** (fit a logistic regression on held-out scores) or **temperature
+scaling** (divide logits by a single learned `T > 1` before softmax — the same
+`T` from module 01's sampler). Calibration matters whenever the probability
+gates a decision — routing low-confidence outputs to human review (module 21
+Task 4) only works if "0.6 confident" means 0.6.
+
+**PR curve vs ROC curve.** ROC (module 01b) plots TPR vs FPR; the
+precision–recall curve plots precision vs recall. Under heavy imbalance ROC-AUC
+can look great while the classifier is useless, because FPR divides by the huge
+negative count and barely moves; precision divides by the model's _positive
+predictions_, so it collapses when false positives swamp the rare positives.
+Rule: balanced classes or symmetric costs → ROC; rare positive class where false
+alarms hurt (fraud, injection detection in module 20) → PR curve and PR-AUC.
+
 ---
 
 ## Tasks

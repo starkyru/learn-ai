@@ -198,7 +198,9 @@ offline and deterministic — no provider, no network, no ML framework.
 
 **Why:** Module 01 gave you a single toy attention head; this companion builds
 the whole GPT-style decoder — multi-head self-attention with causal masking,
-sinusoidal positional encoding, a pre-LN block, and the KV cache. This is the
+sinusoidal positional encoding, a pre-LN block, and the KV cache — then contrasts
+it with the encoder-only (BERT) family and closes with interview notes on the
+modern stack (RoPE, GQA/MQA, FlashAttention, MoE, scaling laws). This is the
 course's most-asked interview material.
 
 **Learning objectives**
@@ -207,17 +209,21 @@ course's most-asked interview material.
 - Build the sinusoidal positional-encoding table and demonstrate why order matters.
 - Assemble LayerNorm, GELU, an FFN, and residuals into a pre-LN decoder block and stack N of them.
 - Implement incremental decoding with a KV cache and prove it equals the naive recompute.
+- Contrast encoder-only (BERT, masked-LM) with decoder-only (GPT, next-token): same
+  blocks, different mask + objective — and show only the bidirectional model can
+  use right-context to recover a masked token.
 
 **Tasks**
 
-| #   | Task                                  | Depth | What you do                                                                                               |
-| --- | ------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------- |
-| 1   | Multi-head attention + causal masking | 🔴    | Implement `scaled_dot_product_attention` (stable softmax), `causal_mask`, and `multi_head_attention`.     |
-| 2   | Sinusoidal positional encoding        | 🟡    | Implement `sinusoidal_encoding`; study the permutation-equivariance and locality checks the harness runs. |
-| 3   | Pre-LN decoder block                  | 🔴    | Implement `layer_norm`, `gelu`, `ffn`, and the pre-LN residual `TransformerBlock.forward`; stack N = 3.   |
-| 4   | KV cache                              | 🟡    | Implement `decode_with_cache` (one key projection per step) and match the provided naive recompute.       |
+| #   | Task                                  | Depth | What you do                                                                                                                                                                                                 |
+| --- | ------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Multi-head attention + causal masking | 🔴    | Implement `scaled_dot_product_attention` (stable softmax), `causal_mask`, and `multi_head_attention`.                                                                                                       |
+| 2   | Sinusoidal positional encoding        | 🟡    | Implement `sinusoidal_encoding`; study the permutation-equivariance and locality checks the harness runs.                                                                                                   |
+| 3   | Pre-LN decoder block                  | 🔴    | Implement `layer_norm`, `gelu`, `ffn`, and the pre-LN residual `TransformerBlock.forward`; stack N = 3.                                                                                                     |
+| 4   | KV cache                              | 🟡    | Implement `decode_with_cache` (one key projection per step) and match the provided naive recompute.                                                                                                         |
+| 5   | Encoder vs decoder (BERT vs GPT)      | 🟡    | Implement `full_attention` (no mask), `causal_attention`, `attention_mass_on_future`, and cosine-argmax `nearest_token`; only the bidirectional model recovers a masked token whose clue sits to its right. |
 
-**Estimated time:** 4–6 hours
+**Estimated time:** 5–7 hours
 
 **Done when**
 
@@ -225,6 +231,103 @@ course's most-asked interview material.
 - [ ] Task 2: PE shape/range correct; permutation-equivariance passes without PE and fails with PE; adjacent PE dot-product exceeds the endpoint pair.
 - [ ] Task 3: LayerNorm rows have mean ≈ 0 / var ≈ 1; one block preserves shape; a 3-block stack produces finite output.
 - [ ] Task 4: cached logits equal naive logits at every step; key-projection counts are `n` (cached) vs `n(n+1)/2` (naive).
+- [ ] Task 5: causal future-attention mass is exactly 0 vs > 0.2 bidirectional; the bidirectional model recovers ≥ 4/5 masked tokens, the causal model strictly fewer.
+- [ ] You can answer in one breath: "BERT vs GPT — what's actually different?" (mask + objective; the blocks are the same).
+
+---
+
+## Module 01e — Trees & Ensembles
+
+**Prerequisites:** Module 01b. NumPy (a base dependency — no extra needed).
+Pure numpy (Python) / plain TypeScript, fully offline, deterministic (fixed
+seeds, synthetic data) — no provider, no network, no LLM. **No sklearn / no
+xgboost** — that constraint is the point.
+
+**Why:** The course covers linear models (01b) and deep nets (01c) but nothing
+tree-based — and decision trees / random forests / gradient boosting are the
+#1 classic-ML interview family and the default baseline for tabular data. This
+companion builds CART, bagging, a random forest, and least-squares gradient
+boosting from scratch, then measures the bias–variance decomposition that
+explains why ensembles work.
+
+**Learning objectives**
+
+- Implement CART from scratch — Gini impurity, exhaustive midpoint split
+  search, recursive growth, prediction — and show depth controlling the
+  train−test overfitting gap.
+- Implement bootstrap sampling (≈ 63.2% unique rows), bagging, and the
+  random-forest feature-subsampling trick, and show the decorrelated ensemble
+  beating both its average member and a single deep tree.
+- Implement least-squares gradient boosting with regression stumps — knowing
+  that the residual IS the negative gradient (gradient descent in function
+  space) — with monotone train MSE, a validation U-curve, and early stopping.
+- Compute the empirical bias–variance decomposition from an (M × N_test)
+  prediction matrix and verify bias² + variance ≈ expected MSE − σ² for a
+  stump, a deep tree, and bagged deep trees.
+
+**Tasks**
+
+| #   | Task                                  | Depth | What you do                                                                                                                         |
+| --- | ------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Decision tree (CART) from scratch     | 🔴    | Implement `gini`, `best_split` (every feature, every midpoint), recursive `build_tree`, `predict_one`; deep vs depth-3 overfit gap. |
+| 2   | Bagging → random forest               | 🟡    | Implement `bootstrap_sample`, `train_forest` (bootstrap + per-split feature subset via the provided trainer), `forest_predict`.     |
+| 3   | Gradient boosting with stumps         | 🔴    | Implement `fit_stump` (best two-leaf SSE split) and `boost` (residuals = negative gradient, lr·stump updates, early-stop pick).     |
+| 4   | Empirical bias–variance decomposition | 🟢    | Implement `empirical_bias_variance` (bias² and variance from an M × N_test prediction matrix); stump vs deep vs bagged table.       |
+
+**Estimated time:** 4–6 hours
+
+**Done when**
+
+- [ ] Task 1: gini(pure) = 0.0 and gini(50/50) = 0.5; unlimited tree hits train acc ≥ 0.99 with a train−test gap ≥ 0.10; the depth-3 tree has a smaller gap and test acc ≥ 0.80.
+- [ ] Task 2: every bootstrap has duplicate indices with unique fraction ≈ 0.632; ensemble test accuracy ≥ mean individual tree and ≥ the single deep-tree baseline.
+- [ ] Task 3: train MSE non-increasing; validation MSE bottoms out strictly before the last round (U-curve); boosted val MSE < 0.5 × the single-stump baseline.
+- [ ] Task 4: stump highest bias², deep tree highest variance, bagging cuts deep-tree variance by > 40%; bias² + variance matches expected MSE − σ² within ± 0.03 for all three models.
+
+---
+
+## Module 01f — Probability, Statistics & PCA
+
+**Prerequisites:** Module 01 (Module 01b helps). NumPy (a base dependency — no
+extra needed). Pure numpy (Python) / plain TypeScript, fully offline,
+deterministic (fixed seeds, synthetic data) — no provider, no network, no LLM.
+
+**Why:** ML-engineer and data-science interviews lean on probability and
+statistics the course never covers — Bayes' theorem (and the base-rate trap),
+maximum likelihood (and why cross-entropy IS maximum likelihood), hypothesis
+testing / A/B tests, and PCA for dimensionality reduction. This companion fills
+that gap without duplicating Module 01b (ROC/AUC, k-means) or Module 08
+(precision/recall/F1).
+
+**Learning objectives**
+
+- Apply Bayes' theorem to the classic medical-test question (posterior ≈ 0.16,
+  not 95%) and scale the same rule into a Laplace-smoothed naive Bayes spam
+  classifier working in log space.
+- Compute closed-form MLEs for Gaussian and Bernoulli data, verify them by
+  grid-searching the NLLs, and show minimising MSE ≡ Gaussian MLE and
+  minimising binary cross-entropy ≡ Bernoulli MLE.
+- Build the two-proportion z-test and CI for an A/B test, then simulate the
+  Type I error rate (≈ α), empirical power, and the multiple-testing trap.
+- Implement PCA from scratch (center → covariance → eigendecomposition → sort
+  → project → reconstruct) and recover the 2-D plane hiding in 10-D data.
+
+**Tasks**
+
+| #   | Task                         | Depth | What you do                                                                                                                             |
+| --- | ---------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Bayes' theorem + naive Bayes | 🟡    | Implement `bayes_posterior` (the base-rate trap), `fit_naive_bayes` (Laplace-smoothed log-likelihoods), `predict_log_posterior`.        |
+| 2   | MLE & the loss connection    | 🟡    | Implement `gaussian_mle`, `bernoulli_mle`, `nll_gaussian`, `nll_bernoulli`; grid searches show MSE ≡ Gaussian NLL, BCE ≡ Bernoulli NLL. |
+| 3   | Hypothesis testing & A/B     | 🟢    | Implement `normal_cdf`, `two_proportion_ztest` (pooled SE), `confidence_interval_diff`; simulate α, power, and multiple testing.        |
+| 4   | PCA from scratch             | 🔴    | Implement `center`, `covariance_matrix`, `pca_fit` (sort eigenpairs descending), `project`, `reconstruct`, `explained_variance_ratio`.  |
+
+**Estimated time:** 4–6 hours
+
+**Done when**
+
+- [ ] Task 1: medical-test posterior within ±0.005 of ≈ 0.161; held-out spam/ham accuracy ≥ 0.9; obvious spam doc gets P(spam) > 0.9.
+- [ ] Task 2: NLL grid argmins land within one grid step of the closed-form MLEs; MSE argmin == Gaussian-NLL argmin; BCE argmin == Bernoulli-NLL argmin.
+- [ ] Task 3: worked A/B example gives p < 0.05 with a CI excluding 0; A/A false-positive rate ≈ 0.05 (±0.02); power reported; the 20-metric A/A demo finds ≥ 1 spurious hit.
+- [ ] Task 4: components orthonormal; top-2 explained variance ≥ 0.9; reconstruction MSE strictly decreases k = 1 → 2 → 5; k = 10 recovers X.
 
 ---
 
@@ -756,6 +859,52 @@ call.
 
 ---
 
+## Module 13b — Post-training & Alignment (RLHF & DPO)
+
+**Prerequisites:** Module 13 (and Module 01b helps). NumPy (a base dependency —
+no extra needed). Pure numpy (Python) / plain TypeScript, fully offline,
+deterministic — no provider, no network, no LLM.
+
+**Why:** "How is ChatGPT actually trained?" — pretraining → SFT → preference
+optimization (RLHF or DPO) — is a top LLM interview question, and module 13
+stops at SFT. This companion builds the missing stage from scratch on toy
+models: "responses" are synthetic feature vectors scored by a hidden true
+reward, and the policies are small tabular softmaxes, so every algorithm stays
+visible — preference data → reward model → RLHF (with its failure mode, reward
+hacking) → DPO.
+
+**Learning objectives**
+
+- Aggregate noisy pairwise preferences into win-rate matrices and Elo ratings
+  (the Chatbot Arena mechanics) and recover a true quality ordering.
+- Train a Bradley–Terry reward model on (chosen, rejected) pairs and verify it
+  recovers the hidden reward direction.
+- Implement REINFORCE with a baseline for the KL-regularized RLHF objective,
+  and demonstrate reward hacking (Goodhart's law) with and without the KL leash.
+- Derive and implement the DPO loss and its analytic gradient, verified by a
+  finite-difference grad check.
+
+**Tasks**
+
+| #   | Task                              | Depth | What you do                                                                                                                          |
+| --- | --------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Preference data: win rates & Elo  | 🟢    | Implement `win_rate_matrix`, `elo_update`, `run_elo`; replay a noisy match log and recover the true model ordering.                  |
+| 2   | Reward model (Bradley–Terry)      | 🟡    | Implement `bt_prob`, `bt_loss`, `bt_grad_step`; train a linear RM on noisy pairs, check ranking accuracy + cosine to w\*.            |
+| 3   | RLHF (REINFORCE) + reward hacking | 🔴    | Implement `softmax`, `reinforce_step`, `kl_divergence`; optimize an imperfect RM with/without the KL leash, watch Goodhart.          |
+| 4   | DPO from scratch                  | 🔴    | Implement `dpo_loss` and the analytic `dpo_grad` (finite-difference checked); train on pairs, watch the implicit reward margin grow. |
+
+**Estimated time:** 4–6 hours
+
+**Done when**
+
+- [ ] Task 1: win-rate matrix consistent, Elo ordering matches true quality, best model clearly on top.
+- [ ] Task 2: held-out ranking accuracy ≥ 0.9, cosine(θ, w\*) ≥ 0.9, monotone BT loss.
+- [ ] Task 3: no-KL run shows the Goodhart collapse (true reward below its peak, proxy at max, P(exploit) > 0.9); KL run keeps true reward ≥ 0.9× peak with KL < 1.0 and P(exploit) < 0.3.
+- [ ] Task 4: grad check < 1e-5; P(chosen) − P(rejected) > 0.2; monotone DPO loss; KL(π‖π_ref) < 1.5.
+- [ ] You can derive the DPO loss from the RLHF objective and name RLAIF, KTO, IPO, GRPO.
+
+---
+
 ## Module 14 — Local Inference & Optimization
 
 **Prerequisites:** Module 00 (Ollama). No extra deps for default path; `uv sync --extra llama-cpp` optional.
@@ -1228,10 +1377,26 @@ the true nearest neighbour.
 **Agent** — a loop where an LLM decides what to do, a tool executes, the result
 feeds back as an observation, and the LLM decides again until done.
 
+**A/B test** — comparing two variants on live traffic and using a statistical
+test (e.g. a two-proportion z-test) to decide whether the observed difference is
+real or noise. Requires understanding p-values, confidence intervals, power, and
+the multiple-testing trap. Built from scratch in module 01f.
+
+**Bagging vs boosting** — the two ways to combine many weak models. Bagging
+(random forests) trains trees independently on bootstrap resamples and averages
+them — it reduces _variance_. Boosting (gradient boosting, XGBoost) trains
+learners sequentially, each fitting the previous ensemble's residuals — it
+reduces _bias_. Module 01e builds both from scratch.
+
 **BPE (Byte-Pair Encoding)** — the tokenization algorithm used by most modern
 LLMs. Starts from characters or bytes and repeatedly merges the most frequent
 adjacent pair into a new token. Handles rare words gracefully without an
 out-of-vocabulary problem.
+
+**Calibration** — how well a classifier's scores behave as probabilities: among
+samples given `p = 0.8`, about 80 % should actually be positive. Neural nets are
+typically overconfident; fix post-hoc with Platt or temperature scaling. See
+module 08's interview notes.
 
 **Chunk** — a segment of a larger document produced by a chunker. Smaller chunks
 give more precise retrieval; larger chunks give more context per result. Structure-aware
@@ -1255,9 +1420,19 @@ module 16.
 of a prompt costs (system, documents, history, tools) and applying truncation or
 compaction strategies before exceeding the model's limit.
 
+**Continuous batching** — iteration-level scheduling in LLM serving engines
+(vLLM, TGI): finished sequences leave the batch after every decode step and
+queued requests join immediately, keeping the GPU full. The biggest single
+throughput win in production serving. See module 14's interview notes.
+
 **Cosine similarity** — `dot(a, b) / (|a| × |b|)`. Measures the angle between
 two vectors regardless of their magnitude. The standard distance metric for
 embedding retrieval.
+
+**Decision tree (CART)** — a classifier/regressor built by greedily choosing the
+feature-threshold split that most reduces impurity (Gini), recursing until a
+depth or leaf-size limit. Interpretable, fast, and the building block of random
+forests and gradient boosting. Built from scratch in module 01e.
 
 **Diffusion** — the class of generative model that learns to reverse a noising
 process. During training, noise is added to images in steps (forward process);
@@ -1277,9 +1452,27 @@ Markdown, DOCX) into clean, structured text chunks ready for embedding and
 retrieval. The real engineering work of a RAG project: ~80 % of quality depends
 on ingestion, not the LLM.
 
+**DPO (Direct Preference Optimization)** — preference tuning that skips the
+reward model and RL loop: the RLHF objective's closed-form optimal policy is
+inverted so the LM's own log-probability ratios act as the implicit reward, and
+a Bradley–Terry loss is applied directly to (chosen, rejected) pairs. Built from
+scratch in module 13b.
+
+**Drift** — production degradation with no code change. Data drift: the input
+distribution moves. Concept drift: the correct answer moves (stale corpus).
+Upstream drift: a hosted provider silently changes the model behind an alias.
+Detect by comparing reference vs live windows (PSI, KS test, embedding
+distance). See module 21's interview notes.
+
 **Embedding** — a fixed-length vector of floats representing the meaning of a
 text (or image). Semantically similar inputs land near each other in the vector
 space.
+
+**Encoder-only vs decoder-only** — same transformer blocks, different mask and
+training objective. Encoder-only (BERT): bidirectional attention + masked-LM →
+representations/embeddings, can't generate. Decoder-only (GPT): causal mask +
+next-token prediction → generation. Encoder–decoder (T5) bolts both together.
+Module 01d Task 5 demonstrates the difference concretely.
 
 **Eval gate** — a CI step (script that exits non-zero) that blocks merging or
 deploying if a quality metric falls below a threshold. Equivalent to a unit test
@@ -1332,13 +1525,39 @@ exposing tools, resources, and prompts to any LLM application. A single MCP
 server is instantly usable by any MCP client (Claude Code, OpenAI Responses API,
 LangGraph, etc.). Runs over stdio (subprocess) or HTTP/SSE (remote/multi-client).
 
+**MLE (Maximum Likelihood Estimation)** — pick the parameters that maximize the
+probability of the observed data. Minimizing cross-entropy _is_ MLE under a
+Bernoulli/categorical model, and minimizing MSE is MLE under Gaussian noise —
+the reason those losses are the defaults. Module 01f makes the link concrete.
+
+**MoE (Mixture of Experts)** — a transformer variant where each FFN is replaced
+by E expert FFNs plus a router that activates only the top-k per token, so total
+parameters (capacity) grow without growing per-token FLOPs. Mixtral 8×7B: ~47 B
+total, ~13 B active. See module 01d's interview notes.
+
 **Multimodal** — a model or application that processes more than one modality
 (e.g. text + images). GPT-4o and Claude 3+ are multimodal LLMs.
+
+**NDCG (Normalized Discounted Cumulative Gain)** — retrieval metric for graded
+relevance: gains are discounted by `1/log₂(rank+1)` and normalized by the ideal
+ordering. Use recall@k to tune the retriever, MRR when one good chunk is enough,
+NDCG when relevance is graded. See module 05's retrieval-metrics notes.
 
 **OWASP LLM Top 10** — a community-maintained list of the ten most critical
 security risks specific to LLM-integrated applications. Key entries include
 Prompt Injection (LLM01), Excessive Agency (LLM08), and Sensitive Information
 Disclosure (LLM06). The 2025 edition is the current reference; see module 20.
+
+**PagedAttention** — vLLM's virtual-memory trick for the KV cache: split it into
+fixed-size blocks with a per-request block table, allocate on demand, share
+blocks across requests with a common prefix. Cuts cache waste from ~60–80 % to
+<4 %, enabling the large batches continuous batching needs. See module 14's
+interview notes.
+
+**PCA (Principal Component Analysis)** — dimensionality reduction by projecting
+data onto the top eigenvectors of its covariance matrix (the directions of
+maximum variance). Used to visualise embeddings in 2-D and to de-noise features.
+Built from scratch in module 01f.
 
 **Prompt caching** — a provider feature that stores the KV cache of a long
 repeated prefix (system prompt, large document, tool definitions) so subsequent
@@ -1377,6 +1596,28 @@ a fast retriever and scores them with a more accurate but slower model
 **Responses API** — OpenAI's agent-platform API (January 2025) that adds
 response chaining via `previous_response_id`, hosted tools (web_search,
 code_interpreter, file_search), and a remote MCP connector. Covered in module 17.
+
+**Reward model** — a model trained on pairwise human preferences (Bradley–Terry:
+`P(a ≻ b) = σ(r_a − r_b)`) to score responses, standing in for the human during
+RLHF. Imperfect by construction — optimizing hard against it causes reward
+hacking (Goodhart's law), which is why RLHF keeps a KL leash to the reference
+policy. Built from scratch in module 13b.
+
+**RLHF (Reinforcement Learning from Human Feedback)** — the post-training stage
+that turns an SFT model into an aligned assistant: collect preference pairs,
+train a reward model, then optimize the policy with RL (PPO in production)
+against `reward − β·KL(π‖π_ref)`. The pipeline behind ChatGPT-style models;
+module 13b builds a toy version end to end, reward hacking included.
+
+**Scaling laws** — empirical power laws relating loss to parameters, data, and
+compute (Kaplan et al.); Chinchilla showed compute-optimal training wants ~20
+tokens per parameter, and modern models deliberately overtrain past that because
+inference cost dominates. See module 01d's interview notes.
+
+**Speculative decoding** — a small draft model proposes k tokens, the target
+model verifies them in one parallel forward pass, and a rejection-sampling rule
+keeps the output distribution exactly the target's. Lossless 2–3× decode
+speedup. See module 14's interview notes.
 
 **Streaming UX** — the product pattern of displaying LLM output token-by-token
 as it is generated, rather than waiting for the complete response. Dramatically
