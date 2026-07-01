@@ -25,6 +25,7 @@ data/*.gguf
 data/*.sqlite
 data/chroma/
 data/qdrant/
+.chroma-data/
 *.faiss
 
 # Editor / OS
