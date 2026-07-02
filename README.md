@@ -93,6 +93,14 @@ they're where the real understanding lives.
 > (skills/functions + a planner) — each reimplemented through `llm_core` then mapped
 > back to the real library's API. Every task runs offline via a `--stub` deterministic model.
 
+> **Deep dive — [`modules/06d-agent-memory/`](modules/06d-agent-memory/):** extends
+> modules 06/06b with **agent memory engineering** — the memory-augmented vs
+> memory-aware distinction and the full taxonomy (episodic, semantic, procedural,
+> entity, summary): the read-before / write-after lifecycle, relevance thresholds
+> against noisy retrieval, entity extraction + merge, summary compaction with
+> just-in-time expansion, and a composed `MemoryManager` with TTL eviction that
+> keeps context under a token budget across turns. Offline via `--stub`, like 06c.
+
 **Hosted-first** (default to APIs, optional local heavy path documented): modules **09, 10** (vision/diffusion), **13** (fine-tuning), **19** (audio). Nothing multi-GB downloads unless you opt in.
 
 **Lost in the acronyms?** Every abbreviation used in the course (BM25, RAG, HNSW, KV cache, LoRA, …) is expanded on first use in each lesson and collected in [`docs/GLOSSARY.md`](docs/GLOSSARY.md).

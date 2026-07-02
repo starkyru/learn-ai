@@ -7,7 +7,8 @@ check the stop reason, dispatch tools, append results, loop. That approach is
 transparent and universal — it works with any provider. But it puts all the
 protocol plumbing on your side.
 
-This module shows two complementary evolutions:
+This module shows two complementary evolutions, then tackles the problem they
+create at scale:
 
 **Modern agent-platform APIs** (Application Programming Interfaces) (Task 1) —
 OpenAI's Responses API and Anthropic's tool-use SDK handle more of the
@@ -20,6 +21,12 @@ for exposing tools, resources, and prompts to _any_ LLM (Large Language Model) a
 OpenAI, LangGraph, Cursor, and your own agents all speak MCP. Instead of each
 app re-inventing tool schemas and dispatch, every MCP server is instantly usable
 by every MCP client.
+
+**Semantic tool discovery** (Task 6) — once MCP makes it trivial to plug in
+dozens of servers, passing _every_ tool schema to the model on every call
+becomes the bottleneck: selection accuracy drops and token cost climbs. Task 6
+builds the standard fix — a searchable toolbox that retrieves only the
+relevant schemas per query.
 
 ---
 
@@ -107,6 +114,34 @@ that hijacks the model's next action. Sanitise or summarise untrusted content.
 **Authentication** — production HTTP servers must require a bearer token.
 Anyone who knows your server URL can call your tools without it.
 
+### Tool schema overload & semantic tool discovery
+
+Exhaustively enumerating every tool schema in every request is a known failure
+mode, and it fails on two axes at once. **Accuracy:** tool-calling evals (e.g.
+the Berkeley Function-Calling Leaderboard, Anthropic's Tool Search results)
+show selection accuracy _drops_ as the schema list grows — with dozens of
+tools, several will have lexically confusable descriptions
+(`unit_convert` vs `currency_convert`, `web_search` vs `news_search`), and the
+model starts picking the one that merely _looks_ more like the query.
+**Cost:** every schema you pass is prompt tokens on every single call,
+whether or not it was ever relevant — with 50+ MCP tools that can be thousands
+of tokens of pure overhead per turn.
+
+The fix is the **toolbox pattern** (semantic tool discovery): treat tool
+definitions as _documents in a vector store_. Index each tool by an
+**LLM-augmented description** — intent and example use-cases ("how much is 100
+USD in yen?"), not just the raw signature, because users phrase requests in
+intent language that signatures never contain. Per query, retrieve the top-k
+semantically closest tools and pass _only those k schemas_ to the model. This
+is RAG (module 05) applied to the tool registry itself.
+
+Note the tie-in to Task 4: fetching schemas _dynamically_ from an MCP server
+removed hardcoding, but it is **not** filtering by relevance — Task 4 still
+ships the whole list every call. Task 6 adds the missing filter. Hosted
+platforms ship the same idea natively (deferred/searchable tools — e.g.
+Anthropic's Tool Search, where the model looks tools up on demand instead of
+receiving them all up front).
+
 ---
 
 ## Setup
@@ -169,6 +204,11 @@ LLM_PROVIDER=openai uv run python modules/17-mcp/py/04_mcp_agent.py
 uv run python modules/17-mcp/py/05_remote_mcp.py            # print security notes
 MCP_PORT=8765 uv run python modules/17-mcp/py/05_remote_mcp.py --serve
 MCP_SERVER_URL=http://localhost:8765 uv run python modules/17-mcp/py/05_remote_mcp.py --client
+
+# Task 6 — Semantic tool discovery (offline by default, no provider needed):
+uv run python modules/17-mcp/py/06_tool_discovery.py
+LLM_PROVIDER=ollama uv run python modules/17-mcp/py/06_tool_discovery.py --embed   # real embeddings
+LLM_PROVIDER=ollama uv run python modules/17-mcp/py/06_tool_discovery.py --live    # real model selects
 ```
 
 **TypeScript** (from the repo root):
@@ -181,6 +221,9 @@ LLM_PROVIDER=openai pnpm tsx modules/17-mcp/ts/04-mcp-agent.ts
 pnpm tsx modules/17-mcp/ts/05-remote-mcp.ts                 # print notes
 MCP_PORT=8765 pnpm tsx modules/17-mcp/ts/05-remote-mcp.ts --serve
 MCP_SERVER_URL=http://localhost:8765 pnpm tsx modules/17-mcp/ts/05-remote-mcp.ts --client
+pnpm tsx modules/17-mcp/ts/06-tool-discovery.ts             # offline by default
+LLM_PROVIDER=ollama pnpm tsx modules/17-mcp/ts/06-tool-discovery.ts --embed
+LLM_PROVIDER=ollama pnpm tsx modules/17-mcp/ts/06-tool-discovery.ts --live
 ```
 
 ---
@@ -344,6 +387,54 @@ connect to it. Understand the security implications.
 
 ---
 
+### Task 6 — Semantic tool discovery: the toolbox 🟡
+
+**Goal:** Stop passing all 20 tool schemas to the model on every call. Index
+LLM-augmented tool descriptions in a (bag-of-words or embedding) vector store,
+retrieve only the top-3 relevant tools per query, and show — on a fixed,
+offline eval set with a deterministic selector — that top-3 beats the
+full-list baseline on selection accuracy at a fraction of the token cost.
+
+**Files:** `py/06_tool_discovery.py` · `ts/06-tool-discovery.ts`
+
+Provided: a registry of 20 realistic tool definitions across distinct domains
+(several deliberately confusable), pre-generated use-case lines (the
+"LLM-augmented" metadata), a 10-query eval set labelled with the correct tool,
+and a deterministic scripted selector that stands in for the model — reliable
+with a small schema list, distractable by lexically similar schemas past its
+focus budget. Runs fully offline by default; `--embed` switches retrieval to
+real `provider.embed()` vectors and `--live` lets the real model pick the tool
+via `get_provider()` / `getProvider()` (any provider except Anthropic for
+`--embed` — no embeddings endpoint there).
+
+**Steps (Python `06_tool_discovery.py` / TypeScript `06-tool-discovery.ts`):**
+
+1. Implement `augment_description()` / `augmentDescription()` — build each
+   tool's retrieval text from its name, description, parameter names, and
+   use-case line (intent language, not just the signature).
+2. Implement `index_toolbox()` / `indexToolbox()` — vectorize every augmented
+   description in one batch and pair each tool with its vector.
+3. Implement `retrieve_tools()` / `retrieveTools()` — top-k tools by cosine
+   similarity against the query, descending, deterministic ties.
+4. Implement `measure_token_cost()` / `measureTokenCost()` — estimate the
+   prompt-token cost of the serialized schemas you pass (chars / 4).
+5. Run offline and read the printed table: full-list picks vs top-3 picks vs
+   per-query token cost. Then try `--embed` and `--live`.
+
+**Acceptance (the script checks these and prints "All acceptance checks passed."):**
+
+- Retrieval hit-rate: the correct tool appears in the top-3 for ≥ 9/10 queries
+  (reference: 10/10).
+- End-to-end selection accuracy with top-3 schemas ≥ the full-20-schema
+  baseline, the full list makes ≥ 2 mistakes on the confusable queries, and
+  top-3 wins or ties on _every_ query (reference: 10/10 vs 4/10).
+- Per-query schema token cost with top-3 is < 25 % of the full list, shown in
+  the printed table (reference: ≤ 20 %).
+- Augmented descriptions beat raw-signature-only retrieval on at least one
+  labelled query — the script prints the concrete case.
+
+---
+
 ## Done when
 
 - [ ] Task 1: both OpenAI Responses API and Anthropic correctly answer a
@@ -356,6 +447,11 @@ connect to it. Understand the security implications.
       them to answer course-related questions.
 - [ ] Task 5: exposed the server over HTTP/SSE; connected a client; can list
       and call tools over the network.
+- [ ] Task 6: built the semantic toolbox — top-3 retrieval beats the
+      full-schema-list baseline on selection accuracy at < 25 % of the schema
+      token cost, and the script prints "All acceptance checks passed."; you
+      can articulate why dynamic schema fetching (Task 4) is not the same as
+      relevance filtering.
 
 ---
 

@@ -115,6 +115,48 @@ Workers can run in parallel (each gets its own LLM call). The planner's job is
 routing and decomposition, not execution. This pattern appears everywhere in
 production: it's essentially a map-reduce with LLMs.
 
+### Stop conditions & failure modes — hardening the loop
+
+The loop at the top of this page has exactly one exit: the model stops emitting
+tool calls. A production harness never trusts that alone. Real agent loops check
+a whole **exit-criteria list** on every iteration:
+
+- **Terminal message** — the model produced a final answer instead of a tool call.
+- **Goal predicate** — a programmatic check that the goal is _actually_ met
+  (inspect world state: was the file written? is the email in the outbox?).
+- **Iteration cap** — a hard budget on loop turns.
+- **Wall-clock timeout** — a hard budget on elapsed time.
+- **Unrecoverable error** — a tool failure that no retry will fix.
+- **Stuck detection** — the model is looping without progress (below).
+- **Explicit exit action** — some harnesses give the model a `finish`/`give_up`
+  tool so "I'm done" and "I'm stuck" are structured, not parsed from prose.
+
+The subtle one: **a terminal message is not goal completion**. When the model
+stops calling tools and says "Which email address should I send this to?", the
+loop is over — but the task isn't done. That's why the goal predicate is a
+_separate_ check from "no more tool calls": success requires both a terminal
+message _and_ the predicate passing; a terminal message alone is merely
+"incomplete".
+
+The classic **stuck signal** is the agent calling the _same tool with identical
+arguments_ N times in a row — it didn't like the observation, so it asks again,
+forever. Its cousin is A/B/A/B **oscillation** between two calls. Both are cheap
+to detect: keep a sliding window of `(tool, canonical-args)` signatures and
+compare. Exiting at iteration 5 of a 10-iteration cap with a diagnostic beats
+burning the remaining budget on identical calls.
+
+Finally, **idempotency** for side-effecting tools: retries are unavoidable
+(networks blip), but a retried `send_email` must not send twice — and a model
+that re-issues the same call after a confusing error must not either. Assign
+each _logical_ call a stable **idempotency key** (tool name + arguments
+serialised in a canonical order) and dedupe at execution time: if the key was
+already executed, return the recorded result instead of running the tool again.
+Note this is **harness-level, not model-level** engineering — the model never
+sees the key; the loop guarantees at-most-once side effects no matter what the
+model does. (Payment APIs like Stripe expose exactly this as an
+`Idempotency-Key` header.) Task 6 builds all of it, with an injected fake clock
+so even the timeout branch is deterministically testable.
+
 ---
 
 ## Setup
@@ -133,6 +175,8 @@ pnpm install
 - Task 2: requires `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` (native tool calling).
 - Task 4: requires a LangChain-compatible chat model (install `langchain-openai`
   or `langchain-anthropic` separately, or write an adapter).
+- Task 6: fully offline with `--stub` (no provider, no key); the optional live
+  path works with any provider via `get_provider()` / `getProvider()`.
 
 ---
 
@@ -288,6 +332,57 @@ question and delegates subtasks to specialised worker agents.
 
 ---
 
+### Task 6 — Harden the loop: stop conditions, failure detection, idempotency 🟡
+
+**Goal:** Turn the naive loop into a production-grade harness: iteration cap,
+fake-clock timeout, a goal predicate distinct from "the model stopped", stuck
+detection with an early-exit diagnostic, and at-most-once side effects via
+idempotency keys. Deterministic by default — a scripted `StubModel` replays
+misbehaving-model scenarios so _your guards_ are the only thing under test.
+
+**Files:**
+
+- `py/06_harden_loop.py`
+- `ts/06-harden-loop.ts`
+
+**Steps (Python):**
+
+1. Open `py/06_harden_loop.py`. Read the provided pieces: `StubModel` (replays
+   scripted decisions), the tools (`search` returns canned text; `send_email`
+   appends to an in-memory outbox, with a flaky wrapper that fails the first
+   attempt), the `FakeClock`, and the scenario harness.
+2. Implement `idempotency_key(tool_name, args)` — a stable key per logical call.
+3. Implement `detect_stuck(recent_calls, window)` — repeated-identical-call and
+   A/B/A/B oscillation detection over a sliding window of call signatures.
+4. Implement `execute_with_retry(tool, args, executed)` — dedupe by key, retry
+   a transient failure exactly once.
+5. Implement `run_agent_loop(...)` — the guarded loop: timeout, terminal-message
+   exit with goal check, stuck exit, iteration cap.
+6. Run: `uv run python modules/06-agents/py/06_harden_loop.py --stub`
+7. (Optional) Run without `--stub` to drive the same loop with a live model via
+   `get_provider()`.
+
+**Steps (TypeScript):**
+
+1. Open `ts/06-harden-loop.ts`. Implement `idempotencyKey` (use the provided
+   `stableJson` helper), `detectStuck`, `executeWithRetry`, and `runAgentLoop`.
+2. Run: `pnpm tsx modules/06-agents/ts/06-harden-loop.ts --stub`
+
+**Acceptance (`--stub`):**
+
+- The stuck scenario exits via a `detect_stuck` diagnostic at iteration 5 of a
+  10-iteration cap (printed) — before burning the remaining budget; the
+  oscillation scenario exits at iteration 4.
+- A terminal clarifying question does NOT count as success: the loop reports
+  `incomplete` (goal predicate false), distinct from the `success` run.
+- The timeout scenario exits via the injected fake clock, well before the
+  iteration cap — no real sleeps anywhere.
+- Idempotency: the outbox contains EXACTLY 1 email despite 1 transient failure
+  - retry and a duplicate re-issued call (with args in a different key order).
+- The full run ends with "All acceptance checks passed."
+
+---
+
 ## Done when
 
 - [ ] Task 1: a from-scratch ReAct agent solves a multi-step question on Ollama.
@@ -296,6 +391,46 @@ question and delegates subtasks to specialised worker agents.
 - [ ] Task 4: the same ReAct behaviour reproduced with LangGraph.
 - [ ] Task 5: planner decomposes a question, workers solve subtasks, synthesiser
       combines results.
+- [ ] Task 6: `06_harden_loop --stub` / `06-harden-loop --stub` prints
+      "All acceptance checks passed." — stuck exits early with a diagnostic,
+      a clarifying terminal message is `incomplete` (not success), the fake
+      clock trips the timeout, and the outbox holds exactly one email.
+- [ ] You can list the exit criteria a production agent loop checks on every
+      iteration, and explain why an idempotency key lives in the harness, not
+      the model.
+
+---
+
+## The loops around the loop (interview notes)
+
+"Does the agent learn while it runs?" is a favourite interview probe, and the
+answer needs three different loops kept straight. The first is the **training
+loop**: gradient descent over a dataset, run **offline**, producing **frozen
+weights**. Nothing in this module touches it. When an agent seems to "learn"
+in a session — recalling your name, building on earlier conclusions — that is
+**retrieval from memory** (Task 3's scratchpad, module 04/05's vector stores)
+injected back into the context window, **not a weight update**. Restart the
+process without the memory file and the "learning" is gone.
+
+The second is the **feedback loop** — signals routed back into the system at
+different timescales. Per iteration: tool results feed back as observations
+(that _is_ the agent loop). Per session: user corrections and ratings get
+captured and mined (module 22, Task 4 builds the capture UX). Per release: eval
+metrics and production traces (module 21) tell you whether a prompt, retrieval
+corpus, or fine-tune dataset change actually improved things. None of these
+change weights at runtime either — they change the _context, corpus, or next
+training run_.
+
+The third is the **human loop**: a human-in-the-loop pause is an **autonomy
+boundary**, not a UX nicety. The harness stops before a risky side effect
+(sending the email, spending the money) and waits for approval — 06b Task 4
+builds this with LangGraph's `interrupt()`, and module 22 Task 5 designs the
+approval flow around it. It composes with Task 6's guards: stop conditions
+bound what the agent may do alone; the human loop gates what it may do at all.
+The likely convergence of all three is **continual learning** — agent
+experience distilled into training signal so today's feedback loop feeds
+tomorrow's training loop; see module 13b for how that training actually
+happens (post-training and alignment).
 
 ---
 

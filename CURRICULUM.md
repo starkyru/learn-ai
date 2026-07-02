@@ -509,18 +509,20 @@ vector list for a graph to answer multi-hop questions.
 - Add persistent scratchpad memory that survives restarts.
 - Re-implement the same agent with LangGraph's state machine model.
 - Build a planner-worker multi-agent architecture.
+- Harden the loop with production stop conditions: iteration cap, timeout, a goal predicate distinct from "the model stopped", stuck detection, and idempotent side-effecting tools.
 
 **Tasks**
 
-| #   | Task                    | Depth | What you do                                                                                             |
-| --- | ----------------------- | ----- | ------------------------------------------------------------------------------------------------------- |
-| 1   | ReAct loop from scratch | 🔴    | Implement parser, tool dispatch, and the full Thought→Action→Observation loop; works on Ollama.         |
-| 2   | Native tool calling     | 🟢    | Re-implement with structured tool schemas; run on OpenAI and Anthropic; compare format differences.     |
-| 3   | Memory                  | 🟡    | Add a `scratchpad.json` the agent writes structured notes to; history stays within `MAX_HISTORY_TURNS`. |
-| 4   | LangGraph agent         | 🟢    | Re-build as a typed state machine; map each node back to your from-scratch loop.                        |
-| 5   | Multi-agent             | 🟡    | Planner decomposes a question → workers run in parallel → synthesiser combines results.                 |
+| #   | Task                    | Depth | What you do                                                                                                                                                                                              |
+| --- | ----------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | ReAct loop from scratch | 🔴    | Implement parser, tool dispatch, and the full Thought→Action→Observation loop; works on Ollama.                                                                                                          |
+| 2   | Native tool calling     | 🟢    | Re-implement with structured tool schemas; run on OpenAI and Anthropic; compare format differences.                                                                                                      |
+| 3   | Memory                  | 🟡    | Add a `scratchpad.json` the agent writes structured notes to; history stays within `MAX_HISTORY_TURNS`.                                                                                                  |
+| 4   | LangGraph agent         | 🟢    | Re-build as a typed state machine; map each node back to your from-scratch loop.                                                                                                                         |
+| 5   | Multi-agent             | 🟡    | Planner decomposes a question → workers run in parallel → synthesiser combines results.                                                                                                                  |
+| 6   | Harden the loop         | 🟡    | Guarded loop: iteration cap, fake-clock timeout, goal predicate ≠ terminal message, stuck detection (repeat + A/B oscillation), idempotency-keyed at-most-once side effects; deterministic via `--stub`. |
 
-**Estimated time:** 6–8 hours
+**Estimated time:** 7–9 hours
 
 **Done when**
 
@@ -529,6 +531,7 @@ vector list for a graph to answer multi-hop questions.
 - [ ] Scratchpad persists across restarts; history is bounded (Task 3).
 - [ ] LangGraph graph produces the same answer as Task 1 (Task 4).
 - [ ] Multi-agent: planner JSON → workers → synthesiser (Task 5).
+- [ ] Task 6: stuck run exits early with a diagnostic; a clarifying terminal message counts as incomplete, not success; the fake clock trips the timeout; the outbox holds exactly one email despite a retry.
 
 ---
 
@@ -633,6 +636,53 @@ call.
 - [ ] Task 5: the index chunks 3 documents into 6 nodes, the top node for the Eiffel-Tower query is correct, and the synthesis prompt contains the retrieved node text.
 - [ ] Task 6: the kernel invokes a native and a semantic function by name and chains them into a sequential pipeline.
 - [ ] You can name the real library API each of your classes maps to.
+
+---
+
+## Module 06d — Agent Memory
+
+**Prerequisites:** Module 06 (Tasks 1 & 3 — the loop and the scratchpad); 06b
+(checkpointer) helps but isn't required. No new deps. Everything runs offline
+via a `--stub` deterministic fake model with exact assertions; the live path
+goes through `get_provider()` / `getProvider()` (default `ollama`).
+
+**Why:** Module 06 gave the agent one memory (a scratchpad) and 06b gave durable
+thread persistence — but production agents and interviews distinguish a whole
+taxonomy: episodic (conversation history), semantic (knowledge base), procedural
+(workflow patterns), entity, and summary memory, plus the discipline of
+_managing_ memory (encode → store → retrieve → inject → forget) rather than just
+reading it. Memory-augmented (memory happens to the agent) vs memory-aware (the
+harness manages its cognitive state) is the framing.
+
+**Learning objectives**
+
+- Run the memory lifecycle: reads before the model call, writes after; keep
+  threads isolated and injection bounded.
+- Mitigate noisy retrieval with a relevance threshold and stale facts with
+  update-on-write upserts.
+- Extract and merge entity records; compact old turns into summaries with
+  just-in-time expansion (mark, don't delete).
+- Compose everything into a `MemoryManager` that holds context under a hard
+  token budget across turns and evicts stale records by TTL.
+
+**Tasks**
+
+| #   | Task                                           | Depth | What you do                                                                                                                                                            |
+| --- | ---------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Episodic memory + the read/write lifecycle     | 🟢    | Implement `read_episodic` / `write_episodic` / `build_context`: per-thread JSON-file history, reads before the model call, writes after; `last_n` injection bound.     |
+| 2   | Semantic memory with a relevance threshold     | 🟡    | Implement `cosine`, thresholded top-k `retrieve`, and `upsert`: threshold 0 lets a near-miss distractor leak, the tuned threshold filters it; upsert never duplicates. |
+| 3   | Entity memory + summary memory (JIT expansion) | 🟡    | Implement `extract_entities` (model → JSON, parse + validate), `merge_entities`, `summarise_turns` (mark `archived_by`, don't delete), `expand_summary` (verbatim).    |
+| 4   | The MemoryManager: composed lifecycle + TTL    | 🔴    | Implement `assemble_context` (episodic → semantic → entities → summaries under a token budget), `finalize_turn` (write path + compaction), `evict_stale` (fake clock). |
+
+**Estimated time:** 3–5 hours
+
+**Done when**
+
+- [ ] Task 1: isolated threads, preserved order, 4+4 store entries, `last_n` bound respected.
+- [ ] Task 2: distractor leaks at threshold 0, is filtered at the tuned threshold; upsert replaces (not duplicates) the changed fact.
+- [ ] Task 3: merged entities recalled across a restart; compaction shrinks the context; `expand_summary` recovers the verbatim originals.
+- [ ] Task 4: context stays under budget on all 6 turns while the baseline overruns; the stale record is evicted at the right tick; the turn-1 entity is still cited in turn 6.
+- [ ] You can explain memory-augmented vs memory-aware, name the five memory types with their lookup mechanisms, and say which operations are programmatic vs agent-triggered.
 
 ---
 
@@ -979,18 +1029,20 @@ hacking) → DPO.
 - Compact long conversations with a running summary to prevent context overflow.
 - Apply map-reduce and refine over documents too large for a single call; demonstrate "lost in the middle".
 - Submit batch requests at 50 % cost via the OpenAI or Anthropic Batch API.
+- Offload bulky tool outputs from an agent loop's history to a tool-log store with on-demand retrieval; keep message history append-only so prompt-cache prefixes survive.
 
 **Tasks**
 
-| #   | Task                             | Depth | What you do                                                                                       |
-| --- | -------------------------------- | ----- | ------------------------------------------------------------------------------------------------- |
-| 1   | Token budgeting                  | 🟢    | Count tokens; implement head/tail/middle-out truncation; print results table.                     |
-| 2   | Prompt caching                   | 🟢    | Make repeated calls with a large prefix; observe cache hits in `usage`; measure cost saving.      |
-| 3   | Conversation memory / compaction | 🟡    | Summarise oldest turns when budget exceeded; verify compaction fires and context stays in budget. |
-| 4   | Long-context strategies          | 🟡    | Implement map-reduce and refine over chunked document; demonstrate lost-in-the-middle recall.     |
-| 5   | Batch API                        | 🟢    | Submit 5 requests via Batch API; poll until complete; print results and estimated savings.        |
+| #   | Task                             | Depth | What you do                                                                                                                                 |
+| --- | -------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Token budgeting                  | 🟢    | Count tokens; implement head/tail/middle-out truncation; print results table.                                                               |
+| 2   | Prompt caching                   | 🟢    | Make repeated calls with a large prefix; observe cache hits in `usage`; measure cost saving.                                                |
+| 3   | Conversation memory / compaction | 🟡    | Summarise oldest turns when budget exceeded; verify compaction fires and context stays in budget.                                           |
+| 4   | Long-context strategies          | 🟡    | Implement map-reduce and refine over chunked document; demonstrate lost-in-the-middle recall.                                               |
+| 5   | Batch API                        | 🟢    | Submit 5 requests via Batch API; poll until complete; print results and estimated savings.                                                  |
+| 6   | Tool-output offloading           | 🟡    | Offload large tool outputs to a log store; keep one-line references in history; retrieve on demand; compare context growth vs a naive loop. |
 
-**Estimated time:** 4–5 hours
+**Estimated time:** 5–6 hours
 
 **Done when**
 
@@ -999,6 +1051,7 @@ hacking) → DPO.
 - [ ] Compaction fires; context stays within budget; coherence preserved (Task 3).
 - [ ] Map-reduce and refine both produce answers; lost-in-the-middle demonstrated (Task 4).
 - [ ] Batch job completes; results printed; cost savings calculated (Task 5).
+- [ ] Task 6: offloaded loop stays far under the naive loop's final token count; `read_tool_log` round-trips payloads exactly; the final answer recovers a fact that lives only in a stored payload.
 
 ---
 
@@ -1013,18 +1066,20 @@ hacking) → DPO.
 - Build an MCP server that exposes `search_docs`, `read_module`, and `run_exam_question`.
 - Wire MCP tools into an agent loop that dynamically fetches schemas at runtime.
 - Expose an MCP server over HTTP/SSE and understand its security implications.
+- Fix tool-schema overload with semantic tool discovery: index augmented tool descriptions, retrieve only the top-k relevant schemas per query.
 
 **Tasks**
 
-| #   | Task                         | Depth | What you do                                                                                                      |
-| --- | ---------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------- |
-| 1   | Modern agent APIs            | 🟢    | Use OpenAI Responses API and Anthropic tool use to answer a two-part question; compare to module 06 manual loop. |
-| 2   | Use an MCP server            | 🟢    | Connect client to an existing server via stdio; list tools; call one tool.                                       |
-| 3   | Build the course MCP server  | 🟢    | Build stdio MCP server with `search_docs`, `read_module`, `run_exam_question`; all three tools work when tested. |
-| 4   | Wire MCP tools into an agent | 🟡    | Fetch tool schemas dynamically from the course server; run OpenAI and Anthropic agent loops using MCP tools.     |
-| 5   | Remote MCP + security        | 🟡    | Expose the server over HTTP/SSE; add bearer-token auth; explain five security threats.                           |
+| #   | Task                         | Depth | What you do                                                                                                                                                                    |
+| --- | ---------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Modern agent APIs            | 🟢    | Use OpenAI Responses API and Anthropic tool use to answer a two-part question; compare to module 06 manual loop.                                                               |
+| 2   | Use an MCP server            | 🟢    | Connect client to an existing server via stdio; list tools; call one tool.                                                                                                     |
+| 3   | Build the course MCP server  | 🟢    | Build stdio MCP server with `search_docs`, `read_module`, `run_exam_question`; all three tools work when tested.                                                               |
+| 4   | Wire MCP tools into an agent | 🟡    | Fetch tool schemas dynamically from the course server; run OpenAI and Anthropic agent loops using MCP tools.                                                                   |
+| 5   | Remote MCP + security        | 🟡    | Expose the server over HTTP/SSE; add bearer-token auth; explain five security threats.                                                                                         |
+| 6   | Semantic tool discovery      | 🟡    | Index LLM-augmented tool descriptions in a vector store; retrieve top-3 schemas per query; beat the full-20-schema baseline on selection accuracy at < 25 % of the token cost. |
 
-**Estimated time:** 5–7 hours
+**Estimated time:** 6–8 hours
 
 **Done when**
 
@@ -1033,6 +1088,7 @@ hacking) → DPO.
 - [ ] Task 3 server's three tools work when tested with the Task 2 client.
 - [ ] Task 4 agent answers course-related questions using dynamically fetched MCP schemas.
 - [ ] Task 5 server reachable over HTTP/SSE; client lists and calls tools over the network.
+- [ ] Task 6 toolbox: top-3 retrieval beats the full-schema-list baseline on selection accuracy at < 25 % of the schema token cost; script prints "All acceptance checks passed."
 
 ---
 
@@ -1377,6 +1433,13 @@ the true nearest neighbour.
 **Agent** — a loop where an LLM decides what to do, a tool executes, the result
 feeds back as an observation, and the LLM decides again until done.
 
+**Agent loop** — the repeating cycle a harness runs within one agent turn:
+assemble context (system prompt, history, memory, tool outputs) → invoke the
+model to decide → act (tool call, answer, state write) → append the trace and
+repeat until a stop condition ends the run. Exists because long-horizon tasks
+can't complete in a single forward pass. Built from scratch in module 06;
+hardened (stop conditions, stuck detection, idempotency) in module 06 Task 6.
+
 **A/B test** — comparing two variants on live traffic and using a statistical
 test (e.g. a two-proportion z-test) to decide whether the observed difference is
 real or noise. Requires understanding p-values, confidence intervals, power, and
@@ -1419,6 +1482,12 @@ module 16.
 **Context window budget** — the discipline of tracking how many tokens each part
 of a prompt costs (system, documents, history, tools) and applying truncation or
 compaction strategies before exceeding the model's limit.
+
+**Continual learning** — a model acquiring new knowledge from a stream of data
+over time without full retraining and without catastrophic forgetting. The
+bridge between the agent loop (which generates experience as memory) and the
+training loop (which bakes experience into weights): in-session "learning" is
+retrieval, not weight updates. See module 06's interview notes and module 13b.
 
 **Continuous batching** — iteration-level scheduling in LLM serving engines
 (vLLM, TGI): finished sequences leave the batch after every decode step and
@@ -1497,6 +1566,11 @@ graph that enables sub-linear search time.
 keyword) retrieval and merging the ranked lists (e.g. via RRF). Catches both
 semantic matches and exact-match queries.
 
+**Idempotency (tool calls)** — assigning each side-effecting tool call a stable
+key before execution so a retry after a transient failure (network error, rate
+limit) is deduplicated instead of firing twice (double email, double payment).
+Harness-level engineering, not model-level. Module 06 Task 6.
+
 **KV cache** — in autoregressive generation, a cache of key (K) and value (V)
 matrices for all past tokens. Avoids re-computing attention over the full history
 at each step, reducing per-token cost from O(n) to O(1) in the attention layer.
@@ -1524,6 +1598,12 @@ an embedding, it produces a strong baseline classifier.
 exposing tools, resources, and prompts to any LLM application. A single MCP
 server is instantly usable by any MCP client (Claude Code, OpenAI Responses API,
 LangGraph, etc.). Runs over stdio (subprocess) or HTTP/SSE (remote/multi-client).
+
+**Memory-aware agent** — an agent whose harness actively manages its cognitive
+state — encode, store, retrieve, inject, forget — across memory types (episodic
+history, semantic knowledge, procedural workflows, entities, summaries), as
+opposed to a merely memory-augmented agent that only has context injected into
+it. The subject of module 06d.
 
 **MLE (Maximum Likelihood Estimation)** — pick the parameters that maximize the
 probability of the observed data. Minimizing cross-entropy _is_ MLE under a
@@ -1614,6 +1694,12 @@ compute (Kaplan et al.); Chinchilla showed compute-optimal training wants ~20
 tokens per parameter, and modern models deliberately overtrain past that because
 inference cost dominates. See module 01d's interview notes.
 
+**Semantic tool discovery** — indexing tool definitions in a vector store
+(embedding LLM-augmented descriptions, not just signatures) and passing only the
+top-k relevant schemas to the model per query, instead of enumerating every
+tool. Fixes tool-schema overload: selection accuracy drops and token cost climbs
+as the schema list grows. Module 17 Task 6.
+
 **Speculative decoding** — a small draft model proposes k tokens, the target
 model verifies them in one parallel forward pass, and a rejection-sampling rule
 keeps the output distribution exactly the target's. Lossless 2–3× decode
@@ -1645,6 +1731,12 @@ window are measured in tokens.
 **Tool calling** — the mechanism by which an LLM requests the execution of an
 external function. The model returns a structured call (name + arguments); the
 host executes it and returns the result as a new message.
+
+**Tool-output offloading** — persisting a bulky tool result to a log store and
+injecting only a one-line reference (`[Tool Log #id] …`) plus a `read_tool_log`
+tool into context, so later loop iterations stop re-carrying thousands of stale
+tokens. Keeps agent-loop context flat instead of monotonically growing. Module
+16 Task 6.
 
 **Top-p (nucleus sampling)** — keep the smallest set of tokens whose cumulative
 probability ≥ p, renormalise, and sample. Adapts the cutoff to the distribution

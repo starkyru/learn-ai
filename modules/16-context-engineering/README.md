@@ -6,8 +6,8 @@ the model cannot use. _Context engineering_ is the art of spending that budget w
 
 By the end of this module you will have measured token counts precisely, cached a large
 repeated prefix to save cost, compacted long conversations so they don't overflow, applied
-map-reduce over a document too large to fit in one call, and submitted a batch of requests
-at a discount.
+map-reduce over a document too large to fit in one call, submitted a batch of requests
+at a discount, and offloaded bulky tool outputs out of an agent loop's message history.
 
 ---
 
@@ -51,6 +51,17 @@ tool definitions) normally re-charges the full input cost on every call. Prompt 
 Both providers charge a fraction of the normal input price for cache hits (often 10–20 % of
 the full rate). This is a _beyond-the-abstraction_ feature: you must use the provider SDKs (Software Development Kits) directly.
 
+**Cache-aware message ordering.** Prompt caching is _prefix-based_: a call only hits the
+cache for the longest run of tokens that exactly matches the start of an earlier request.
+Rewriting earlier messages mid-conversation — cleaning up old turns, inline-injecting a new
+system instruction near the top, or reordering messages — changes that prefix, breaks
+prefix stability, and destroys every cache hit from that point on. The correct pattern is
+**append-only history**: leave everything already sent byte-for-byte untouched and add new
+instructions at the END of the message list. This is exactly why agent harnesses preserve
+each old prompt as an exact prefix of the next one — turn N's request is turn N−1's request
+plus a few appended messages, so the entire shared prefix is a cache read instead of a
+full-price re-send.
+
 ### Conversation memory / compaction
 
 In a long chat, the context window fills up with old turns. Two standard mitigations:
@@ -61,6 +72,32 @@ In a long chat, the context window fills up with old turns. Two standard mitigat
    retains the gist without the full verbatim history.
 
 A hybrid ("keep the last K turns AND a running summary of everything older") is the most robust.
+
+### Tool-output offloading
+
+Compaction targets chat turns; agent loops have a worse offender: **tool results**. In a
+multi-iteration agent loop (module 06's ReAct pattern), a single web-search or file-read
+result can be 3–4 K tokens — and because the whole message history is re-sent on every
+iteration, those tokens are paid again on _every subsequent step_. Five iterations after
+one 4 K-token search, that one result has cost ~20 K input tokens, and most of it was
+never needed verbatim.
+
+The offloading pattern breaks the loop:
+
+1. **Persist** the full tool output to a _tool-log store_ (a dict, a file, a DB row)
+   keyed by an id.
+2. **Reference** it in the history with a one-line stand-in — e.g.
+   `[Tool Log #3] web_search output stored (3 812 tokens); call read_tool_log(3) to retrieve` —
+   ideally with a short preview so the model knows what's in there.
+3. **Retrieve on demand** via a `read_tool_log(id)` tool the agent can call only when it
+   actually needs the full content back.
+
+Context now grows by ~50 tokens per tool call instead of thousands, while nothing is
+lost — the store round-trips outputs exactly. This becomes _necessary_ (not just nice)
+once loops run long: 10 iterations × a few large tool results will overflow even a 200 K
+window, and re-reading megabytes of stale tool output degrades quality ("lost in the
+middle") as well as cost. Claude Code and similar agent harnesses do exactly this for
+large tool results. Task 6 makes you build it.
 
 ### Long-context strategies
 
@@ -108,7 +145,7 @@ No changes to `.env.example` are needed — add values to your local `.env`.
 
 ### Extra Python dependencies
 
-Task 1 uses `tiktoken` for token counting:
+Tasks 1 and 6 use `tiktoken` for token counting:
 
 ```bash
 uv sync --extra context
@@ -251,6 +288,49 @@ observe the "lost in the middle" effect.
 
 ---
 
+### Task 6 🟡 — Tool-output offloading
+
+**Goal:** Stop re-paying for large tool outputs on every iteration of an agent loop:
+store them in a tool log, keep only a one-line reference in the message history, and
+retrieve the full text on demand.
+
+Fully offline and deterministic — a provided scripted 5-iteration agent loop with a
+canned `web_search` tool; no provider or API key needed.
+
+**Files:** `py/06_tool_offloading.py` / `ts/06-tool-offloading.ts`
+
+**Steps:**
+
+1. Open the file and read the provided pieces: the fake `web_search` (large canned
+   payloads, one hiding a `FINDING:` line), the scripted 5-iteration `SCRIPT`, and the
+   naive baseline `run_loop_naive` / `runLoopNaive` that appends every full tool output
+   to the history.
+2. Implement `write_tool_log(store, tool_name, output)` — append a record and return its
+   new sequential id.
+3. Implement `make_reference(log_id, tool_name, output)` — the compact one-liner that
+   replaces the payload in the history: log id, tool name, stored size in tokens, a
+   ≤ ~80-char preview, and how to retrieve it.
+4. Implement `read_tool_log(store, log_id)` — return the exact stored output
+   (round-trip), erroring on unknown ids.
+5. Implement `run_loop_with_offloading(script, store)` — mirror the naive loop, but
+   append references instead of full outputs, and expand a stored log via
+   `read_tool_log` only when the script demands it.
+6. Run it and compare the printed per-iteration context sizes for the naive vs the
+   offloaded loop.
+
+**Acceptance:**
+
+- Per-iteration context token counts are printed for both loops; the naive context grows
+  monotonically and ends above 9 000 tokens, while the offloaded context stays below
+  1 200 tokens at every iteration.
+- `read_tool_log` round-trips the exact original payload, and the store holds sequential
+  ids 1, 2, 3.
+- The offloaded run's final answer contains the needle fact that exists only inside a
+  stored payload — proof that on-demand retrieval worked.
+- The script prints "All acceptance checks passed."
+
+---
+
 ## Done when
 
 - [ ] Task 1: `count_tokens` uses tiktoken; all three truncation strategies print a results table.
@@ -258,6 +338,9 @@ observe the "lost in the middle" effect.
 - [ ] Task 3: compaction fires; the context stays within budget; coherence is preserved.
 - [ ] Task 4: map-reduce and refine both produce answers; lost-in-the-middle is demonstrated.
 - [ ] Task 5: batch job completes, results are printed, and cost savings are calculated.
+- [ ] Task 6: the offloaded loop stays under the token ceiling while the naive loop blows past
+      the floor; `read_tool_log` round-trips payloads exactly; the final answer recovers the
+      needle fact from a stored payload; "All acceptance checks passed." is printed.
 
 ---
 
