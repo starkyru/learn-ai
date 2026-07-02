@@ -19,7 +19,9 @@ learn-ai/
 │   ├── ts/llm-core/        # provider-agnostic LLM client (TypeScript) — @learn-ai/llm-core
 │   └── py/llm_core/        # the same client, in Python — llm_core
 ├── modules/
-│   └── 00-setup/ … 23-capstone/
+│   ├── 00-setup/ … 23-capstone/   # main numbered modules
+│   ├── 01b-*/ 05b-*/ 06b-*/ 06c-*/ 13b-*  # companion/deep-dive modules
+│   └── <module>/
 │       ├── README.md       # THE LESSON: concepts + numbered tasks + "Done when" checklist
 │       ├── ts/             # TypeScript exercises
 │       └── py/             # Python exercises
@@ -40,10 +42,13 @@ The module map:
 01b Classic ML Foundations (companion — extends 01; from-scratch numpy/TS, no provider)
 01c Deep Learning Essentials (companion — extends 01; from-scratch numpy/TS, no provider)
 01d Transformer Architecture (companion — extends 01; from-scratch numpy/TS, no provider)
+01e Trees & Ensembles (companion — extends 01; from-scratch numpy/TS, no provider)
+01f Stats Foundations (companion — extends 01; from-scratch numpy/TS, no provider)
 02 LLM Integration
 03 Prompting & Patterns
 04 Embeddings & Vectors
 05 RAG
+05b Advanced RAG (deep dive — extends 05; see docs/ADVANCED_RAG.md)
 06 Agents
 06b LangGraph (deep dive — extends 06; see docs/LANGGRAPH.md)
 06c Agent Frameworks (companion — LangChain/CrewAI/AutoGen, extends 06/06b; offline via --stub)
@@ -54,6 +59,7 @@ The module map:
 11 Document Ingestion
 12 Text-to-SQL
 13 Fine-tuning
+13b Alignment & Post-training (deep dive — extends 13; offline toy RLHF/DPO)
 14 Local Inference & Optimization
 15 Reasoning & Test-time Compute
 16 Context Engineering
@@ -85,6 +91,25 @@ module/task:
   library for a 🔴 task.
 
 Respect the learner's chosen lane when advising or reviewing.
+
+## Companion and deep-dive modules
+
+Several modules extend the main 00-23 path. Treat them as first-class lessons:
+
+- `01b` through `01f` are offline foundations companions: classic ML, deep
+  learning, transformers, trees/ensembles, and statistics. They should not use a
+  provider unless the local README explicitly says otherwise.
+- `05b-advanced-rag` covers named RAG architectures: Contextual Retrieval,
+  Corrective RAG (CRAG), Self-RAG, and GraphRAG. Use
+  `docs/ADVANCED_RAG.md` as the cross-cutting reference.
+- `06b-langgraph` is the LangGraph production deep dive; use
+  `docs/LANGGRAPH.md` as the cross-cutting reference.
+- `06c-agent-frameworks` maps course-built patterns to LangChain, CrewAI,
+  AutoGen, LlamaIndex, and Semantic Kernel. Exercises can run offline with
+  `--stub`.
+- `13b-alignment` covers post-training and alignment from scratch on toy models:
+  preference data, Elo/win rates, Bradley-Terry reward modeling, RLHF with a
+  reward-hacking demo, KL control, and DPO.
 
 ## The `llm_core` abstraction (default rule)
 
@@ -129,6 +154,10 @@ fine-tuning, STT/TTS, and Realtime voice.
   - `telegram` (projects/news-agent)
 - **TypeScript:** `pnpm tsx <path>.ts` (e.g. `pnpm tsx modules/00-setup/ts/hello.ts`),
   or `pnpm --filter ./modules/<id>/ts dev`. Build the core first with `pnpm build:core`.
+
+For companion/deep-dive modules, use their actual folder names in paths and
+filters, e.g. `modules/05b-advanced-rag`, `modules/13b-alignment`, not just the
+base module number.
 
 Hosted-first modules: 09, 10, 13, and 19 default to APIs where possible. Local
 paths may download large model weights and should be treated as optional unless
