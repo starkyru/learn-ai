@@ -24,6 +24,18 @@ loop:
     history.append(tool_result)            # observation feeds back
 ```
 
+The same loop as a picture — every iteration either answers or acts:
+
+```mermaid
+flowchart TD
+    Q[User question] --> T[Think - the LLM decides the next step]
+    T --> C{Final answer ready}
+    C -- yes --> A[Return the answer]
+    C -- no --> X[Act - run the chosen tool]
+    X --> O[Observe - append the tool result to history]
+    O --> T
+```
+
 That's it. Every agent framework (LangGraph, AutoGen, CrewAI) is an opinionated
 implementation of that loop with added persistence, routing, and tracing.
 
@@ -441,3 +453,13 @@ happens (post-training and alignment).
 - **Tree of Thought**: branch multiple reasoning paths and pick the best.
 - **Human-in-the-loop**: add an edge in LangGraph that pauses for human approval before tool execution.
 - **Agent evals**: use Task 1's multi-step questions as a test suite — measure how often the agent reaches the correct Final Answer within N steps.
+
+---
+
+## 📚 Read more
+
+- **ReAct paper (Yao et al., 2022)** — <https://arxiv.org/abs/2210.03629> — the original Thought/Action/Observation format you build in Task 1.
+- **Anthropic — Building effective agents** — <https://www.anthropic.com/research/building-effective-agents> — when a workflow beats an agent, and why simple composable loops win in production.
+- **Native tool calling — OpenAI & Anthropic docs** — <https://platform.openai.com/docs/guides/function-calling> · <https://docs.anthropic.com> — the structured `tool_calls` / `tool_use` APIs behind both of Task 2's loops.
+- **Lilian Weng — LLM Powered Autonomous Agents** — <https://lilianweng.github.io/posts/2023-06-23-agent/> — the classic survey tying planning, memory, and tool use into one picture.
+- 🎥 **DeepLearning.AI — Functions, Tools and Agents with LangChain** — <https://www.deeplearning.ai/short-courses/functions-tools-agents-langchain/> — short video course walking the same tool-calling-to-agent progression.

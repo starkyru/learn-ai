@@ -20,6 +20,21 @@ they're where the real understanding lives.
 
 ## The map
 
+How the tracks feed each other — foundations first, then two big tracks
+(retrieval and agents) that merge in production and the capstone:
+
+```mermaid
+flowchart LR
+    F[Foundations<br>00-01f: setup, ML, DL,<br>LLMs and transformers] --> B[Building with LLMs<br>02 integration - 03 prompting]
+    B --> R[Retrieval track<br>04 embeddings - 05/05b RAG<br>11 ingestion - 12 text-to-SQL]
+    B --> A[Agents track<br>06-06d agents - 16 context<br>17 MCP - 18 computer use]
+    B --> T[Training and inference<br>13/13b fine-tuning and alignment<br>14 local - 15 reasoning]
+    R --> P[Production<br>07 serving - 20 security<br>21 LLMOps - 22 UX]
+    A --> P
+    T --> P
+    P --> C[23 Capstone]
+```
+
 | #   | Module                                                                     | You'll build                                                                                       | Core ideas                                                      |
 | --- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | 00  | [Setup & Providers](modules/00-setup/)                                     | "Hello LLM" across 6 providers                                                                     | API keys, the provider abstraction, OpenAI-compatible APIs      |
@@ -131,14 +146,14 @@ learn-ai/
 │   ├── ts/llm-core/        # provider-agnostic LLM client (TypeScript)
 │   └── py/llm_core/        # the same, in Python
 ├── modules/
-│   ├── 00-setup/ … 23-capstone/   # 24 modules
+│   ├── 00-setup/ … 23-capstone/   # 24 modules + 10 deep-dive companions
 │   │   ├── README.md       # the lesson + tasks + "done when" checklist
 │   │   ├── ts/             # TypeScript exercises
 │   │   └── py/             # Python exercises
 ├── projects/
 │   ├── news-agent/         # the Telegram daily-news agent
 │   └── tutor/              # Q&A + exam study CLI
-├── docs/                   # TOOLING.md, TUTOR_AND_EXAM.md
+├── docs/                   # TOOLING, TUTOR_AND_EXAM, GLOSSARY, ADVANCED_RAG, LANGGRAPH
 ├── data/                   # sample corpora for RAG exercises
 ├── scripts/                # helpers (smoke tests, etc.)
 └── .claude/commands/       # /tutor and /exam slash commands
@@ -147,7 +162,12 @@ learn-ai/
 The two `llm-core` packages are the spine of the course: you write exercises
 against one small interface and swap OpenAI ↔ Claude ↔ Ollama ↔ LM Studio ↔
 NVIDIA ↔ Gemini by changing a single env var. Understanding _why_ that abstraction is possible (and
-where it leaks) is module 00–02.
+where it leaks) is module 00–02. For the full tooling reference (uv, pnpm,
+pytest, jest, formatters), see [docs/TOOLING.md](docs/TOOLING.md).
+
+Prefer reading in a browser? `uv run scripts/build_site.py` renders every
+module lesson and reference doc (with the diagrams) to a static HTML site —
+open `site/index.html`.
 
 ---
 
@@ -192,7 +212,7 @@ to hosted APIs.
 ```bash
 pnpm install
 pnpm build:core
-pnpm --filter ./modules/00-setup/ts dev      # or: cd modules/00-setup/ts && pnpm dev
+pnpm tsx modules/00-setup/ts/hello.ts        # run any exercise file directly
 ```
 
 ---

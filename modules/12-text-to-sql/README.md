@@ -31,6 +31,17 @@ SQL. The quality gap between a naive prompt and a careful one is enormous.
 The lesson: schema grounding is not optional. A model with no schema will
 hallucinate column names confidently.
 
+```mermaid
+flowchart TD
+    A[User question] --> B[Schema context from the live DB]
+    B --> C[LLM generates SQL]
+    C --> D[Validate read-only]
+    D --> E[Execute on SQLite]
+    E -->|error| F[Self-repair loop]
+    F --> C
+    E --> G[Rows and answer]
+```
+
 ### Schema grounding
 
 A good schema prompt includes:
@@ -292,3 +303,12 @@ uv run python modules/12-text-to-sql/py/seed_db.py
 # TypeScript
 pnpm tsx modules/12-text-to-sql/ts/seed-db.ts
 ```
+
+---
+
+## 📚 Read more
+
+- [Spider benchmark](https://yale-lily.github.io/spider) — the standard cross-domain text-to-SQL benchmark; browse its examples to see what "hard" NL→SQL looks like.
+- [SQLite docs](https://www.sqlite.org/docs.html) — the dialect your generated SQL must target; the SQL syntax and PRAGMA references matter most here.
+- [Anthropic docs](https://docs.anthropic.com) — prompt-engineering guidance that applies directly to schema-grounded and few-shot SQL prompts.
+- [SQLBolt](https://sqlbolt.com) — interactive SQL lessons, useful if your own JOIN and aggregation skills need a refresher before judging the LLM's output.

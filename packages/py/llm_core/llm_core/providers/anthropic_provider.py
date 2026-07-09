@@ -12,7 +12,7 @@ notice vs. the OpenAI-compatible providers:
 
 from __future__ import annotations
 
-from typing import Iterable, Iterator
+from collections.abc import Iterable, Iterator
 
 import anthropic
 
@@ -28,11 +28,7 @@ from ..types import (
 
 def _split_system(messages: list[ChatMessage]) -> tuple[str | None, list[dict]]:
     system_parts = [m.content for m in messages if m.role == "system"]
-    rest = [
-        {"role": m.role, "content": m.content}
-        for m in messages
-        if m.role != "system"
-    ]
+    rest = [{"role": m.role, "content": m.content} for m in messages if m.role != "system"]
     system = "\n\n".join(system_parts) if system_parts else None
     return system, rest
 

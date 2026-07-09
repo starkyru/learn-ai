@@ -26,6 +26,18 @@ Deep learning _learns_ the features from data. Task 4 in this module implements
 a hand-crafted edge detector so you feel exactly what a "feature" is before the
 learning happens.
 
+The three inference paths this module walks through:
+
+```mermaid
+flowchart TD
+    A[Image pixels] --> B[Vision encoder CNN or ViT]
+    B --> C[Fixed-class probabilities]
+    B --> D[CLIP shared embedding space]
+    D --> E[Zero-shot label ranking]
+    B --> F[Image tokens into a multimodal LLM]
+    F --> G[Free-form description and OCR]
+```
+
 ### Convolutional Neural Networks (CNNs)
 
 A CNN stacks many **convolutional layers**. Each layer slides a small matrix
@@ -338,3 +350,12 @@ again what a conv layer actually computes.
 - [Learning Transferable Visual Models From Natural Language Supervision (CLIP)](https://arxiv.org/abs/2103.00020) — the original CLIP paper.
 - [HuggingFace Vision Course](https://huggingface.co/learn/computer-vision-course/) — hands-on; covers classification, detection, generation.
 - [NVIDIA NIM (NVIDIA Inference Microservices) vision models](https://build.nvidia.com/explore/vision) — hosted vision endpoints (CLIP, OCR, object detection) if you want an OpenAI-compatible API for vision tasks.
+
+---
+
+## 📚 Read more
+
+- [CS231n notes](https://cs231n.github.io) — the canonical course notes on convolution, pooling, and CNN architectures; the backbone of Task 4.
+- [CLIP paper — Radford et al. 2021](https://arxiv.org/abs/2103.00020) — the contrastive image/text training behind Task 2's zero-shot classifier.
+- [Anthropic docs](https://docs.anthropic.com) — the vision/multimodal message format you build by hand in Task 3.
+- [3Blue1Brown — Neural networks](https://www.3blue1brown.com/topics/neural-networks) — visual intuition for what stacked layers learn from pixels.

@@ -30,22 +30,22 @@ uv sync
 
 #### Optional extras — install when you reach the module that needs them
 
-| Extra | Command | Used by |
-| --- | --- | --- |
-| `vectors` | `uv sync --extra vectors` | Modules 04, 05 (Chroma, Qdrant, BM25) |
-| `agents` | `uv sync --extra agents` | Module 06 (LangGraph) |
-| `production` | `uv sync --extra production` | Module 07 (FastAPI, Uvicorn) |
-| `telegram` | `uv sync --extra telegram` | `projects/news-agent` |
+| Extra        | Command                      | Used by                               |
+| ------------ | ---------------------------- | ------------------------------------- |
+| `vectors`    | `uv sync --extra vectors`    | Modules 04, 05 (Chroma, Qdrant, BM25) |
+| `agents`     | `uv sync --extra agents`     | Module 06 (LangGraph)                 |
+| `production` | `uv sync --extra production` | Module 07 (FastAPI, Uvicorn)          |
+| `telegram`   | `uv sync --extra telegram`   | `projects/news-agent`                 |
 
 You can combine them: `uv sync --extra vectors --extra agents`.
 
 ### Recommended VSCode extensions
 
-| Extension | ID | Purpose |
-| --- | --- | --- |
-| Prettier | `esbenp.prettier-vscode` | Format JS/TS/JSON/MD/YAML on save |
-| Ruff | `charliermarsh.ruff` | Format + lint Python on save |
-| Python | `ms-python.python` | Language support, test discovery |
+| Extension | ID                       | Purpose                           |
+| --------- | ------------------------ | --------------------------------- |
+| Prettier  | `esbenp.prettier-vscode` | Format JS/TS/JSON/MD/YAML on save |
+| Ruff      | `charliermarsh.ruff`     | Format + lint Python on save      |
+| Python    | `ms-python.python`       | Language support, test discovery  |
 
 ---
 
@@ -110,7 +110,7 @@ Jest uses `@swc/jest` for fast transpilation (no type-checking — that's `pnpm 
 uv run pytest
 ```
 
-pytest scans `modules/`, `packages/`, and `projects/` for files matching `test_*.py` or `*_test.py`. The `-q` flag is set by default in `pyproject.toml`.
+pytest scans `modules/` and `packages/` for files matching `test_*.py` or `*_test.py` (`projects/` is excluded — run project tests explicitly). The `-q` flag is set by default in `pyproject.toml`.
 
 ---
 
@@ -146,10 +146,10 @@ Hooks are registered automatically when you run `pnpm install` (via the `prepare
 
 Runs on every `git commit`. Only staged files are processed:
 
-| Staged file pattern | Action |
-| --- | --- |
-| `*.{ts,tsx,js,jsx,json,md,yaml,yml}` | `prettier --write` |
-| `*.py` | `uv run ruff format` then `uv run ruff check --fix` |
+| Staged file pattern                  | Action                                              |
+| ------------------------------------ | --------------------------------------------------- |
+| `*.{ts,tsx,js,jsx,json,md,yaml,yml}` | `prettier --write`                                  |
+| `*.py`                               | `uv run ruff format` then `uv run ruff check --fix` |
 
 If Prettier or Ruff changes a file, the modified version is included in the commit automatically.
 

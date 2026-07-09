@@ -13,6 +13,20 @@ samplers. The point isn't to reinvent these — it's that once you've written
 
 ## Concepts
 
+The five concepts below are one loop — text goes in as tokens, a transformer
+scores what comes next, a sampler picks one token, and the loop repeats:
+
+```mermaid
+flowchart LR
+    P[Prompt text] --> T[BPE tokenizer]
+    T --> I[Token ids]
+    I --> M[Transformer with attention]
+    M --> L[Logits]
+    L --> S[Sampler greedy temp top-k top-p]
+    S --> N[Next token]
+    N -->|append and repeat| I
+```
+
 ### 1. Tokens & tokenization
 
 Models don't read characters or words. They read **tokens** — integer ids drawn
@@ -281,3 +295,13 @@ token from the previous one.
 - **[Hugging Face LLM Course](https://huggingface.co/learn/llm-course)** — tokenizers, embeddings, transformers hands-on.
 - **[tinygrad](https://github.com/tinygrad/tinygrad)** — a tiny autograd/NN framework worth reading once you've done the from-scratch tasks.
 - **[Attention Is All You Need](https://arxiv.org/abs/1706.03762)** — the original transformer paper; readable after this module.
+
+---
+
+## 📚 Read more
+
+- [Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) (video course) — the full ladder from backprop to a GPT and a BPE tokenizer, built live; the definitive companion to Tasks 1 and 3–5.
+- [3Blue1Brown — Neural networks](https://www.3blue1brown.com/topics/neural-networks) — the animated series, including the transformer/attention chapters; the best visual intuition for Concept 3.
+- [Jay Alammar — The Illustrated GPT-2](https://jalammar.github.io/illustrated-gpt2/) — walks the exact generate loop in the diagram above (ids in, logits out, sample, append) with pictures.
+- [Lilian Weng's blog](https://lilianweng.github.io) — rigorous long-form posts on attention, sampling/decoding, and everything downstream, for when you want the math past this module.
+- [Hugging Face LLM course](https://huggingface.co/learn/llm-course) — hands-on tokenizer and transformer chapters that show the production versions of what you built by hand here.

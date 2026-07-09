@@ -2,14 +2,16 @@
 
 The whole point of this package: write your exercise code against ONE
 interface (``LLMProvider``), then swap the underlying model — OpenAI, Claude,
-a local Ollama model, or an NVIDIA-hosted model — by changing one env var.
+Gemini, a local Ollama or LM Studio model, or an NVIDIA-hosted model — by
+changing one env var.
 That swap-ability is itself a core lesson (see modules/02-llm-integration).
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
-from typing import Iterable, Iterator, Literal, Protocol, runtime_checkable
+from typing import Literal, Protocol, runtime_checkable
 
 Role = Literal["system", "user", "assistant"]
 

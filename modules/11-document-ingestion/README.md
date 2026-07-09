@@ -27,6 +27,17 @@ as the text that was extracted.
 The split: ~20% of production RAG engineering is tuning the retrieval and
 generation; ~80% is building robust ingestion that handles edge cases.
 
+```mermaid
+flowchart TD
+    A[PDF] --> D[Parse to plain text]
+    B[HTML] --> D
+    C[Markdown] --> D
+    D --> E[Clean and dedupe]
+    E --> F[Structure-aware chunking]
+    F --> G[Chunks with metadata]
+    G --> H[Embed and index — RAG-ready]
+```
+
 ### Parsing formats
 
 | Format          | Key challenge                                                                                               | Library                                             |
@@ -367,3 +378,12 @@ Install: `pnpm install` from `modules/11-document-ingestion/ts/` or `pnpm -r ins
 - `vector_databases.html` — HTML page with nav/header/footer boilerplate to strip
 
 These files are self-contained so every task runs without network access.
+
+---
+
+## 📚 Read more
+
+- [pypdf docs](https://pypdf.readthedocs.io) — the reference for the PDF extraction you do in Task 1, including its limits on scanned pages.
+- [Beautiful Soup docs](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) — the canonical guide to navigating and stripping HTML trees.
+- [Unstructured docs](https://docs.unstructured.io) — a production-grade ingestion library: one API for PDF, HTML, DOCX, EPUB, and more.
+- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) — the standard open-source OCR engine for when your PDFs are scans, not digital text.

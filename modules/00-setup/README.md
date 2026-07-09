@@ -32,6 +32,22 @@ Ollama, NVIDIA NIM (NVIDIA Inference Microservices), LM Studio, and Google Gemin
 exercise code never hard-codes a vendor. You'll see _why_ that abstraction is
 possible below, and _where it leaks_ in module 02.
 
+The whole routing story in one picture — one env var picks the provider, one
+shared class covers five of the six:
+
+```mermaid
+flowchart TD
+    ENV[LLM_PROVIDER env var] --> GP[get_provider in llm-core]
+    GP --> OC[OpenAICompatibleProvider]
+    GP --> AP[AnthropicProvider]
+    OC --> A[OpenAI]
+    OC --> B[Ollama]
+    OC --> C[NVIDIA NIM]
+    OC --> D[LM Studio]
+    OC --> E[Google Gemini]
+    AP --> F[Anthropic Claude]
+```
+
 ### Why the OpenAI HTTP shape is a de-facto standard
 
 When OpenAI shipped `/v1/chat/completions`, the request/response JSON (JavaScript Object Notation) shape was
@@ -197,3 +213,13 @@ configured, clearly labelling which providers ran and which were skipped.
 - [NVIDIA NIM](https://build.nvidia.com) — free-tier OpenAI-compatible hosting.
 - [Gemini OpenAI-compatibility docs](https://ai.google.dev/gemini-api/docs/openai) — Google's `/v1beta/openai/` endpoint; free tier at [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 - Read `packages/ts/llm-core/src/providers/` and `packages/py/llm_core/llm_core/providers/` — the actual adapters you're using.
+
+---
+
+## 📚 Read more
+
+- [OpenAI platform docs](https://platform.openai.com/docs) — the full reference for the request/response shape that became the de-facto standard five of our six providers speak.
+- [Anthropic docs](https://docs.anthropic.com) — the one API that _didn't_ copy that shape; browse the Messages API to see exactly what our `AnthropicProvider` adapts.
+- [Ollama docs](https://docs.ollama.com) — everything about the zero-cost local path: pulling models, the server, and its OpenAI-compatible endpoint.
+- [Andrej Karpathy's YouTube channel](https://www.youtube.com/@AndrejKarpathy) (video) — his "Intro to Large Language Models" and "Deep Dive into LLMs" talks are the best big-picture view of what's behind the API you just called.
+- [Hugging Face LLM course](https://huggingface.co/learn/llm-course) — a free hands-on course on what these hosted models actually are, useful context before module 01.

@@ -11,6 +11,19 @@ Study `projects/news-agent` first. It is a complete, end-to-end example that
 combines modules 02, 04, 05, and 06 into a running application. Read every file
 before you write a line of your own.
 
+Whichever track you pick, the shape is the same: an agent loop over a retrieval
+pipeline, wrapped in evals and a served interface.
+
+```mermaid
+flowchart TD
+    Query[User query] --> Agent[Agent loop with tools]
+    Agent --> Retriever[Hybrid retriever over your corpus]
+    Retriever --> Generator[Generator with citations]
+    Generator --> UI[Streaming UI with feedback]
+    Generator --> Evals[Eval harness and CI gate]
+    Evals --> Agent
+```
+
 ---
 
 ## Choose your track
@@ -223,3 +236,12 @@ Total out of 24. A score of ≥ 15 with no 1s is a solid capstone.
 - [ ] You can swap providers by changing one env var and the app still runs.
 - [ ] Your self-evaluation rubric is filled in with honest scores (target ≥ 15/24).
 - [ ] The README in your `py/` or `ts/` folder documents how to run the project.
+
+---
+
+## 📚 Read more
+
+- [Anthropic research](https://www.anthropic.com/research) — see "Building Effective Agents" for hard-won guidance on when simple workflows beat autonomous agents; read it before designing M4.
+- [Hamel Husain — Your AI product needs evals](https://hamel.dev/blog/posts/evals/) — how to make the M5 eval harness genuinely useful rather than ceremonial.
+- [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — the security checklist to run your capstone against before calling it done.
+- [Langfuse docs](https://langfuse.com/docs) — free, self-hostable tracing and eval dashboards for the cost/latency and eval rubric rows.

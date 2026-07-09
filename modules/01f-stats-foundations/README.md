@@ -22,6 +22,17 @@ MLE & the loss-function connection, hypothesis testing & A/B tests, and PCA**.
 
 ## Concepts
 
+The module's core mental model in one picture — every belief update in Tasks 1–3
+follows this flow:
+
+```mermaid
+flowchart LR
+    prior[Prior belief] --> bayes[Bayes rule]
+    lik[Likelihood of the evidence] --> bayes
+    bayes --> post[Posterior belief]
+    post --> nb[Argmax over classes - naive Bayes]
+```
+
 ### 1. Bayes' theorem, the base-rate fallacy, and naive Bayes
 
 Bayes' theorem inverts a conditional probability — it turns "how likely is this
@@ -369,3 +380,18 @@ uv run python modules/01f-stats-foundations/py/01_bayes_naive_bayes.py
 ```bash
 pnpm tsx modules/01f-stats-foundations/ts/01-bayes-naive-bayes.ts
 ```
+
+---
+
+## 📚 Read more
+
+- **Seeing Theory** (Brown) — interactive visualisations of Bayes' rule,
+  distributions, confidence intervals, and regression; the fastest way to make
+  Tasks 1 and 3 intuitive: <https://seeing-theory.brown.edu>
+- **An Introduction to Statistical Learning** — free textbook; chapter 4 covers
+  naive Bayes, chapter 12 covers PCA: <https://www.statlearning.com>
+- **StatQuest (Josh Starmer)** — intuitive videos on Bayes, MLE, p-values, and
+  PCA step-by-step (video): <https://www.youtube.com/@statquest>
+- **scikit-learn user guide** — the Naive Bayes and Decomposition chapters are
+  the library versions of Tasks 1 and 4:
+  <https://scikit-learn.org/stable/user_guide.html>

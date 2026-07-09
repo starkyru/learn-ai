@@ -16,6 +16,18 @@ that collapses the three-step pipeline into a single low-latency WebSocket.
 
 ## Concepts
 
+The core pipeline in one picture: audio in, transcript out, answer generated,
+speech back.
+
+```mermaid
+flowchart LR
+    Mic[Mic audio] --> STT[Whisper STT]
+    STT --> Transcript[Transcript]
+    Transcript --> LLM[LLM with RAG context]
+    LLM --> TTS[TTS synthesis]
+    TTS --> Speaker[Spoken answer]
+```
+
 ### The audio modality
 
 Audio is a one-dimensional time series: a sequence of pressure samples taken
@@ -432,3 +444,12 @@ streams TTS audio back. Libraries:
 - [Robust Speech Recognition via Large-Scale Weak Supervision (Whisper)](https://arxiv.org/abs/2212.04356)
 - [Natural TTS Synthesis by Conditioning WaveNet on Mel Spectrogram Predictions (Tacotron 2)](https://arxiv.org/abs/1712.05884)
 - [FastSpeech 2: Fast and High-Quality End-to-End Text to Speech](https://arxiv.org/abs/2006.04558)
+
+---
+
+## 📚 Read more
+
+- [OpenAI Whisper](https://github.com/openai/whisper) — the reference open-source ASR model: code, model cards, and usage examples for local transcription.
+- [Whisper paper](https://arxiv.org/abs/2212.04356) — how 680 000 hours of weakly supervised audio produced a robust multilingual ASR model; explains the encoder–decoder design from the Concepts section.
+- [OpenAI speech-to-text guide](https://platform.openai.com/docs/guides/speech-to-text) — the hosted transcription API used in tasks 1 and 3, including formats and prompting.
+- [OpenAI text-to-speech guide](https://platform.openai.com/docs/guides/text-to-speech) — voices, models, output formats, and streaming options for the TTS API in task 2.

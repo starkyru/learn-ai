@@ -32,6 +32,21 @@ relevant schemas per query.
 
 ## Concepts
 
+The mental model in one picture: a host application runs an MCP client, which
+connects to any number of MCP servers — each exposing tools, resources, and
+prompts through one standard protocol.
+
+```mermaid
+flowchart LR
+    Host[Host app such as Claude Code or your agent] --> Client[MCP client]
+    Client --> S1[MCP server A]
+    Client --> S2[MCP server B]
+    S1 --> T1[Tools]
+    S1 --> R1[Resources]
+    S1 --> P1[Prompts]
+    S2 --> T2[Tools]
+```
+
 ### Why MCP exists
 
 Before MCP, every app defined its own tool format. OpenAI's `function` schemas
@@ -482,3 +497,12 @@ via `get_provider()` / `getProvider()` (any provider except Anthropic for
   return data), enabling server-side agentic behaviour.
 - **Authentication schemes**: beyond bearer tokens — OAuth 2.0 (Open Authorization) PKCE (Proof Key for Code Exchange) flow for
   user-delegated access (e.g., Google Calendar MCP server).
+
+---
+
+## 📚 Read more
+
+- [Model Context Protocol — docs & specification](https://modelcontextprotocol.io) — the official site: concepts, the full spec, and SDK quickstarts for building both clients and servers.
+- [Introducing the Model Context Protocol](https://www.anthropic.com/news/model-context-protocol) — Anthropic's launch announcement; the clearest short statement of the N×M integration problem MCP solves.
+- [Anthropic documentation](https://docs.anthropic.com) — tool use, the MCP connector, and agent-building guides that pair with Task 1's client-side loop.
+- [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — tool poisoning and result injection from the MCP-security section map to LLM01/LLM07; module 20 goes deep on defences.

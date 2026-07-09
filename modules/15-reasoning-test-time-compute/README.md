@@ -14,6 +14,20 @@ extra compute is actually worth it.
 
 ## Concepts
 
+Test-time compute in one picture — spend more inference tokens on parallel reasoning chains, then let a vote or a verifier pick the answer:
+
+```mermaid
+flowchart TD
+    Q[Hard question] --> S[Sample N chains of thought at high temperature]
+    S --> C1[Chain 1]
+    S --> C2[Chain 2]
+    S --> C3[Chain N]
+    C1 --> V[Verify or majority vote]
+    C2 --> V
+    C3 --> V
+    V --> A[Final answer]
+```
+
 ### What are "reasoning models"?
 
 OpenAI's o1/o3 family and Anthropic's _extended thinking_ feature both allocate
@@ -207,3 +221,13 @@ for each strategy from Tasks 1–3, making the trade-off tangible.
 - [OpenAI o1 system card](https://openai.com/index/openai-o1-system-card/)
 - [Anthropic extended thinking docs](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
 - [OpenAI reasoning models guide](https://platform.openai.com/docs/guides/reasoning)
+
+---
+
+## 📚 Read more
+
+- [Chain-of-Thought paper](https://arxiv.org/abs/2201.11903) — Wei et al., 2022; where "think step by step" was shown to unlock multi-step reasoning.
+- [DeepSeek-R1 paper](https://arxiv.org/abs/2501.12948) — how RL on verifiable rewards trains a model to produce long reasoning chains natively.
+- [OpenAI reasoning models guide](https://platform.openai.com/docs/guides/reasoning) — the official reference for `reasoning_effort`, `max_completion_tokens`, and reasoning-token accounting in Task 1.
+- [Anthropic extended thinking docs](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking) — the `budget_tokens` knob and thinking blocks used on the Anthropic path.
+- [Lilian Weng's blog](https://lilianweng.github.io) — long-form posts on test-time compute and how models "think"; the deep-dive companion to this module.

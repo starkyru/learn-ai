@@ -13,6 +13,22 @@ Each piece is independent: do them in order or jump to the part you need.
 
 ## Concepts
 
+The lifecycle in one picture: a versioned dataset feeds eval runs, scores gate
+deploys, and production traces plus human labels flow back into the dataset.
+
+```mermaid
+flowchart TD
+    Data[Versioned eval set] --> Run[Run system under test]
+    Run --> Score[Score with graders]
+    Score --> Gate{Regression gate passes}
+    Gate -->|yes| Deploy[Deploy and promote baseline]
+    Gate -->|no| Fix[Fix prompt or model]
+    Fix --> Run
+    Deploy --> Monitor[Production monitoring and tracing]
+    Monitor --> Review[Human review queue]
+    Review --> Data
+```
+
 ### The eval lifecycle
 
 ```
@@ -344,3 +360,12 @@ and cost, check alert thresholds, and print a report.
 - **Prompt regression testing with `git bisect`**: tag eval results in git
   alongside the prompt files that produced them; `git bisect` can find the
   commit that broke faithfulness.
+
+---
+
+## 📚 Read more
+
+- [Hamel Husain — Your AI product needs evals](https://hamel.dev/blog/posts/evals/) — the widely cited practitioner's guide to eval systems that actually improve a product, not just decorate a dashboard.
+- [OpenAI evals guide](https://platform.openai.com/docs/guides/evals) — official patterns for designing graders and running evals against hosted models.
+- [Langfuse docs](https://langfuse.com/docs) — open-source tracing, datasets, scores, and human annotation; every concept in this module has a direct Langfuse counterpart.
+- [Chip Huyen's blog](https://huyenchip.com/blog/) — essays on ML/LLM system design, monitoring, and the data-drift thinking behind task 5.

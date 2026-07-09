@@ -4,8 +4,8 @@ Run with:
     uv run python scripts/smoke_test.py
 
 Note: this file is a runnable script, not a pytest test suite. pytest's
-testpaths in pyproject.toml are modules/, packages/, and projects/ — scripts/
-is excluded, so this file is never collected as a test (which is intentional).
+testpaths in pyproject.toml are modules/ and packages/ — scripts/ is
+excluded, so this file is never collected as a test (which is intentional).
 """
 
 from __future__ import annotations

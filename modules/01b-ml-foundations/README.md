@@ -97,6 +97,21 @@ E[(y - ŷ)²] = bias² + variance + irreducible_noise
 Plot test error vs `d` and you get the classic **U-curve**: it falls (bias
 shrinking), bottoms out at the sweet spot, then rises (variance growing).
 
+The whole diagnosis loop in one picture — cross-validate, read the U-curve,
+then adjust capacity or regularisation:
+
+```mermaid
+flowchart TD
+    D[Dataset] --> S[Split into k folds]
+    S --> TR[Train on k-1 folds]
+    TR --> V[Score on held-out fold]
+    V --> CV[Average k scores = CV error]
+    CV --> U{Where on the U-curve}
+    U -->|train and CV error both high| HB[High bias - underfitting - raise degree]
+    U -->|train low but CV high| HV[High variance - overfitting - lower degree or add ridge]
+    U -->|both low| OK[Sweet spot - pick this model]
+```
+
 We can't see test error during training, so we estimate it with **k-fold
 cross-validation**. Split the data into `k` folds; for each fold, train on the
 other `k-1` and score on the held-out fold; average the `k` scores:
@@ -401,3 +416,13 @@ uv run python modules/01b-ml-foundations/py/01_linear_regression.py
 ```bash
 pnpm tsx modules/01b-ml-foundations/ts/01-linear-regression.ts
 ```
+
+---
+
+## 📚 Read more
+
+- [StatQuest](https://www.youtube.com/@statquest) (video) — the clearest short explainers anywhere for exactly this module's topics: bias–variance, ridge, cross-validation, ROC/AUC.
+- [Deep Learning book — deeplearningbook.org](https://www.deeplearningbook.org) — Part I (especially chapter 5, "Machine Learning Basics") gives the formal treatment of capacity, over/underfitting, and regularisation.
+- [scikit-learn user guide](https://scikit-learn.org/stable/user_guide.html) — the production versions of everything you built by hand (`Ridge`, `LogisticRegression`, `roc_auc_score`, `KMeans`), with practical caveats.
+- [3Blue1Brown — Neural networks](https://www.3blue1brown.com/topics/neural-networks) — the gradient-descent chapters visualise the loss-surface intuition behind Tasks 1 and 3.
+- [Chip Huyen's blog](https://huyenchip.com/blog/) — how these classic ideas resurface in real ML systems and ML interviews.

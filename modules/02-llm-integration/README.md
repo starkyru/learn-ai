@@ -13,6 +13,19 @@ production LLM (Large Language Model) feature.
 
 ## Concepts
 
+Everything in this module lives between your code and the provider's API:
+
+```mermaid
+flowchart TD
+    app[Your application] --> core[llm_core provider abstraction]
+    core --> api[Provider API - OpenAI, Anthropic, Ollama, ...]
+    api --> stream[Streaming chunks - measure TTFT]
+    api --> err[429 or 5xx error]
+    err --> retry[Exponential backoff and retry]
+    retry --> api
+    stream --> app
+```
+
 ### The request/response loop
 
 Every `chat()` call is stateless on the server side.
@@ -254,3 +267,12 @@ against them with **no changes**, just env vars:
 - [Zod documentation](https://zod.dev/) — schema-first TypeScript validation
 - [Pydantic v2 docs](https://docs.pydantic.dev/latest/) — Python data validation
 - OpenAI cookbook: [How to count tokens](https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken)
+
+---
+
+## 📚 Read more
+
+- [OpenAI API docs](https://platform.openai.com/docs) — the reference for streaming, structured outputs, and function calling on the OpenAI-compatible side of Task 5.
+- [Anthropic API docs](https://docs.anthropic.com) — the Messages API, tool use, and token counting used in Task 5 Part B.
+- [Hugging Face LLM course](https://huggingface.co/learn/llm-course) — free course on how the models behind these APIs actually work, from tokenizers up.
+- [3Blue1Brown, Neural Networks series](https://www.3blue1brown.com/topics/neural-networks) — animated chapters on transformers and attention: what happens inside the model between each streamed token (video).

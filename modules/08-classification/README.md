@@ -21,6 +21,18 @@ Classification maps an input to one of _C_ discrete labels. For text that means
 The hard part is representation: how do you turn words into something a
 mathematical model can learn from?
 
+```mermaid
+flowchart TD
+    A[Raw text] --> B{Representation}
+    B --> C[Prompt an LLM with the label set]
+    B --> D[Embed into a float vector]
+    D --> E[Trained head kNN or LR]
+    C --> F[Predicted label]
+    E --> F
+    F --> G[Eval with accuracy F1 and confusion matrix]
+    G -->|iterate| B
+```
+
 ### Three approaches (and when to use each)
 
 | Approach                  | How it works                                                                            | Needs labelled data?                     | Inference cost               |
@@ -381,3 +393,12 @@ OLLAMA_EMBED_MODEL=nomic-embed-text    # default
 ```bash
 uv sync --extra ml    # installs scikit-learn (Tasks 2 and 3)
 ```
+
+---
+
+## 📚 Read more
+
+- [scikit-learn user guide](https://scikit-learn.org/stable/user_guide.html) — the reference for LogisticRegression, kNN, metrics, calibration, and cross-validation.
+- [CS231n — Linear classification notes](https://cs231n.github.io/linear-classify/) — the cleanest written derivation of softmax + cross-entropy (the Task 4 math).
+- [StatQuest (YouTube)](https://www.youtube.com/@statquest) — short, intuition-first videos on logistic regression, ROC/PR curves, and F1.
+- [3Blue1Brown — Neural networks](https://www.3blue1brown.com/topics/neural-networks) — visual gradient-descent intuition that makes the Task 4 update rule click.

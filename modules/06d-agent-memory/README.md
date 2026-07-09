@@ -86,6 +86,22 @@ per turn:
                    summarise old history if over budget
 ```
 
+The same lifecycle as a picture — stores on the left, one turn flowing down:
+
+```mermaid
+flowchart TD
+    U[New user turn] --> F[Forget - TTL eviction of stale records]
+    F --> R[Retrieve - fixed read order]
+    EP[Episodic store] --> R
+    SE[Semantic store] --> R
+    PR[Procedural store] --> R
+    R --> I[Inject - assemble context under the token budget]
+    I --> M[Model call]
+    M --> W[Write - append turn, merge entities, compact if over budget]
+    W --> EP
+    W --> SE
+```
+
 The invariant: **memory READS run BEFORE the model call, memory WRITES run
 AFTER it.** The model never mutates the store mid-call; the harness owns the
 lifecycle.
@@ -381,3 +397,13 @@ module — no new env vars. The zero-cost path is Ollama (`ollama pull llama3.2`
 > each file points to the exact spot. (Python's `provider.chat` is synchronous,
 > so the Python real path works as-is. Expect to harden Task 3's JSON parsing
 > against a real model's chattier output.)
+
+---
+
+## 📚 Read more
+
+- **MemGPT paper (Packer et al.)** — <https://arxiv.org/abs/2310.08560> — the OS analogy this module leans on: paging between in-context memory and external stores, compaction, just-in-time retrieval.
+- **Letta (MemGPT) docs** — <https://docs.letta.com> — the production framework built on those ideas: memory blocks, self-editing memory, and agent state that outlives a context window.
+- **LangGraph memory docs** — <https://langchain-ai.github.io/langgraph/concepts/memory/> — short-term (thread-scoped checkpointer) vs long-term (cross-thread store) memory, mapped to the taxonomy you built here.
+- **Lilian Weng — LLM Powered Autonomous Agents** — <https://lilianweng.github.io/posts/2023-06-23-agent/> — the memory section of the classic agents survey: sensory/short-term/long-term framing and retrieval as recall.
+- 🎥 **DeepLearning.AI — LLMs as Operating Systems: Agent Memory** — <https://www.deeplearning.ai/short-courses/llms-as-operating-systems-agent-memory/> — short video course with the MemGPT/Letta authors, the video companion to this module.

@@ -9,6 +9,19 @@ prototype from a production service.
 
 ## Concepts
 
+The production request path this module builds, piece by piece:
+
+```mermaid
+flowchart TD
+    A[Incoming request] --> B[Input guards]
+    B --> C{Cache hit?}
+    C -->|yes| D[Return cached answer]
+    C -->|no| E[LLM provider call with retry]
+    E --> F[Output guards]
+    F --> G[Response to client]
+    E --> H[Observability log]
+```
+
 ### Why evals come first
 
 You can't improve what you can't measure. Before optimising prompts, swapping
@@ -356,3 +369,13 @@ Get free keys at <https://cloud.langfuse.com> (or self-host with Docker).
 - **Red-teaming**: systematic adversarial testing to find guardrail bypasses.
   Automate it: run an "attacker" LLM that generates injection attempts against
   your guarded pipeline and measure the block rate.
+
+---
+
+## 📚 Read more
+
+- [OpenAI — Production best practices](https://platform.openai.com/docs/guides/production-best-practices) — the official checklist for latency, cost, rate limits, and safety when going live.
+- [Anthropic docs](https://docs.anthropic.com) — provider-side guidance on errors, rate limits, streaming, and structured outputs.
+- [Langfuse docs](https://langfuse.com/docs) — the observability platform you wire up in Task 6: traces, sessions, and cost dashboards.
+- [OpenTelemetry docs](https://opentelemetry.io/docs/) — the vendor-neutral tracing standard, for when your LLM service is one node in a bigger system.
+- [Lilian Weng's blog](https://lilianweng.github.io) — deep, well-sourced posts on LLM-powered systems, including evaluation and adversarial attacks.

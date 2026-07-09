@@ -10,6 +10,18 @@ from scratch in NumPy so the maths clicks.
 
 ## Concepts
 
+The text-to-image pipeline at a glance:
+
+```mermaid
+flowchart TD
+    A[Text prompt] --> B[CLIP text encoder]
+    B --> C[Denoising U-Net]
+    D[Random noise latent] --> C
+    C -->|repeat for N steps| C
+    C --> E[VAE decoder]
+    E --> F[Final image]
+```
+
 ### 1. What is a diffusion model?
 
 A diffusion model learns to undo Gaussian noise. Training has two phases:
@@ -362,3 +374,13 @@ To switch, edit `IMAGE_PROVIDER` at the top of any script or set the env var.
   full inference loop.
 - [AUTOMATIC1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
   — the most popular local SD interface; good for manual experimentation.
+
+---
+
+## 📚 Read more
+
+- [The Illustrated Stable Diffusion — Jay Alammar](https://jalammar.github.io/illustrated-stable-diffusion/) — the best visual walkthrough of the full pipeline: text encoder, U-Net, VAE.
+- [Hugging Face Diffusers docs](https://huggingface.co/docs/diffusers) — the reference library API: pipelines, schedulers/samplers, LoRA loading.
+- [Latent diffusion paper — Rombach et al. 2022](https://arxiv.org/abs/2112.10752) — the Stable Diffusion paper; why diffusing in latent space is the key trick (Concept 2).
+- [CLIP paper — Radford et al. 2021](https://arxiv.org/abs/2103.00020) — the text encoder that turns your prompt into the conditioning vector (Concept 4).
+- [Lilian Weng — What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/) — the clearest single write-up of the DDPM math behind Task 4.

@@ -152,8 +152,8 @@ fine-tuning, STT/TTS, and Realtime voice.
   - `browser` (18; then install Chromium for Playwright)
   - `audio` (19 local only)
   - `telegram` (projects/news-agent)
-- **TypeScript:** `pnpm tsx <path>.ts` (e.g. `pnpm tsx modules/00-setup/ts/hello.ts`),
-  or `pnpm --filter ./modules/<id>/ts dev`. Build the core first with `pnpm build:core`.
+- **TypeScript:** `pnpm tsx <path>.ts` (e.g. `pnpm tsx modules/00-setup/ts/hello.ts`).
+  Build the core first with `pnpm build:core`.
 
 For companion/deep-dive modules, use their actual folder names in paths and
 filters, e.g. `modules/05b-advanced-rag`, `modules/13b-alignment`, not just the

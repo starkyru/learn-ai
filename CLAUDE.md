@@ -111,8 +111,10 @@ or LM Studio (load a model, Start Server on port 1234). Gemini
   `agents` (06), `production` (07, 22), `ml` (08), `vision` (09, local),
   `imagegen` (10, local), `ingest` (11), `finetune` (13, local), `mcp` (17),
   `browser` (18), `audio` (19, local), `telegram` (news-agent).
-- **TypeScript:** `pnpm tsx <path>.ts` (e.g. `pnpm tsx modules/00-setup/ts/hello.ts`),
-  or `pnpm --filter ./modules/<id>/ts dev`. Build the core first with `pnpm build:core`.
+- **TypeScript:** `pnpm tsx <path>.ts` (e.g. `pnpm tsx modules/00-setup/ts/hello.ts`).
+  Build the core first with `pnpm build:core`.
+- **Docs site:** `uv run scripts/build_site.py` renders all lessons + docs (incl.
+  Mermaid diagrams) to static HTML under `site/` (gitignored); open `site/index.html`.
 
 ## Interactive learning tools
 

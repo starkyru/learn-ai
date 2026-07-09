@@ -3,8 +3,8 @@
 KEY LESSON: OpenAI's HTTP API became a de-facto standard. OpenAI itself,
 NVIDIA NIM, Ollama, vLLM, LM Studio, Together, Groq, and many others all expose
 the SAME ``/v1/chat/completions`` and ``/v1/embeddings`` shape. So one class —
-just a different ``base_url`` + ``api_key`` + model id — covers three of our
-four providers. Only Anthropic ships its own distinct API.
+just a different ``base_url`` + ``api_key`` + model id — covers five of our
+six providers. Only Anthropic ships its own distinct API.
 """
 
 from __future__ import annotations
@@ -84,7 +84,11 @@ class OpenAICompatibleProvider:
                 yield delta
 
     def embed(self, input: list[str]) -> EmbeddingResult:
-        resp = self._client.embeddings.create(model=self.embed_model, input=input)
+        # encoding_format="float" matters: without it, some OpenAI-compatible
+        # servers (LM Studio) return base64-encoded or all-zero vectors.
+        resp = self._client.embeddings.create(
+            model=self.embed_model, input=input, encoding_format="float"
+        )
         return EmbeddingResult(
             vectors=[d.embedding for d in resp.data],
             model=self.embed_model,

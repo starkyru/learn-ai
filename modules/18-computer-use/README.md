@@ -25,6 +25,18 @@ Task 4 covers the non-negotiable safety layer that both approaches need.
 
 ## Concepts
 
+Both agent styles share one loop: observe the page, let the model decide the
+next action, execute it, observe the new state — until the goal is reached.
+
+```mermaid
+flowchart TD
+    Observe[Take screenshot or a11y tree] --> Decide[LLM decides next action]
+    Decide --> Act[Execute click or type via Playwright]
+    Act --> State[New page state]
+    State --> Observe
+    Decide --> Done[Goal reached]
+```
+
 ### Vision-grounded agents
 
 The loop mirrors what a human does:
@@ -402,3 +414,13 @@ Safe defaults:
   official docs including the API shape, safety guidance, and example implementations.
 - [SWE-bench](https://www.swebench.com/) — agents solving GitHub issues by
   browsing code and running tests; shows the frontier of what's possible.
+
+---
+
+## 📚 Read more
+
+- [Anthropic computer use docs](https://docs.anthropic.com/en/docs/build-with-claude/computer-use) — the official tool definitions, agent-loop shape, and safety guidance for OS-level computer use.
+- [Playwright documentation](https://playwright.dev) — the browser-automation layer under both agents: selectors, waiting strategies, screenshots, and codegen.
+- [Simon Willison's prompt injection series](https://simonwillison.net/series/prompt-injection/) — why letting an LLM act on untrusted web content is dangerous, from the writer who named the attack.
+- [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — excessive agency (LLM08) is precisely the risk Task 4's approval gate mitigates.
+- [Anthropic safety research](https://www.anthropic.com/research) — red-teaming and safeguards work that informs the computer-use safety recommendations.

@@ -16,6 +16,16 @@ llama.cpp and vLLM are documented for each task.
 
 ## Concepts
 
+The local-inference pipeline in one picture — shrink the weights, package them, then let the runtime's caching and batching set the speed:
+
+```mermaid
+flowchart LR
+    A[fp16 weights] --> B[Quantize to int8 or int4]
+    B --> C[GGUF file with weights and tokenizer metadata]
+    C --> D[Local runtime - Ollama or llama.cpp]
+    D --> E[KV cache plus batching set tokens per second]
+```
+
 ### Quantization
 
 Neural network weights are stored as floating-point numbers. The default is
@@ -409,3 +419,13 @@ uv sync --extra llama-cpp
 # vLLM is NOT available on Mac. Use it on a Linux server with an NVIDIA GPU.
 # pip install vllm   (outside uv, system python)
 ```
+
+---
+
+## 📚 Read more
+
+- [llama.cpp](https://github.com/ggml-org/llama.cpp) — the reference CPU/edge inference engine; the repo also hosts the GGUF format and quantization docs.
+- [Ollama docs](https://docs.ollama.com) — the official docs for the runner used throughout this module, including the `/api/show` endpoint from Task 2.
+- [vLLM docs](https://docs.vllm.ai) — official docs for the high-throughput serving engine; continuous batching and PagedAttention explained by the people who built them.
+- [PagedAttention paper](https://arxiv.org/abs/2309.06180) — Kwon et al., 2023; the virtual-memory trick for the KV cache from the interview-notes section.
+- [Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) 🎥 — building GPT from scratch makes the KV-cache math in Task 5 obvious.

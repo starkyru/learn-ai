@@ -24,6 +24,19 @@ stubs.
 
 ## Concepts
 
+The module's mental model in one picture — one greedy tree, then two opposite
+ways to turn it into an ensemble:
+
+```mermaid
+flowchart TD
+    data[Training data] --> tree[One deep tree - greedy CART splits]
+    tree --> hv[Low bias but high variance]
+    hv --> bag[Bagging - many deep trees in parallel, majority vote]
+    hv --> boost[Boosting - weak stumps in sequence, each fits the residuals]
+    bag --> rf[Random forest - add per-split feature subsampling]
+    boost --> gb[Gradient boosting - shrinkage and early stopping]
+```
+
 ### 1. Decision trees (CART) and Gini impurity
 
 A decision tree classifies by asking a sequence of threshold questions
@@ -370,3 +383,20 @@ uv run python modules/01e-trees-ensembles/py/01_decision_tree.py
 ```bash
 pnpm tsx modules/01e-trees-ensembles/ts/01-decision-tree.ts
 ```
+
+---
+
+## 📚 Read more
+
+- **scikit-learn user guide** — the Decision Trees and Ensembles chapters are
+  the production counterparts of the code you just wrote from scratch:
+  <https://scikit-learn.org/stable/user_guide.html>
+- **An Introduction to Statistical Learning** — free textbook; chapter 8 covers
+  trees, bagging, random forests, and boosting with worked labs:
+  <https://www.statlearning.com>
+- **StatQuest (Josh Starmer)** — clear, step-by-step videos on Gini impurity,
+  CART, random forests, and gradient boost (video):
+  <https://www.youtube.com/@statquest>
+- **XGBoost documentation** — the "Introduction to Boosted Trees" tutorial shows
+  how Task 3's loop becomes a second-order, regularised production system:
+  <https://xgboost.readthedocs.io>

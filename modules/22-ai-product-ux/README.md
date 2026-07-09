@@ -15,6 +15,18 @@ inspect.
 
 ## Concepts
 
+The UX loop in one picture: stream fast, show sources and confidence, capture
+feedback, and feed it back into the eval set so the next answer is better.
+
+```mermaid
+flowchart LR
+    Ask[User asks a question] --> Stream[Tokens stream in via SSE]
+    Stream --> Trust[Citations and confidence badge]
+    Trust --> Feedback[User feedback and reports]
+    Feedback --> Evals[Eval set and human review]
+    Evals -->|better answers next time| Ask
+```
+
 ### Why UX matters for AI trust
 
 A model that's right 85 % of the time is worse than useless if the user can't
@@ -368,3 +380,12 @@ inspectable.
 - **Optimistic UI**: for fast predictable actions, show the result immediately
   and roll back on server error. For slow/uncertain actions (like this LLM),
   show the loading state and never guess.
+
+---
+
+## 📚 Read more
+
+- [Nielsen Norman Group articles](https://www.nngroup.com/articles/) — evidence-based UX research, including a growing body of work on AI interfaces, trust, and error states.
+- [MDN — Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) — the definitive reference for the SSE transport under tasks 1–3.
+- [Chip Huyen's blog](https://huyenchip.com/blog/) — system-design essays on latency, streaming, and user feedback in production LLM apps.
+- [Langfuse docs](https://langfuse.com/docs) — where task 4's feedback capture lands in a real stack: user feedback as scores attached to traces.

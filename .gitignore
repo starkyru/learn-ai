@@ -35,3 +35,6 @@ data/qdrant/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Generated docs site
+site/

@@ -24,6 +24,19 @@ What this module deliberately does **not** re-teach:
 
 ## Concepts
 
+Every task in this module lives somewhere on the same training loop — forward,
+loss, backward, step, zero, repeat:
+
+```mermaid
+flowchart LR
+    X[Input batch] --> F[Forward pass]
+    F --> L[Loss]
+    L --> B[Backward pass fills every grad]
+    B --> O[Optimizer step SGD momentum Adam]
+    O --> Z[Zero grads]
+    Z -->|next batch| F
+```
+
 ### 1. Backpropagation as a graph of scalars (Task 1)
 
 Every neural network is a big composite function. Backprop is nothing more than the
@@ -435,3 +448,13 @@ No env vars, no provider, no network. These are pure-math exercises:
   Run: `pnpm tsx modules/01c-deep-learning/ts/01-autograd-mlp.ts`
 
 All randomness is seeded, so every run prints the same numbers.
+
+---
+
+## 📚 Read more
+
+- [Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) (video course) — the first lecture builds Task 1's autograd engine live, and the series continues through exactly this module's stack.
+- [3Blue1Brown — Neural networks](https://www.3blue1brown.com/topics/neural-networks) — animated backprop and gradient-descent chapters; watch before (or after) writing your `_backward` closures.
+- [Deep Learning book — deeplearningbook.org](https://www.deeplearningbook.org) — chapters 6–8 are the formal version of Concepts 1–3: backprop, regularisation, and optimization.
+- [Lilian Weng's blog](https://lilianweng.github.io) — long-form deep dives that pick up where this module stops, including recurrent architectures and attention.
+- [StatQuest](https://www.youtube.com/@statquest) (video) — gentle step-by-step explainers for backprop, ReLU, and gradient descent if the math above moves too fast.

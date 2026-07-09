@@ -21,6 +21,22 @@ concepts are used here).
 
 ### The RAG pipeline
 
+```mermaid
+flowchart TD
+    D[Document corpus] --> C[Chunk]
+    C --> E[Embed]
+    E --> I[Vector index]
+    Q[Question] --> QE[Embed query]
+    QE --> R[Retrieve top-k chunks]
+    I --> R
+    R --> P[Stuff chunks into prompt]
+    P --> G[LLM generates answer]
+    G --> A[Answer plus citations]
+```
+
+The offline path (chunk → embed → index) runs once; the online path runs on
+every query:
+
 ```
 Document corpus
    │
@@ -286,3 +302,13 @@ No new env vars beyond module 00/04.
 ```bash
 uv sync --extra vectors   # chromadb, qdrant-client, rank-bm25 (from module 04)
 ```
+
+---
+
+## 📚 Read more
+
+- [Retrieval-Augmented Generation (Lewis et al., 2020)](https://arxiv.org/abs/2005.11401) — the original RAG paper that named the pattern you just built.
+- [Pinecone — Retrieval-Augmented Generation](https://www.pinecone.io/learn/retrieval-augmented-generation/) — a practical walkthrough of the full pipeline, with the same retrieval-is-the-bottleneck framing as this module.
+- [RAGAS documentation](https://docs.ragas.io/) — the library behind Task 3's metrics; read how faithfulness and relevance are actually prompted and averaged.
+- [Hugging Face LLM course](https://huggingface.co/learn/llm-course) — free course covering the transformer and retrieval foundations under RAG.
+- 🎬 [Andrej Karpathy's channel](https://www.youtube.com/@AndrejKarpathy) — his "Intro to Large Language Models" talk situates RAG among the other ways to get knowledge into an LLM.

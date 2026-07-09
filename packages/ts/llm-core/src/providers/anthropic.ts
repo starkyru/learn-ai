@@ -1,7 +1,7 @@
 /**
  * Anthropic (Claude) provider.
  *
- * Claude does NOT use the OpenAI shape, so it gets its own class. Two things
+ * Claude does NOT use the OpenAI shape, so it gets its own class. Things
  * to notice vs. the OpenAI-compatible providers:
  *   1. The `system` prompt is a top-level parameter, not a message with
  *      role:"system". We split it out here.
@@ -91,10 +91,7 @@ export class AnthropicProvider implements LLMProvider {
       messages: rest,
     });
     for await (const event of stream) {
-      if (
-        event.type === "content_block_delta" &&
-        event.delta.type === "text_delta"
-      ) {
+      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
         yield event.delta.text;
       }
     }

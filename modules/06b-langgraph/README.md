@@ -57,6 +57,15 @@ START ──▶│  agent  │──────yes─────▶│  tools 
             END  ◀── (cycle back) ─────┘
 ```
 
+```mermaid
+flowchart TD
+    S[START] --> A[agent node - one model call]
+    A --> C{conditional edge - tool calls present}
+    C -- yes --> T[tools node - run each tool]
+    C -- no --> E[END]
+    T --> A
+```
+
 That diagram is the **prebuilt ReAct agent** — `create_react_agent(model, tools)`
 builds exactly it. You'll use the prebuilt where it fits and hand-build the graph
 where you need control. Knowing _both_ is the interview signal.
@@ -390,3 +399,13 @@ Questions companies actually ask (answers live in `docs/LANGGRAPH.md`):
   (the `Send` API) and gather results.
 - **Structured output nodes** — bind a schema so a node returns typed data, not prose.
 - **Evaluation** — reuse module 21's harness: graph in, final state out, score the run.
+
+---
+
+## 📚 Read more
+
+- **LangGraph docs** — <https://langchain-ai.github.io/langgraph/> — the official concepts + how-tos for everything in this module: state, checkpointers, interrupts, streaming, subgraphs, `Command`.
+- **`docs/LANGGRAPH.md` (this repo)** — the local companion reference, including the answers behind the interview cheat-sheet above.
+- **LangChain docs** — <https://python.langchain.com/docs/> — the model/tool/chain layer LangGraph is built on; useful when a task needs `@tool` or a chat-model adapter.
+- **Anthropic — Building effective agents** — <https://www.anthropic.com/research/building-effective-agents> — the "do you even need a graph?" sanity check: workflows vs agents, and when to keep it simple.
+- 🎥 **DeepLearning.AI — AI Agents in LangGraph** — <https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/> — short video course covering the same graph, persistence, and human-in-the-loop features hands-on.

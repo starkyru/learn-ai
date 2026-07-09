@@ -824,17 +824,19 @@ harness manages its cognitive state) is the framing.
 - Clean and normalise extracted text: strip boilerplate, collapse whitespace, deduplicate paragraphs.
 - Chunk documents by section/heading structure rather than by arbitrary character counts.
 - Implement incremental indexing with a content-hash manifest to skip unchanged documents.
+- Attach per-document ACL metadata at ingestion and enforce it at retrieval time (permissions-aware RAG with citations).
 
 **Tasks**
 
-| #   | Task                     | Depth | What you do                                                                                                             |
-| --- | ------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------------- |
-| 1   | Parse documents          | 🟢    | Extract text from PDF, HTML, and Markdown; normalise to a Document record; strip nav/footer noise from HTML.            |
-| 2   | Clean & normalize        | 🟡    | Strip Markdown syntax, collapse whitespace, remove boilerplate lines, deduplicate near-identical paragraphs.            |
-| 3   | Structure-aware chunking | 🟡    | Detect ATX heading boundaries; emit one chunk per section; sub-chunk long sections; prepend heading to every sub-chunk. |
-| 4   | Incremental indexing     | 🟢    | Hash each document; skip unchanged ones on re-run; maintain a manifest JSON; prune stale entries.                       |
+| #   | Task                        | Depth | What you do                                                                                                                                      |
+| --- | --------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Parse documents             | 🟢    | Extract text from PDF, HTML, and Markdown; normalise to a Document record; strip nav/footer noise from HTML.                                     |
+| 2   | Clean & normalize           | 🟡    | Strip Markdown syntax, collapse whitespace, remove boilerplate lines, deduplicate near-identical paragraphs.                                     |
+| 3   | Structure-aware chunking    | 🟡    | Detect ATX heading boundaries; emit one chunk per section; sub-chunk long sections; prepend heading to every sub-chunk.                          |
+| 4   | Incremental indexing        | 🟢    | Hash each document; skip unchanged ones on re-run; maintain a manifest JSON; prune stale entries.                                                |
+| 5   | Permissions-aware retrieval | 🟡    | Tag chunks with ACLs (owner/groups/visibility) at ingestion; enforce at retrieval via pre- and post-filter; carry source/section/page citations. |
 
-**Estimated time:** 4–5 hours
+**Estimated time:** 5–6 hours
 
 **Done when**
 
@@ -842,6 +844,8 @@ harness manages its cognitive state) is the framing.
 - [ ] Cleaned HTML has no nav/footer text; cleaned Markdown has no `#`/`**` chars.
 - [ ] Section-aware chunks carry `metadata.section` and respect heading boundaries.
 - [ ] Second incremental-indexing run shows 0 new / 0 changed / N skipped.
+- [ ] `retrieve_for_user()` enforces ACLs: guest cannot see private/group docs; pre- and post-filter agree.
+- [ ] Every retrieval result includes a citation with source + section (+ page for PDFs).
 
 ---
 
@@ -957,7 +961,7 @@ hacking) → DPO.
 
 ## Module 14 — Local Inference & Optimization
 
-**Prerequisites:** Module 00 (Ollama). No extra deps for default path; `uv sync --extra llama-cpp` optional.
+**Prerequisites:** Module 00 (Ollama). No extra deps for default path; `uv sync --extra finetune` (llama-cpp-python et al.) optional for the local path.
 
 **Learning objectives**
 
@@ -1020,7 +1024,7 @@ hacking) → DPO.
 
 ## Module 16 — Context Engineering
 
-**Prerequisites:** Modules 00–02. `uv sync --extra context` (tiktoken). `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY` for caching/batch tasks.
+**Prerequisites:** Modules 00–02. No extras needed (tiktoken is a base dependency). `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY` for caching/batch tasks.
 
 **Learning objectives**
 

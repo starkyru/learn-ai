@@ -3,7 +3,8 @@
  *
  * The whole point of this package: write your exercise code against ONE
  * interface (`LLMProvider`), then swap the underlying model — OpenAI, Claude,
- * a local Ollama model, or an NVIDIA-hosted model — by changing one env var.
+ * Gemini, a local Ollama or LM Studio model, or an NVIDIA-hosted model — by
+ * changing one env var.
  * That swap-ability is itself a core lesson (see modules/02-llm-integration).
  */
 
@@ -58,10 +59,7 @@ export interface LLMProvider {
   chat(messages: ChatMessage[], options?: ChatOptions): Promise<ChatResult>;
 
   /** Token-by-token (or chunk-by-chunk) streaming. */
-  chatStream(
-    messages: ChatMessage[],
-    options?: ChatOptions,
-  ): AsyncIterable<string>;
+  chatStream(messages: ChatMessage[], options?: ChatOptions): AsyncIterable<string>;
 
   embed(input: string[]): Promise<EmbeddingResult>;
 }

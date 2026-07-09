@@ -4,8 +4,8 @@
  * KEY LESSON: OpenAI's HTTP API became a de-facto standard. OpenAI itself,
  * NVIDIA NIM, Ollama, vLLM, LM Studio, Together, Groq, and many others all
  * expose the SAME `/v1/chat/completions` and `/v1/embeddings` shape. So one
- * class — just a different `baseURL` + `apiKey` + model id — covers three of
- * our four providers. Only Anthropic ships its own distinct API.
+ * class — just a different `baseURL` + `apiKey` + model id — covers five of
+ * our six providers. Only Anthropic ships its own distinct API.
  */
 
 import OpenAI from "openai";

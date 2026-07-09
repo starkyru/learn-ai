@@ -12,6 +12,24 @@ with numbers — the same principle behind Anthropic's and OpenAI's own prompt e
 
 ## Concepts
 
+The core loop this module builds — a template becomes role-tagged messages, the
+model replies, and the output is parsed (and repaired) before you trust it:
+
+```mermaid
+flowchart TD
+    T[Prompt template] --> S[System message]
+    T --> U[User message]
+    F[Few-shot example pairs] --> M[Message list]
+    S --> M
+    U --> M
+    M --> L[LLM]
+    L --> P[Parse output]
+    P -->|valid| A[Answer]
+    P -->|invalid| R[Append correction and retry]
+    R --> L
+    A --> E[Eval harness scores accuracy]
+```
+
 ### Templates and roles
 
 Raw string concatenation for prompts has invisible bugs (typo in a variable name = silent failure).
@@ -204,3 +222,13 @@ run locally in minutes.
 - [Large Language Models are Zero-Shot Reasoners (Kojima et al. 2022)](https://arxiv.org/abs/2205.11916) — "Let's think step by step"
 - [HELM](https://crfm.stanford.edu/helm/latest/) — what large-scale prompt evaluation looks like
 - Anthropic's [prompt engineering docs](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview)
+
+---
+
+## 📚 Read more
+
+- [Anthropic — Prompt engineering overview](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) — the official technique-by-technique guide (clarity, examples, CoT, XML tags), ordered by what to try first.
+- [OpenAI — Prompt engineering guide](https://platform.openai.com/docs/guides/prompt-engineering) — OpenAI's take on the same strategies; compare the two vendors' advice against your Task 5 eval numbers.
+- [Chain-of-Thought Prompting (Wei et al., 2022)](https://arxiv.org/abs/2201.11903) — the paper behind Task 3: why "think step by step" moves accuracy on multi-step reasoning.
+- [Hugging Face LLM course](https://huggingface.co/learn/llm-course) — free course that grounds prompting in how the models actually work underneath.
+- 🎬 [Andrej Karpathy's channel](https://www.youtube.com/@AndrejKarpathy) — his LLM deep-dive talks explain _why_ few-shot and CoT work, from the model's point of view.

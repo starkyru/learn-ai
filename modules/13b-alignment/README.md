@@ -30,6 +30,17 @@ and what happens when we optimize against an imperfect copy of it?**
 
 ## Concepts
 
+The third stage in one picture — preference pairs feed either the two-step RLHF path or the one-step DPO shortcut:
+
+```mermaid
+flowchart TD
+    P[Preference pairs - chosen vs rejected] --> R[Reward model via Bradley-Terry loss]
+    R --> H[RLHF - maximize reward on a KL leash]
+    P --> D[DPO - one supervised loss on the policy]
+    H --> F[Aligned policy]
+    D --> F
+```
+
 ### 1. The post-training pipeline, preference data, and Elo
 
 What each training stage gives the model:
@@ -390,3 +401,13 @@ uv run python modules/13b-alignment/py/01_preferences_elo.py
 ```bash
 pnpm tsx modules/13b-alignment/ts/01-preferences-elo.ts
 ```
+
+---
+
+## 📚 Read more
+
+- [InstructGPT paper](https://arxiv.org/abs/2203.02155) — Ouyang et al., 2022; the SFT → reward model → PPO recipe this module rebuilds on toy models.
+- [DPO paper](https://arxiv.org/abs/2305.18290) — Rafailov et al., 2023; the three-step derivation from Concepts §4 is Section 4 of the paper.
+- [Chip Huyen — RLHF: Reinforcement Learning from Human Feedback](https://huyenchip.com/2023/05/02/rlhf.html) — the clearest end-to-end walkthrough of the pipeline, with the Bradley–Terry loss spelled out.
+- [DeepSeek-R1 paper](https://arxiv.org/abs/2501.12948) — where GRPO (the PPO simplification from the variants list) powers reasoning-model RL at scale.
+- [Lilian Weng's blog](https://lilianweng.github.io) — home of the canonical long-form posts on RLHF, reward hacking, and policy gradients.

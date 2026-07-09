@@ -13,6 +13,18 @@ at a discount, and offloaded bulky tool outputs out of an agent loop's message h
 
 ## Concepts
 
+The context window anatomy in one picture — every section competes for the same fixed token budget, and compaction reclaims what history overspends:
+
+```mermaid
+flowchart TD
+    W[Context window - a fixed token budget] --> S[System prompt]
+    W --> T[Tool definitions]
+    W --> H[Conversation history]
+    W --> R[Retrieved documents and tool outputs]
+    W --> O[Room reserved for the output]
+    H --> C[Compaction - summarise old turns when over budget]
+```
+
 ### The context window as a budget
 
 The context window is the maximum number of tokens (input + output combined) that a model
@@ -353,3 +365,13 @@ canned `web_search` tool; no provider or API key needed.
 - [Lost in the Middle (Liu et al. 2023)](https://arxiv.org/abs/2307.03172)
 - [tiktoken](https://github.com/openai/tiktoken)
 - [MemGPT (Packer et al. 2023)](https://arxiv.org/abs/2310.08560) — LLM with external memory for infinite context
+
+---
+
+## 📚 Read more
+
+- [Anthropic — Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — the post that named the discipline; covers compaction, tool-output offloading, and treating context as a budget.
+- [Anthropic prompt caching docs](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) — `cache_control` breakpoints, TTL, and the prefix-matching rule behind append-only history (Task 2).
+- [OpenAI prompt caching guide](https://platform.openai.com/docs/guides/prompt-caching) — how the automatic > 1024-token caching works and how to read `cached_tokens` from `usage`.
+- [OpenAI Batch API guide](https://platform.openai.com/docs/guides/batch) — the JSONL submit-and-poll workflow of Task 5, with the 50 % discount terms.
+- [Lost in the Middle paper](https://arxiv.org/abs/2307.03172) — Liu et al., 2023; the recall-by-position effect you reproduce in Task 4.

@@ -19,6 +19,22 @@ to the OWASP (Open Worldwide Application Security Project) LLM Top 10 with a def
 
 ## Concepts
 
+The module in one picture: every attack surface feeds the same LLM, and no
+single defence stops them all — you layer defences so each one assumes the
+others failed.
+
+```mermaid
+flowchart TD
+    Inject[Direct prompt injection] --> LLM[LLM with tools and memory]
+    Poison[Poisoned RAG content] --> LLM
+    Jail[Jailbreak prompts] --> LLM
+    LLM --> L1[Input classification and delimiters]
+    L1 --> L2[Least privilege tools and ACL retrieval]
+    L2 --> L3[Human approval gates]
+    L3 --> L4[Output DLP filter]
+    L4 --> Out[Safe response or denial]
+```
+
 ### The agent threat model
 
 When an LLM is given tools and memory, the attack surface expands dramatically:
@@ -502,3 +518,12 @@ so output filtering is the _last_ resort, not the first.
 - [ ] A data-exfiltration intent classifier denies secret/bulk-PII queries before
       retrieval runs (separate from the prompt-injection classifier).
 - [ ] API keys are stored in a secrets manager, not environment files committed to source control.
+
+---
+
+## 📚 Read more
+
+- [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — the authoritative risk list every task in this module maps to; read each entry's mitigations, not just the names.
+- [Simon Willison's prompt injection series](https://simonwillison.net/series/prompt-injection/) — the canonical running commentary on injection attacks, why they remain unsolved, and which defences actually hold up.
+- [Lilian Weng's blog](https://lilianweng.github.io) — see the post on adversarial attacks on LLMs for a research-grade taxonomy of jailbreaks and defence techniques.
+- [Anthropic safety research](https://www.anthropic.com/research) — red-teaming methodology and safety papers from a frontier lab; useful context for Task 4's harness design.

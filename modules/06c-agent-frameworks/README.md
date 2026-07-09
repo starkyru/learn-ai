@@ -49,6 +49,18 @@ Every framework here is **composition + a bounded loop** over one model function
 No calculus — the "math" is function composition, a fold (left-accumulate), a
 cosine similarity, and a modular rotation. We derive each below.
 
+One picture of the whole landscape — five orchestration styles around the same call:
+
+```mermaid
+flowchart TD
+    M[One model call - messages in, text out]
+    M --> L[LangChain LCEL - pipe steps into a chain]
+    M --> C[CrewAI - fold task outputs through role-grounded agents]
+    M --> G[AutoGen - loop speakers over one shared transcript]
+    M --> Q[LlamaIndex - retrieve nodes then synthesize an answer]
+    M --> K[Semantic Kernel - invoke and chain named functions]
+```
+
 ### 1. LCEL is function composition (Task 1)
 
 LangChain Expression Language is the `|` operator: `chain = prompt | model | parser`.
@@ -460,15 +472,15 @@ them **by name**, and **chains** them into a sequential pipeline.
 
 ## Framework cheat-sheet (what to say in an interview)
 
-| Framework           | Core primitive you built                 | Real API to name                                                   |
-| ------------------- | ---------------------------------------- | ------------------------------------------------------------------ |
-| **LangChain**       | `Runnable` + `pipe` = LCEL               | `prompt \| model \| parser`, `RunnableSequence`, `StrOutputParser` |
-| **LangChain**       | buffer memory + retriever RAG            | `ConversationBufferMemory`, `VectorStoreRetriever`                 |
-| **CrewAI**          | role-grounded `Agent`, sequential `Crew` | `Agent`, `Task`, `Crew`, `Process.sequential`                      |
-| **AutoGen**         | shared transcript + round-robin manager  | `ConversableAgent`, `GroupChat`, `GroupChatManager`                |
+| Framework           | Core primitive you built                 | Real API to name                                                         |
+| ------------------- | ---------------------------------------- | ------------------------------------------------------------------------ |
+| **LangChain**       | `Runnable` + `pipe` = LCEL               | `prompt \| model \| parser`, `RunnableSequence`, `StrOutputParser`       |
+| **LangChain**       | buffer memory + retriever RAG            | `ConversationBufferMemory`, `VectorStoreRetriever`                       |
+| **CrewAI**          | role-grounded `Agent`, sequential `Crew` | `Agent`, `Task`, `Crew`, `Process.sequential`                            |
+| **AutoGen**         | shared transcript + round-robin manager  | `ConversableAgent`, `GroupChat`, `GroupChatManager`                      |
 | **LlamaIndex**      | index of Nodes + query engine (RAG)      | `Document`, `VectorStoreIndex.from_documents`, `as_query_engine().query` |
-| **Semantic Kernel** | kernel of named functions + chaining     | `Kernel`, `@kernel_function` / `add_function`, `kernel.invoke`     |
-| **LangGraph**       | (module 06b) stateful graph runtime      | `StateGraph`, checkpointer, `Command(goto=…)`                      |
+| **Semantic Kernel** | kernel of named functions + chaining     | `Kernel`, `@kernel_function` / `add_function`, `kernel.invoke`           |
+| **LangGraph**       | (module 06b) stateful graph runtime      | `StateGraph`, checkpointer, `Command(goto=…)`                            |
 
 The one-liner that ties them together: **each framework is orchestration around a
 single `model(messages) -> text` call** — LCEL composes it, CrewAI folds context
@@ -527,3 +539,13 @@ module — no new env vars. The zero-cost path is Ollama
 > `async` and `await provider.chat(messages)` — the header comment on each file
 > points to the exact spot. (Python's `provider.chat` is synchronous, so the
 > Python real path works as-is.)
+
+---
+
+## 📚 Read more
+
+- **LangChain docs** — <https://python.langchain.com/docs/> — the real LCEL / Runnable / memory / retriever APIs your Task 1–2 reimplementations map to.
+- **CrewAI docs** — <https://docs.crewai.com> — `Agent`, `Task`, `Crew`, and `Process.sequential`, the library version of Task 3's fold.
+- **AutoGen docs** — <https://microsoft.github.io/autogen/> — `ConversableAgent` and group chat, including the smarter speaker selection our round-robin stands in for.
+- **LlamaIndex docs** — <https://docs.llamaindex.ai> — Documents, `VectorStoreIndex`, and query engines: Task 5's retrieve-then-synthesize done with real embeddings.
+- 🎥 **DeepLearning.AI — Multi AI Agent Systems with crewAI** — <https://www.deeplearning.ai/short-courses/multi-ai-agent-systems-with-crewai/> — short video course building role-based crews with the real library.

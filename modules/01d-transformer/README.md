@@ -19,6 +19,20 @@ machinery with nothing hidden. This is the course's most-asked interview materia
 
 ## Concepts
 
+The whole module in one picture — the path a token takes through the decoder you
+are about to build:
+
+```mermaid
+flowchart TD
+    tok[Token embeddings] --> pe[Add positional encoding]
+    pe --> attn[Masked multi-head self-attention]
+    attn --> ffn[LayerNorm residuals and FFN]
+    ffn --> stack[Stack N decoder blocks]
+    stack --> logits[Logits over the vocabulary]
+    logits --> next[Sample next token and append]
+    next -. KV cache reuses old keys and values .-> attn
+```
+
 ### 1. Scaled dot-product attention
 
 Attention lets every token pull information from every other token. Given three
@@ -506,3 +520,21 @@ fully offline.
   dependency; no extra needed).
 - **TypeScript:** `pnpm build:core` once, then
   `pnpm tsx modules/01d-transformer/ts/01-attention.ts`.
+
+---
+
+## 📚 Read more
+
+- **"Attention Is All You Need"** — the 2017 paper; §3.2 is the exact SDPA/MHA
+  math you implement in Task 1: <https://arxiv.org/abs/1706.03762>
+- **The Illustrated Transformer** (Jay Alammar) — the best diagram-first
+  walkthrough of Q/K/V, heads, and the encoder–decoder split:
+  <https://jalammar.github.io/illustrated-transformer/>
+- **3Blue1Brown, Neural Networks series** — the animated attention and
+  transformer chapters build the same geometric intuition as Tasks 1–3 (video):
+  <https://www.3blue1brown.com/topics/neural-networks>
+- **Karpathy, Neural Networks: Zero to Hero** — includes "Let's build GPT",
+  the canonical from-scratch coding session that mirrors this module (video):
+  <https://karpathy.ai/zero-to-hero.html>
+- **The Annotated Transformer** (Harvard NLP) — the original paper re-typeset
+  as runnable, line-by-line PyTorch: <https://nlp.seas.harvard.edu/annotated-transformer/>

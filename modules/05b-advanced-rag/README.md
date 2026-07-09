@@ -48,6 +48,21 @@ retriever underneath; radically different control flow around it.
   GraphRAG:      query ──▶ find entities ──▶ traverse graph ──▶ generate over connected facts
 ```
 
+The feedback loop that CRAG and Self-RAG share — grade what came back, and only
+generate over it if it passes:
+
+```mermaid
+flowchart TD
+    Q[Query] --> R[Retrieve chunks]
+    R --> G[Grade relevance]
+    G -->|good| A[Generate answer]
+    G -->|bad| W[Rewrite query or fall back to web search]
+    W --> R
+    A --> S[Check answer is supported by chunks]
+    S -->|supported| O[Final answer]
+    S -->|unsupported| F[Flag low support]
+```
+
 ---
 
 ## Concepts
@@ -342,3 +357,13 @@ library. (Task 4's graph is hand-rolled on purpose.)
 ```bash
 uv sync                  # base deps are enough
 ```
+
+---
+
+## 📚 Read more
+
+- [docs/ADVANCED_RAG.md](../../docs/ADVANCED_RAG.md) — this course's own deep-dive reference on all four architectures, written to pair with these tasks.
+- [Anthropic — Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) — the post behind Task 1, with the exact failure-rate numbers quoted above and the situating prompt they used.
+- [Self-RAG (Asai et al., 2023)](https://arxiv.org/abs/2310.11511) and [Corrective RAG (Yan et al., 2024)](https://arxiv.org/abs/2401.15884) — the two papers behind Tasks 2–3; skim for the reflection tokens and the three-verdict evaluator.
+- [GraphRAG (Edge et al., 2024)](https://arxiv.org/abs/2404.16130) — Microsoft's paper behind Task 4; the [project docs](https://microsoft.github.io/graphrag/) cover the full system with community detection and global search.
+- 🎬 [Andrej Karpathy's channel](https://www.youtube.com/@AndrejKarpathy) — his LLM deep dives explain why models hallucinate over bad context, which is the failure every loop here guards against.

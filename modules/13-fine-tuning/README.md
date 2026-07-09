@@ -12,6 +12,17 @@ the LoRA low-rank update by hand so the math is no longer magic.
 
 ## Concepts
 
+The whole module in one picture — a frozen base model plus your dataset produce small LoRA adapters, which merge into the fine-tuned model:
+
+```mermaid
+flowchart TD
+    B[Base model with frozen weights W] --> T[LoRA training]
+    D[JSONL dataset of prompt completion pairs] --> T
+    T --> A[LoRA adapters - small matrices B and A]
+    B --> M[Merged fine-tuned model W plus BA]
+    A --> M
+```
+
 ### Prompt vs RAG vs fine-tune — the decision
 
 Before writing a single line of fine-tuning code you need to ask: **is fine-tuning
@@ -410,3 +421,13 @@ uv sync --extra finetune
 # Installs: torch, transformers, peft, datasets, accelerate
 # Expect ~3-5 GB of downloads on first run.
 ```
+
+---
+
+## 📚 Read more
+
+- [LoRA paper](https://arxiv.org/abs/2106.09685) — Hu et al., 2021; the low-rank update ΔW = B·A you implement by hand in Task 5.
+- [QLoRA paper](https://arxiv.org/abs/2305.14314) — Dettmers et al., 2023; 4-bit frozen base + bf16 adapters, the trick that fits fine-tuning on a consumer GPU.
+- [Hugging Face PEFT docs](https://huggingface.co/docs/peft) — the official docs for the library behind Task 3 (`LoraConfig`, `get_peft_model`).
+- [OpenAI fine-tuning guide](https://platform.openai.com/docs/guides/fine-tuning) — the hosted-SFT workflow of Task 2: JSONL format, job lifecycle, current pricing.
+- [Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) 🎥 — video course building GPT from scratch; the best background if the training mechanics still feel like magic.

@@ -14,6 +14,20 @@ you retrieve.
 
 ## Concepts
 
+The whole module in one picture — documents and the query pass through the same
+embedding model, and retrieval is just geometry:
+
+```mermaid
+flowchart LR
+    D[Document text] --> E[Embedding model]
+    E --> V[Stored vectors]
+    Q[Query text] --> E2[Embedding model]
+    E2 --> QV[Query vector]
+    V --> C[Cosine similarity]
+    QV --> C
+    C --> K[Top-k nearest neighbors]
+```
+
 ### What is an embedding?
 
 An embedding model maps a string to a fixed-length list of floats — a _vector_
@@ -240,3 +254,13 @@ QDRANT_URL=http://localhost:6333   # already in .env.example
 ```bash
 uv sync --extra vectors   # installs chromadb, qdrant-client, rank-bm25
 ```
+
+---
+
+## 📚 Read more
+
+- [Simon Willison — Embeddings: What they are and why they matter](https://simonwillison.net/2023/Oct/23/embeddings/) — the best plain-English intuition for "meaning as geometry", with worked examples.
+- [OpenAI — Embeddings guide](https://platform.openai.com/docs/guides/embeddings) — official reference for a production embeddings API: dimensions, distance metrics, and use cases.
+- [Pinecone learning center](https://www.pinecone.io/learn/) — a deep article series covering vector similarity, ANN indexes (HNSW), chunking, and hybrid search — everything in this module, one level deeper.
+- 🎬 [StatQuest](https://www.youtube.com/@statquest) — short, clear videos on cosine similarity and word embeddings if the math needs a second pass.
+- 🎬 [3Blue1Brown — Neural networks series](https://www.3blue1brown.com/topics/neural-networks) — visual intuition for high-dimensional vector spaces and how models learn them.
