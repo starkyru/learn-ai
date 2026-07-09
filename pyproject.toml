@@ -73,6 +73,7 @@ ingest = [
     "pypdf>=4.0",
     "beautifulsoup4>=4.12",
     "lxml>=5.0",
+    "pymupdf>=1.24",   # Task 6 — render PDF pages to images for multimodal retrieval
 ]
 # `uv sync --extra finetune`  (module 13 — LOCAL LoRA/QLoRA; big download. Hosted SFT
 #  uses the OpenAI API and needs no extra. Optional.)

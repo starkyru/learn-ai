@@ -105,6 +105,26 @@ question would.
 HyDE adds one LLM call per query. It works best when query and answer surface
 forms diverge (technical Q&A, foreign-language queries against English docs).
 
+### Reverse HyDE — generate the questions at index time
+
+HyDE closes the query/answer gap on the _query_ side, paying one LLM call on
+_every_ query. **Reverse HyDE** closes the same gap on the _index_ side, paying
+once. At index time, for each chunk ask the LLM: _"what questions does this
+passage answer?"_ Embed those hypothetical **questions** and store them pointing
+back at the chunk. At query time the real user question is compared
+question-to-question — same surface form — so no per-query LLM call is needed and
+query latency stays flat.
+
+|               | Forward HyDE       | Reverse HyDE                     |
+| ------------- | ------------------ | -------------------------------- |
+| When it runs  | per query          | once at index time               |
+| Cost          | 1 LLM call / query | N LLM calls / chunk (amortised)  |
+| Query latency | +1 generation      | none extra                       |
+| Storage       | 1 vector / chunk   | several question vectors / chunk |
+
+They compose with everything else: reverse-HyDE question vectors can sit
+alongside the chunk-text vectors, and a reranker (Task 2) still runs on top.
+
 ### RAG evaluation (LLM-as-judge)
 
 Three metrics, inspired by [RAGAS](https://docs.ragas.io/):
@@ -258,6 +278,39 @@ validate those citations.
 
 ---
 
+### Task 5 🟡 — Reverse HyDE
+
+**Goal:** Close the query/answer embedding gap at index time by embedding the
+questions each chunk answers, so no per-query LLM call is needed.
+
+**Files:**
+
+- `py/05_reverse_hyde.py`
+- `ts/05-reverse-hyde.ts`
+
+**Steps:**
+
+1. Implement `generate_questions()` / `generateQuestions()` — prompt the LLM for
+   N short, distinct questions a chunk would answer; parse one per line.
+2. Implement `build_reverse_hyde_index()` / `buildReverseHydeIndex()` — generate
+   questions per chunk, embed all questions in one batch, emit one entry per
+   (chunk, question, vector).
+3. Implement `retrieve_reverse_hyde()` / `retrieveReverseHyde()` — embed the
+   query, score against question vectors, collapse to chunks by best-matching
+   question (max), return top-k.
+4. Run the harness; it compares reverse-HyDE retrieval against the naive
+   embed-the-chunk baseline on deliberately-reworded questions.
+
+**Acceptance:**
+
+- The index holds several question vectors per chunk (≈ N × chunk count).
+- Chunk score is the MAX over its question vectors (a chunk is not counted once
+  per question).
+- For at least one reworded question, reverse HyDE ranks the intended chunk
+  higher (or ties) versus the baseline.
+
+---
+
 ## Done when
 
 - [ ] Naive RAG answers questions about the corpus with chunk citations.
@@ -267,6 +320,8 @@ validate those citations.
       scores for all 3 test cases.
 - [ ] The HNSW eval case scores faithfulness < 1.0 (hallucination detected).
 - [ ] Citation validator flags invalid and uncited claims.
+- [ ] Reverse HyDE builds an index of per-chunk question vectors and retrieves by
+      question-to-question match (no per-query LLM call).
 
 ---
 

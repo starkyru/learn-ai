@@ -109,6 +109,43 @@ triples → entities are nodes, relations are edges.
 
 ---
 
+## Related retrieval techniques (other modules)
+
+These aren't full architectures, but they attack the same "right chunk, found
+and used" problem from earlier modules — worth knowing alongside 05b.
+
+- **Semantic chunking** (module 04 Task 5). Content-blind chunkers (fixed /
+  sentence / overlap) can straddle two topics in one chunk. Embed each sentence,
+  compute `1 − cosine` between adjacent pairs, and break where the gap exceeds a
+  high **percentile** — boundaries follow topic shifts, and the percentile makes
+  it corpus-agnostic. Pairs naturally with Contextual Retrieval (chunk well, then
+  situate each chunk).
+- **HyDE vs Reverse HyDE** (module 05 Tasks 2 & 5). Both close the query/answer
+  embedding gap. **Forward HyDE** rewrites the _query_ into a hypothetical answer
+  (1 LLM call per query). **Reverse HyDE** rewrites the _index_: generate the
+  questions each chunk answers, embed those, retrieve question-to-question — zero
+  per-query LLM calls, several vectors per chunk. Forward pays at query time;
+  reverse pays once at index time.
+- **Multimodal page retrieval** (module 11 Task 6). When the PDF text layer fails
+  (scans, tables-as-lines, charts), render each page to an image, caption it with
+  a vision LLM, embed the caption, retrieve, then _answer over the page image_.
+  Retrieve by text, generate over pixels. The stronger variant embeds the page
+  image directly with a late-interaction model — **ColPali**
+  ([arXiv:2407.01449](https://arxiv.org/abs/2407.01449)).
+
+**Read more — two axes 05b doesn't cover:**
+
+- **Temporal relevance.** Similarity ignores recency; a stale-but-similar chunk
+  outranks a fresh one. Add a recency term — e.g. rerank by
+  `score = α·cosine + (1−α)·exp(−λ·age)`, or filter by a document-date metadata
+  field before scoring. Essential for news/changelog corpora.
+- **Multilingual / cross-lingual retrieval.** Query in one language, corpus in
+  another. Use a multilingual embedding model (e.g. `multilingual-e5`,
+  `bge-m3`, Cohere `embed-multilingual-v3`) so a French query matches an English
+  chunk in shared vector space; or translate the query first. Forward HyDE also
+  helps here, since the hypothetical answer can be generated in the corpus
+  language.
+
 ## How module 05b maps to these
 
 | Task | Pattern              | Depth | Core function you implement                                 |

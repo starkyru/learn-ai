@@ -67,14 +67,27 @@ Embedding models have a token limit (commonly 256–512 tokens). Stuffing a whol
 10-page document into one embedding loses detail. **Chunking** splits a document
 into smaller overlapping passages. Key trade-offs:
 
-| Strategy       | Pro                           | Con                       |
-| -------------- | ----------------------------- | ------------------------- |
-| Fixed-size     | Simple, predictable           | Can split mid-sentence    |
-| Sentence-based | Natural boundaries            | Variable chunk sizes      |
-| Overlapping    | No lost context at boundaries | More storage, more embeds |
+| Strategy       | Pro                            | Con                         |
+| -------------- | ------------------------------ | --------------------------- |
+| Fixed-size     | Simple, predictable            | Can split mid-sentence      |
+| Sentence-based | Natural boundaries             | Variable chunk sizes        |
+| Overlapping    | No lost context at boundaries  | More storage, more embeds   |
+| Semantic       | Boundaries follow topic shifts | Embedding cost per sentence |
 
 Good chunk size depends on your embedding model's window and the nature of your
 queries (fine-grained fact questions vs. broad summaries).
+
+The first three strategies are **content-blind** — they cut at a character or
+sentence count, so one chunk can straddle two unrelated topics. **Semantic
+chunking** places boundaries where the _meaning_ shifts: embed each sentence,
+then start a new chunk wherever consecutive sentences are unusually
+embedding-distant (a **semantic breakpoint**). Concretely: compute
+`distance(i, i+1) = 1 − cosine(v[i], v[i+1])` for every adjacent sentence pair,
+take a high **percentile** of those distances as the threshold, and break where a
+gap exceeds it. Using a percentile (not an absolute cutoff) lets the same code
+adapt to any corpus without hand-tuning. Cost: one embedding per sentence at
+index time; benefit: each chunk stays topically coherent, which lifts retrieval
+precision.
 
 ### Hybrid search & Reciprocal Rank Fusion
 
@@ -208,6 +221,37 @@ benefit from smaller chunks? Which benefit from larger ones?
 
 ---
 
+### Task 5 🟡 — Semantic chunking
+
+**Goal:** Chunk a document at topic boundaries instead of arbitrary counts, by
+detecting semantic breakpoints between sentences.
+
+**Files:**
+
+- `py/05_semantic_chunking.py`
+- `ts/05-semantic-chunking.ts`
+
+**Steps:**
+
+1. Implement `percentile()` — p-th percentile of a list via linear
+   interpolation (no numpy; sort + interpolate).
+2. Implement `semantic_chunks()` / `semanticChunks()` — split into sentences,
+   embed all in one call, compute `1 − cosine` distance between each adjacent
+   pair, threshold at `breakpoint_percentile`, and cut a new chunk wherever the
+   gap exceeds the threshold.
+3. Run the harness on the two-topic sample (coffee → train signalling) and
+   compare against the fixed 3-sentence baseline.
+
+**Acceptance:**
+
+- `percentile([0, 10], 50)` returns `5.0`; `percentile([1], 90)` returns `1.0`.
+- The semantic chunker places a boundary at the coffee→trains topic switch
+  (the two topics land in different chunks).
+- Raising `breakpoint_percentile` from 90 to 95 produces the same or fewer
+  chunks (only the sharpest shifts qualify).
+
+---
+
 ## Done when
 
 - [ ] `01_vector_store_scratch` / `01-vector-store-scratch` runs end-to-end and
@@ -218,6 +262,8 @@ benefit from smaller chunks? Which benefit from larger ones?
       counts and best-chunk text per strategy.
 - [ ] `04_hybrid_search` / `04-hybrid-search` demonstrates that BM25 finds
       exact-match docs and hybrid beats either alone.
+- [ ] `05_semantic_chunking` / `05-semantic-chunking` splits the two-topic doc
+      at the topic boundary, not mid-topic.
 
 ---
 

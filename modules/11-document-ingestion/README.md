@@ -100,6 +100,31 @@ Every chunk should carry:
 | `ingested_at`      | ISO (International Organization for Standardization) timestamp — for staleness detection |
 | `estimated_tokens` | For context-window budget planning                                                       |
 
+### Multimodal pages: when the text layer isn't enough
+
+Everything above assumes the PDF has a **digital text layer** you can extract.
+Much real content doesn't: scanned pages, tables drawn as ruled lines, charts,
+screenshots, and diagrams. `pypdf` returns `""` (or garbage) for those, and the
+numbers in a table image never reach your index.
+
+The fix is **multimodal retrieval**: treat each page as an _image_.
+
+1. **Render** each page to a PNG (via `pymupdf`).
+2. **Caption** it with a vision LLM — transcribe the tables, read the figures —
+   producing a text description of the page.
+3. **Embed** the caption (text embeddings, `llm_core.embed()`) and index it.
+4. At query time, retrieve pages by caption similarity, then **answer over the
+   page image itself** — hand the matched PNG back to the vision model so
+   generation reasons over pixels, not a lossy transcription.
+
+_Retrieve by text, answer over the image._ Two costs: a vision call per page at
+index time, and a vision-capable provider at query time.
+
+> **Abstraction leak (same as module 09 Task 3):** `llm_core`'s `chat()` is
+> **text-only**. Sending an image needs the raw vendor SDK (`openai` /
+> `anthropic`). Embeddings still go through `provider.embed()`. Note Anthropic
+> has vision but **no embeddings** — pair it with `EMBED_PROVIDER=openai`.
+
 ### Incremental indexing
 
 Re-embedding every document on every run is slow and costly. Incremental
@@ -301,6 +326,42 @@ by carrying `source`, `section`, and `page` in chunk metadata.
 
 ---
 
+### Task 6 🟡 — Multimodal PDF retrieval
+
+**Goal:** Index and retrieve PDF pages by _image_, not just extracted text, so
+tables and figures become searchable and answerable.
+
+**Files:**
+
+- `py/06_multimodal_pdf.py`
+- `ts/06-multimodal-pdf.ts`
+
+**Steps:**
+
+1. Implement `build_multimodal_index()` / `buildMultimodalIndex()` — caption
+   each page image with `vision_ask(path, CAPTION_PROMPT)`, then embed all
+   captions in one `embed()` call; return one entry per page.
+2. Implement `retrieve_pages()` / `retrievePages()` — embed the query, score
+   captions by cosine, return top-k pages.
+3. Implement `answer_over_page()` / `answerOverPage()` — build an answer prompt
+   and call `vision_ask()` on the retrieved page **image** (answer over pixels).
+4. Run the harness. Python renders the sample pages (via `pymupdf`) on first
+   run; **TypeScript consumes those PNGs**, so run the Python file once before
+   the TS one.
+
+The vision call (`vision_ask`) is provided — it's the same raw-SDK pattern from
+module 09 Task 3. Your job is the retrieval flow around it.
+
+**Acceptance:**
+
+- The index has one entry per rendered page, each with a non-empty caption.
+- The query "What was Q3 2024 revenue?" retrieves the **table page** (`page_2`)
+  at rank 1.
+- `answer_over_page` returns the Q3 figure (55.3) read from the page image —
+  a number `pypdf`'s text layer would have missed on a scanned table.
+
+---
+
 ## Done when
 
 - [ ] `parse_document()` handles `.md` and `.html` without error.
@@ -310,6 +371,8 @@ by carrying `source`, `section`, and `page` in chunk metadata.
 - [ ] `retrieve_for_user()` enforces ACLs (Access Control Lists): guest cannot see private/group docs.
 - [ ] Pre-filter and post-filter return the same results.
 - [ ] Every retrieval result includes a citation with source + section (+ page for PDFs).
+- [ ] Multimodal retrieval indexes page images, retrieves the table page for a
+      revenue query, and answers the figure from the page image.
 - [ ] Both py and ts harnesses print output without crashing.
 
 ---
@@ -320,6 +383,11 @@ by carrying `source`, `section`, and `page` in chunk metadata.
   [pytesseract](https://github.com/madmaze/pytesseract) or the
   [Azure Document Intelligence](https://azure.microsoft.com/en-us/products/ai-services/ai-document-intelligence)
   API (Application Programming Interface). What changes when the source is image-based?
+- **Vision embeddings (ColPali):** Task 6 captions-then-embeds (text vectors).
+  A stronger approach embeds the page image _directly_ with a late-interaction
+  vision model like [ColPali](https://arxiv.org/abs/2407.01449), skipping the
+  caption step. No text extraction at all — retrieval is image-patch to
+  query-token. Compare recall against your caption pipeline.
 - **DOCX / EPUB:** Add `python-docx` or `ebooklib` support to task 1's
   dispatcher. The cleaning and chunking stages should work unchanged.
 - **Heading hierarchy:** Extend `section_chunks()` to respect heading level —
@@ -356,10 +424,15 @@ uv add pypdf         # or: uv add pdfplumber
 uv add beautifulsoup4 httpx
 
 # HTML parsing fallback: stdlib urllib + re (no install needed)
+
+# Task 6 — multimodal PDF (render pages to images):
+uv sync --extra ingest    # now includes pymupdf
+uv add openai             # OR: uv add anthropic — for the vision call
 ```
 
-These will eventually be bundled under `uv sync --extra ingestion` once the
-root `pyproject.toml` is updated.
+Most parsers are bundled under `uv sync --extra ingest` (`pypdf`,
+`beautifulsoup4`, `lxml`, and now `pymupdf` for Task 6). Task 6's vision call
+also needs the `openai` or `anthropic` SDK.
 
 ## TypeScript dependencies
 

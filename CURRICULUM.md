@@ -407,15 +407,17 @@ that gap without duplicating Module 01b (ROC/AUC, k-means) or Module 08
 - Use a production vector database (ChromaDB, optionally Qdrant) with HNSW indexing.
 - Understand and implement three chunking strategies; see how chunk size affects retrieval.
 - Implement hybrid search: dense + BM25, fused with Reciprocal Rank Fusion (RRF).
+- Chunk at semantic breakpoints (embedding-distance percentile) instead of fixed counts.
 
 **Tasks**
 
-| #   | Task                      | Depth | What you do                                                                                                      |
-| --- | ------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------- |
-| 1   | Vector store from scratch | 🔴    | Implement `add()`, `_cosine_similarity()`, and `query()` with brute-force top-k.                                 |
-| 2   | Real vector DB            | 🟢    | Index the corpus into Chroma; compare results and performance to Task 1.                                         |
-| 3   | Chunking strategies       | 🟡    | Implement fixed-size, sentence-based, and overlapping chunkers; compare retrieval quality per strategy.          |
-| 4   | Hybrid search             | 🟡    | Add BM25 alongside dense retrieval; implement RRF fusion; show hybrid beats either alone on exact-match queries. |
+| #   | Task                      | Depth | What you do                                                                                                                |
+| --- | ------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Vector store from scratch | 🔴    | Implement `add()`, `_cosine_similarity()`, and `query()` with brute-force top-k.                                           |
+| 2   | Real vector DB            | 🟢    | Index the corpus into Chroma; compare results and performance to Task 1.                                                   |
+| 3   | Chunking strategies       | 🟡    | Implement fixed-size, sentence-based, and overlapping chunkers; compare retrieval quality per strategy.                    |
+| 4   | Hybrid search             | 🟡    | Add BM25 alongside dense retrieval; implement RRF fusion; show hybrid beats either alone on exact-match queries.           |
+| 5   | Semantic chunking         | 🟡    | Split at semantic breakpoints: embed sentences, threshold `1−cosine` gaps at a percentile; boundaries follow topic shifts. |
 
 **Estimated time:** 4–6 hours
 
@@ -425,6 +427,7 @@ that gap without duplicating Module 01b (ROC/AUC, k-means) or Module 08
 - [ ] Chroma indexes 8 documents and returns correct top-3 without errors.
 - [ ] Each chunker returns non-empty chunks; overlapping produces at least as many as fixed-size.
 - [ ] BM25-only finds exact-match docs that dense retrieval misses; hybrid catches both.
+- [ ] Semantic chunker splits a two-topic doc at the topic boundary, not mid-topic.
 
 ---
 
@@ -438,15 +441,17 @@ that gap without duplicating Module 01b (ROC/AUC, k-means) or Module 08
 - Implement LLM reranking and HyDE (Hypothetical Document Embeddings).
 - Evaluate RAG quality: faithfulness, context relevance, and answer relevance.
 - Understand the failure modes of RAG (retrieval miss, hallucination, citation drift).
+- Close the query/answer gap at index time with Reverse HyDE (per-chunk question generation).
 
 **Tasks**
 
-| #   | Task                    | Depth | What you do                                                                                          |
-| --- | ----------------------- | ----- | ---------------------------------------------------------------------------------------------------- |
-| 1   | Naive RAG end-to-end    | 🟢    | retrieve → generate; answer includes `[Source N]` citations.                                         |
-| 2   | Better retrieval        | 🟡    | Add LLM reranking and HyDE; compare retrieval precision before/after.                                |
-| 3   | RAG eval                | 🟡    | Implement faithfulness, context-relevance, and answer-relevance LLM-as-judge scores over a test set. |
-| 4   | Citations & attribution | 🟢    | Output structured JSON with per-claim citations; validate and flag invalid or missing citations.     |
+| #   | Task                    | Depth | What you do                                                                                                                 |
+| --- | ----------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Naive RAG end-to-end    | 🟢    | retrieve → generate; answer includes `[Source N]` citations.                                                                |
+| 2   | Better retrieval        | 🟡    | Add LLM reranking and HyDE; compare retrieval precision before/after.                                                       |
+| 3   | RAG eval                | 🟡    | Implement faithfulness, context-relevance, and answer-relevance LLM-as-judge scores over a test set.                        |
+| 4   | Citations & attribution | 🟢    | Output structured JSON with per-claim citations; validate and flag invalid or missing citations.                            |
+| 5   | Reverse HyDE            | 🟡    | Generate the questions each chunk answers at index time, embed them, retrieve question-to-question — no per-query LLM call. |
 
 **Estimated time:** 5–7 hours
 
@@ -456,6 +461,7 @@ that gap without duplicating Module 01b (ROC/AUC, k-means) or Module 08
 - [ ] Reranking changes which top-3 chunks are used (visible in output).
 - [ ] Eval script prints faithfulness / context-relevance / answer-relevance scores without manual input.
 - [ ] The HNSW hallucination case scores faithfulness < 1.0 (hallucination detected).
+- [ ] Reverse HyDE indexes per-chunk question vectors and retrieves by question-to-question match.
 
 ---
 
@@ -816,7 +822,7 @@ harness manages its cognitive state) is the framing.
 
 ## Module 11 — Document Ingestion
 
-**Prerequisites:** Module 05 (RAG). `uv add pypdf beautifulsoup4 httpx` (Python); `pnpm install` (TypeScript — picks up pdf-parse, cheerio).
+**Prerequisites:** Module 05 (RAG). `uv sync --extra ingest` (Python — pypdf, beautifulsoup4, lxml, pymupdf; Task 6 also needs the `openai`/`anthropic` SDK); `pnpm install` (TypeScript — picks up pdf-parse, cheerio).
 
 **Learning objectives**
 
@@ -825,6 +831,7 @@ harness manages its cognitive state) is the framing.
 - Chunk documents by section/heading structure rather than by arbitrary character counts.
 - Implement incremental indexing with a content-hash manifest to skip unchanged documents.
 - Attach per-document ACL metadata at ingestion and enforce it at retrieval time (permissions-aware RAG with citations).
+- Retrieve over PDF pages as images (caption → embed → retrieve → answer over pixels) when the text layer fails.
 
 **Tasks**
 
@@ -835,6 +842,7 @@ harness manages its cognitive state) is the framing.
 | 3   | Structure-aware chunking    | 🟡    | Detect ATX heading boundaries; emit one chunk per section; sub-chunk long sections; prepend heading to every sub-chunk.                          |
 | 4   | Incremental indexing        | 🟢    | Hash each document; skip unchanged ones on re-run; maintain a manifest JSON; prune stale entries.                                                |
 | 5   | Permissions-aware retrieval | 🟡    | Tag chunks with ACLs (owner/groups/visibility) at ingestion; enforce at retrieval via pre- and post-filter; carry source/section/page citations. |
+| 6   | Multimodal PDF retrieval    | 🟡    | Render pages to images; caption with a vision LLM; embed captions; retrieve the table page; answer the figure over the page image.               |
 
 **Estimated time:** 5–6 hours
 
@@ -846,6 +854,7 @@ harness manages its cognitive state) is the framing.
 - [ ] Second incremental-indexing run shows 0 new / 0 changed / N skipped.
 - [ ] `retrieve_for_user()` enforces ACLs: guest cannot see private/group docs; pre- and post-filter agree.
 - [ ] Every retrieval result includes a citation with source + section (+ page for PDFs).
+- [ ] Multimodal retrieval indexes page images, retrieves the table page for a revenue query, and reads the figure from the image.
 
 ---
 
