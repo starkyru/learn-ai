@@ -1,5 +1,13 @@
 # Run the TS and Python test suites before pushing.
+# GUI git clients launch hooks with a minimal PATH — add common install dirs so uv resolves.
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
 echo "→ jest (TypeScript)"
 npx jest --passWithNoTests
+
 echo "→ pytest (Python)"
-uv run pytest -q || { code=$?; [ "$code" -eq 5 ] && echo "  (no tests collected — ok)" || exit $code; }
+if command -v uv >/dev/null 2>&1; then
+  uv run pytest -q || { code=$?; [ "$code" -eq 5 ] && echo "  (no tests collected — ok)" || exit $code; }
+else
+  echo "  (uv not found on PATH — skipping Python tests)"
+fi
