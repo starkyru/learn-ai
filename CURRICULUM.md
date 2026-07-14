@@ -727,6 +727,37 @@ harness manages its cognitive state) is the framing.
 
 ---
 
+## Module 07b — Delivery & AI Service Operations
+
+**Prerequisites:** Module 07. Module 11 helps for ingestion workers; Module 20
+helps for threat modelling. This is a documentation-first capstone deep dive;
+apply it in either language before deploying beyond localhost. Full lesson:
+[`modules/07b-delivery-operations/README.md`](modules/07b-delivery-operations/README.md).
+
+**Learning objectives**
+
+- Package an AI API reproducibly; configure it safely without baking in secrets.
+- Add authentication, authorisation, tenant isolation, timeouts, rate limits,
+  queues, and idempotency.
+- Ship through CI, staging, monitored rollout, and a documented rollback.
+
+| #   | Task                 | Depth | What you do                                                                                      |
+| --- | -------------------- | ----- | ------------------------------------------------------------------------------------------------ |
+| 1   | Containerise API     | 🟢    | Docker/Compose, non-root service, health/readiness endpoints, runtime configuration only.        |
+| 2   | Identity + tenants   | 🟡    | Authenticate, authorise, filter retrieval by tenant before it runs, and audit decisions.         |
+| 3   | Reliability envelope | 🟡    | Bound dependencies; add concurrency/rate limits, circuit breaker, durable jobs, and idempotency. |
+| 4   | Release runbook      | 🟢    | CI + eval gate → staging smoke test → limited rollout → rollback thresholds and command.         |
+
+**Estimated time:** 5–7 hours (plus deployment-platform setup).
+
+**Done when**
+
+- [ ] A clean clone can run a containerised service without leaking credentials.
+- [ ] Cross-tenant retrieval, repeated side effects, and provider outage paths are tested.
+- [ ] CI, staging, rollout evidence, owners, and rollback are documented.
+
+---
+
 ## Module 08 — Classification
 
 **Prerequisites:** Modules 00–04 (embeddings for the embedding classifier).
@@ -1204,6 +1235,36 @@ hacking) → DPO.
 
 ---
 
+## Module 20b — AI Governance, Privacy & Responsible Product Practice
+
+**Prerequisites:** Modules 11 and 20; Module 21 helps for evidence and
+monitoring. This documentation-first capstone deep dive is not legal advice.
+Full lesson:
+[`modules/20b-governance-privacy/README.md`](modules/20b-governance-privacy/README.md).
+
+**Learning objectives**
+
+- Map data through prompts, vectors, logs, caches, vendors, and deletion.
+- Minimise collection; define retention, rights, audit, licence, and ownership decisions.
+- Test inclusive, accessible, accountable user paths and escalation/recourse.
+
+| #   | Task                     | Depth | What you do                                                                                     |
+| --- | ------------------------ | ----- | ----------------------------------------------------------------------------------------------- |
+| 1   | Data map + minimisation  | 🟢    | Classify every store/hop, name purpose/owner/retention, then remove or redact unnecessary data. |
+| 2   | Rights + auditability    | 🟡    | Build a synthetic-data export/delete workflow across primary and derived artifacts.             |
+| 3   | Model + data card        | 🟢    | Document purpose, versions, licences, limitations, prohibited uses, monitoring, and escalation. |
+| 4   | Inclusive accountable UX | 🟡    | Test representative scenarios and accessibility; turn a discrepancy into a product/eval case.   |
+
+**Estimated time:** 4–6 hours.
+
+**Done when**
+
+- [ ] Every store has a purpose, access rule, retention/deletion rule, and owner.
+- [ ] Export/delete and audit paths work for synthetic data.
+- [ ] A reviewed model/data card, escalation path, and accessibility findings exist.
+
+---
+
 ## Module 21 — LLMOps & Eval
 
 **Prerequisites:** Modules 05–07 (eval harness, observability). No extra deps.
@@ -1235,6 +1296,35 @@ hacking) → DPO.
 - [ ] `--threshold 0.99` exits non-zero; `--threshold 0.01` exits zero (Task 3).
 - [ ] Review queue written; `--merge` bumps eval set version and adds cases (Task 4).
 - [ ] Demo log parsed; report printed with latency stats and alerts (Task 5).
+
+---
+
+## Module 21b — Evaluation Science & Agent Reliability
+
+**Prerequisites:** Modules 05, 06, and 21. This documentation-first capstone
+deep dive turns the eval lifecycle into credible release evidence. Full lesson:
+[`modules/21b-evaluation-reliability/README.md`](modules/21b-evaluation-reliability/README.md).
+
+**Learning objectives**
+
+- Measure retrieval, answer quality, and agent behavior separately.
+- Build held-out gold-evidence benchmarks and quantify comparison uncertainty.
+- Check judge agreement and deterministically test tool trajectories and policy gates.
+
+| #   | Task                    | Depth | What you do                                                                                            |
+| --- | ----------------------- | ----- | ------------------------------------------------------------------------------------------------------ |
+| 1   | Retrieval benchmark     | 🟡    | Label gold chunks; implement Recall@k, MRR, NDCG and compare dense/hybrid/reranked retrieval.          |
+| 2   | Claim + citation eval   | 🟡    | Grade atomic claims, support, citation validity, and task success separately.                          |
+| 3   | Uncertainty + agreement | 🟢    | Compare paired variants with bootstrap intervals, practical thresholds, and judge disagreement queues. |
+| 4   | Agent trajectory suite  | 🔴    | Assert tool/argument/approval/retry/idempotency/termination behavior with deterministic fakes.         |
+
+**Estimated time:** 5–7 hours.
+
+**Done when**
+
+- [ ] Development and held-out evidence sets, retriever metrics, and failure reports exist.
+- [ ] Variant promotion can be “inconclusive” and judge disagreements are reviewed.
+- [ ] Policy-violating trajectories fail even when the final text looks correct.
 
 ---
 
@@ -1274,7 +1364,9 @@ hacking) → DPO.
 
 ## Module 23 — Capstone
 
-**Prerequisites:** All previous modules (especially 04, 05, 06, 07, 11, 20, 21, 22).
+**Prerequisites:** All previous modules, especially 04, 05, 06, 07/07b, 11,
+20/20b, 21/21b, and 22. Apply the documentation-first production deep dives to
+any capstone that handles other people's data or is deployed beyond localhost.
 
 **Learning objectives**
 
@@ -1285,21 +1377,22 @@ hacking) → DPO.
 
 **Tracks**
 
-| Option          | What you build                                                                                                                                              |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A (recommended) | Documentation / Q&A assistant: document ingestion (11) + hybrid RAG (04/05) + agent + tools (06/17) + eval gate (07/21) + streaming UI (22) + security (20) |
-| B               | Research / news agent: planner + workers + synthesis + eval gate + security hardening                                                                       |
-| C               | Multimodal assistant: vision (09) + document ingestion (11) + RAG + conversational agent + eval                                                             |
+| Option          | What you build                                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A (recommended) | Documentation / Q&A assistant: document ingestion (11) + hybrid RAG (04/05) + agent + tools (06/17) + delivery (07/07b) + security/governance (20/20b) + release evidence (21/21b) + streaming UI (22) |
+| B               | Research / news agent: planner + workers + synthesis + eval gate + security hardening                                                                                                                  |
+| C               | Multimodal assistant: vision (09) + document ingestion (11) + RAG + conversational agent + eval                                                                                                        |
 
 **Milestone plan (Option A)**
 
-| Milestone                           | Done when                                                                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| M1 — Ingest                         | Top-3 passages for 5 hand-crafted questions are all on-topic. Draws on modules 04, 11.                                    |
-| M2 — Hybrid retrieve + rerank       | Hybrid beats dense-only MRR@5. Draws on modules 04, 05.                                                                   |
-| M3 — Generator with citations       | 5/5 answers include a valid citation; none contradict passages. Draws on module 05.                                       |
-| M4 — Agent + tools                  | Agent answers a 2-hop question requiring two retrieval steps. Draws on modules 06, 17.                                    |
-| M5 — Eval harness + served API + UX | Eval pass rate ≥ 70 %; API returns `{answer, citations, latency_ms}`; streaming UI live. Draws on modules 07, 20, 21, 22. |
+| Milestone                           | Done when                                                                                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M1 — Ingest                         | Top-3 passages for 5 hand-crafted questions are all on-topic. Draws on modules 04, 11.                                                            |
+| M2 — Hybrid retrieve + rerank       | Hybrid beats dense-only MRR@5. Draws on modules 04, 05.                                                                                           |
+| M3 — Generator with citations       | 5/5 answers include a valid citation; none contradict passages. Draws on module 05.                                                               |
+| M4 — Agent + tools                  | Agent answers a 2-hop question requiring two retrieval steps. Draws on modules 06, 17.                                                            |
+| M5 — Eval harness + served API + UX | Eval pass rate ≥ 70 %; API returns `{answer, citations, latency_ms}`; streaming UI live. Draws on modules 07, 20, 21, 22.                         |
+| M6 — Accountable release            | Staging deploy, tenant filtering, data map, model/data card, held-out retrieval evidence, and agent-policy suite. Draws on modules 07b, 20b, 21b. |
 
 **Estimated time:** 10–20 hours (open-ended)
 
@@ -1310,6 +1403,7 @@ hacking) → DPO.
 - [ ] App uses `get_provider()` / `getProvider()` — no hardcoded vendors.
 - [ ] Provider can be swapped by changing one env var.
 - [ ] Self-evaluation rubric filled in with honest scores (target ≥ 15/24).
+- [ ] If deployed or handling other people's data: M6 release evidence is complete.
 
 ---
 
@@ -1369,61 +1463,84 @@ uv run python -m tutor exam --module 04
 
 ---
 
-## Suggested schedule
+## Choose a route before you start
 
-~20 weeks part-time (4–6 hours per week). Adjust to your pace.
+The main numbered route (00–23 plus 07b/20b/21b) contains roughly **124–173
+hours** of estimated exercise time. The full course with all companions and deep
+dives contains roughly **167–236 hours**. These are exercise estimates, not a
+promise that reading, debugging, provider setup, and a real capstone will fit
+inside the same number of hours.
 
-| Week | Module(s)                               | Notes                                                                                      |
-| ---- | --------------------------------------- | ------------------------------------------------------------------------------------------ |
-| 1    | 00 Setup, 01 Fundamentals               | Don't rush 01 — it pays dividends in every later module.                                   |
-| 2    | 01 Fundamentals (continued)             | Finish all 🔴 tasks; run the tests.                                                        |
-| 3    | 02 LLM Integration                      | Tool calling and structured output are the most reused patterns in the course.             |
-| 4    | 03 Prompting & Patterns                 | Lighter module; good time to catch up.                                                     |
-| 5    | 04 Embeddings & Vectors                 | Budget time for Task 1 (from scratch) — it's the foundation of RAG.                        |
-| 6    | 05 RAG                                  | The heart of the course. Take the full week.                                               |
-| 7    | 06 Agents                               | Task 1 (ReAct from scratch) is where the most learning happens.                            |
-| 8    | 06 Agents (continued) + news-agent      | Build the news-agent project this week.                                                    |
-| 9    | 07 Advanced & Production                | Eval harness first — you'll need it for the capstone.                                      |
-| 10   | 08 Classification                       | Lighter module; good recovery week.                                                        |
-| 11   | 09 Computer Vision, 10 Image Generation | Can be done in parallel if comfortable.                                                    |
-| 12   | 11 Document Ingestion, 12 Text-to-SQL   | Two focused modules; no heavy prerequisites beyond 05.                                     |
-| 13   | 13 Fine-tuning                          | Budget the OpenAI fine-tune cost (~$0.50); Task 5 (LoRA from scratch) takes the most time. |
-| 14   | 14 Local Inference & Optimization       | Mostly Ollama-based; Task 5 (KV cache) is the 🔴 payoff.                                   |
-| 15   | 15 Reasoning & Test-time Compute        | Needs an o-series or extended-thinking key for full experience.                            |
-| 16   | 16 Context Engineering, 17 MCP          | Context budgeting + modern agent APIs — directly useful for the capstone.                  |
-| 17   | 18 Computer Use, 19 Audio & Speech      | More specialised; both are hosted-first and can be done quickly at 🟢 depth.               |
-| 18   | 20 AI Security                          | Essential before building anything production-worthy.                                      |
-| 19   | 21 LLMOps & Eval, 22 AI Product UX      | The eval gate and UX patterns feed directly into the capstone.                             |
-| 20   | 23 Capstone                             | Open-ended; the full week is a minimum. Build M1–M3 first, then M4–M5.                     |
+| Route                 | Scope                                                                         | Realistic budget                               | Outcome                                      |
+| --------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------- |
+| App builder           | 🟢 tasks on the main sequence; choose specialised modalities only when needed | 10–14 weeks intensive or 20–28 weeks part-time | A working, evaluated capstone                |
+| Core professional     | Main 00–23 sequence plus 07b, 20b, 21b                                        | 25–35 weeks at ~5 hours/week                   | An accountable service with release evidence |
+| Foundations + systems | Core professional route plus 01b–01f, 05b, 06b–06d, 13b                       | 34–48 weeks at ~5 hours/week                   | Stronger ML/agent-systems interview depth    |
+
+Pick the route based on your goal, not guilt. The companion modules are valuable
+but not hidden prerequisites for a first RAG or agent application.
+
+## Suggested core-professional sequence
+
+This is a **23-week focused sequence**, not a 4–6-hour-per-week promise. It
+assumes about 6–8 hours most weeks and more time for the capstone. At a slower
+part-time pace, stretch it across the Core professional budget above.
+
+| Week | Module(s)                                      | Notes                                                                          |
+| ---- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| 1    | 00 Setup, 01 Fundamentals                      | Don't rush 01 — it pays dividends in every later module.                       |
+| 2    | 01 Fundamentals (continued)                    | Finish all 🔴 tasks; run the tests.                                            |
+| 3    | 02 LLM Integration                             | Tool calling and structured output are the most reused patterns in the course. |
+| 4    | 03 Prompting & Patterns                        | Lighter module; good time to catch up.                                         |
+| 5    | 04 Embeddings & Vectors                        | Budget time for Task 1 (from scratch) — it's the foundation of RAG.            |
+| 6    | 05 RAG                                         | The heart of the course. Take the full week.                                   |
+| 7    | 06 Agents                                      | Task 1 (ReAct from scratch) is where the most learning happens.                |
+| 8    | 06 Agents (continued) + news-agent             | Build the news-agent project this week.                                        |
+| 9    | 07 Advanced & Production                       | Eval harness first — you'll need it for the capstone.                          |
+| 10   | 07b Delivery & Service Operations              | Containerise, add identity/tenant boundaries, and write the release runbook.   |
+| 11   | 08 Classification                              | Lighter module; good recovery week.                                            |
+| 12   | 09 Computer Vision, 10 Image Generation        | Choose one modality first; do both only if you have time.                      |
+| 13   | 11 Document Ingestion, 12 Text-to-SQL          | Two focused modules; no heavy prerequisites beyond 05.                         |
+| 14   | 13 Fine-tuning                                 | Budget the hosted task; local LoRA is optional and heavy.                      |
+| 15   | 14 Local Inference & Optimization              | Mostly Ollama-based; Task 5 (KV cache) is the 🔴 payoff.                       |
+| 16   | 15 Reasoning & Test-time Compute               | Needs an o-series or extended-thinking key for full experience.                |
+| 17   | 16 Context Engineering, 17 MCP                 | Context budgeting + modern agent APIs — directly useful for the capstone.      |
+| 18   | 18 Computer Use, 19 Audio & Speech             | More specialised; select the modality your capstone needs.                     |
+| 19   | 20 AI Security                                 | Essential before production work.                                              |
+| 20   | 20b Governance, Privacy & Responsible Practice | Data map, rights workflow, model/data card, and user recourse.                 |
+| 21   | 21 LLMOps & Eval                               | Versioned metrics, review queue, and monitoring.                               |
+| 22   | 21b Evaluation Science, 22 Product UX          | Add held-out evidence and trajectory tests; surface trustworthy UX.            |
+| 23   | 23 Capstone                                    | Build M1–M3 first, then M4–M6; the full week is a minimum.                     |
 
 ---
 
 ## Learning-path variants
 
-### Fast / app-only path (9–10 weeks)
+### Fast / app-only path (10–14 weeks)
 
 Focus on 🟢 tasks only. Skip or skim 🔴 tasks.
 
-| Week | Modules                                        |
-| ---- | ---------------------------------------------- |
-| 1    | 00, 01 (🟢 only: BPE read-only, cosine worked) |
-| 2    | 02, 03                                         |
-| 3    | 04 (Task 2 Chroma; skip Task 1 scratch), 05    |
-| 4    | 06 (Tasks 2, 4; skip Task 1 scratch)           |
-| 5    | 07, 08 (🟢 only)                               |
-| 6    | 09, 10, 11                                     |
-| 7    | 12, 13 (Tasks 1–2 only), 14 (Tasks 1, 4)       |
-| 8    | 15–17 (🟢 tasks only), 18, 19 (🟢 tasks)       |
-| 9    | 20–22 (🟢 tasks only)                          |
-| 10   | 23 Capstone (Option A, M1–M3 only)             |
+| Week  | Modules                                        |
+| ----- | ---------------------------------------------- |
+| 1     | 00, 01 (🟢 only: BPE read-only, cosine worked) |
+| 2     | 02, 03                                         |
+| 3     | 04 (Task 2 Chroma; skip Task 1 scratch), 05    |
+| 4     | 06 (Tasks 2, 4; skip Task 1 scratch)           |
+| 5     | 07, 08 (🟢 only)                               |
+| 6     | 09, 10, 11                                     |
+| 7     | 12, 13 (Tasks 1–2 only), 14 (Tasks 1, 4)       |
+| 8     | 15–17 (🟢 tasks only), 18, 19 (🟢 tasks)       |
+| 9     | 20–22 (🟢 tasks only)                          |
+| 10–14 | 23 Capstone (Option A, M1–M3 only)             |
 
 Skip 🔴 tasks in modules 01, 08, 10, 13, 14, 20. Treat modules 13 (local LoRA) and 19 (mic mode) as optional.
 
-### Deep / from-scratch path (24+ weeks)
+### Deep / from-scratch path (34–48 weeks)
 
 Do every 🔴 task. Add the "Going deeper" references after each module. Write
 tests for every implementation. Run the eval harnesses across two providers.
-Build the capstone to ≥ 20/24 on the rubric with a CI eval gate.
+Build the capstone to ≥ 20/24 on the rubric with a CI eval gate. Add 07b, 20b,
+and 21b before any public deployment or use of other people's data.
 
 ---
 

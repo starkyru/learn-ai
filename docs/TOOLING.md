@@ -30,12 +30,20 @@ uv sync
 
 #### Optional extras — install when you reach the module that needs them
 
-| Extra        | Command                      | Used by                               |
-| ------------ | ---------------------------- | ------------------------------------- |
-| `vectors`    | `uv sync --extra vectors`    | Modules 04, 05 (Chroma, Qdrant, BM25) |
-| `agents`     | `uv sync --extra agents`     | Module 06 (LangGraph)                 |
-| `production` | `uv sync --extra production` | Module 07 (FastAPI, Uvicorn)          |
-| `telegram`   | `uv sync --extra telegram`   | `projects/news-agent`                 |
+| Extra        | Command                      | Used by                                          |
+| ------------ | ---------------------------- | ------------------------------------------------ |
+| `vectors`    | `uv sync --extra vectors`    | Modules 04, 05 (Chroma, Qdrant, BM25)            |
+| `agents`     | `uv sync --extra agents`     | Modules 06, 06b (LangGraph)                      |
+| `production` | `uv sync --extra production` | Modules 07, 07b, 22 (FastAPI, Uvicorn, Langfuse) |
+| `ml`         | `uv sync --extra ml`         | Module 08 (scikit-learn)                         |
+| `vision`     | `uv sync --extra vision`     | Module 09 local path                             |
+| `imagegen`   | `uv sync --extra imagegen`   | Module 10 local Stable Diffusion path            |
+| `ingest`     | `uv sync --extra ingest`     | Module 11 document/PDF parsing                   |
+| `finetune`   | `uv sync --extra finetune`   | Module 13 local LoRA/QLoRA path                  |
+| `audio`      | `uv sync --extra audio`      | Module 19 local speech path                      |
+| `mcp`        | `uv sync --extra mcp`        | Module 17                                        |
+| `browser`    | `uv sync --extra browser`    | Module 18; then install Playwright Chromium      |
+| `telegram`   | `uv sync --extra telegram`   | `projects/news-agent`                            |
 
 You can combine them: `uv sync --extra vectors --extra agents`.
 
@@ -111,6 +119,14 @@ uv run pytest
 ```
 
 pytest scans `modules/` and `packages/` for files matching `test_*.py` or `*_test.py` (`projects/` is excluded — run project tests explicitly). The `-q` flag is set by default in `pyproject.toml`.
+
+### Course verification baseline
+
+The two test commands are necessary but do not by themselves exercise every
+provider-backed lesson. For a maintainer or release-facing capstone change, use
+the complete verification ladder in
+[`docs/COURSE_MAINTENANCE.md`](COURSE_MAINTENANCE.md): formatting, type checks,
+tests, an offline/stub smoke path, then an opt-in bounded-cost eval gate.
 
 ---
 

@@ -16,6 +16,11 @@ depth levels woven through:
 Pick your lane per module, or do all three. The 🔴 deep tasks are optional but
 they're where the real understanding lives.
 
+Most lessons include runnable TypeScript and Python scaffolds. The explicitly
+labelled documentation-first production deep dives define capstone work that you
+apply in either language while their scaffolds are being built; see the
+[maintenance policy](docs/COURSE_MAINTENANCE.md) for current parity status.
+
 ---
 
 ## The map
@@ -29,38 +34,41 @@ flowchart LR
     B --> R[Retrieval track<br>04 embeddings - 05/05b RAG<br>11 ingestion - 12 text-to-SQL]
     B --> A[Agents track<br>06-06d agents - 16 context<br>17 MCP - 18 computer use]
     B --> T[Training and inference<br>13/13b fine-tuning and alignment<br>14 local - 15 reasoning]
-    R --> P[Production<br>07 serving - 20 security<br>21 LLMOps - 22 UX]
+    R --> P[Production<br>07/07b service delivery<br>20/20b security + governance<br>21/21b eval - 22 UX]
     A --> P
     T --> P
     P --> C[23 Capstone]
 ```
 
-| #   | Module                                                                     | You'll build                                                                                                       | Core ideas                                                                         |
-| --- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| 00  | [Setup & Providers](modules/00-setup/)                                     | "Hello LLM" across 6 providers                                                                                     | API keys, the provider abstraction, OpenAI-compatible APIs                         |
-| 01  | [LLM Fundamentals](modules/01-fundamentals/)                               | A BPE tokenizer, cosine similarity, a toy attention head, samplers                                                 | tokens, embeddings, attention, sampling, what a "model" even is                    |
-| 02  | [LLM Integration](modules/02-llm-integration/)                             | Streaming chat, JSON/structured output, tool calling, retries                                                      | the request/response loop, function calling, cost & tokens                         |
-| 03  | [Prompting & Patterns](modules/03-prompting/)                              | A prompt library + evaluator                                                                                       | few-shot, chain-of-thought, self-consistency, prompt eval                          |
-| 04  | [Embeddings & Vectors](modules/04-embeddings-vectors/)                     | An in-memory vector index from scratch, then Chroma/Qdrant                                                         | embeddings, ANN search, chunking (incl. semantic), hybrid (BM25 + dense) search    |
-| 05  | [RAG](modules/05-rag/)                                                     | A full retrieval-augmented Q&A pipeline + eval                                                                     | chunk→embed→retrieve→rerank→generate, citations, faithfulness, HyDE + reverse HyDE |
-| 06  | [Agents](modules/06-agents/)                                               | A ReAct agent from scratch, then with LangGraph                                                                    | tools, planning loops, memory, multi-agent                                         |
-| 07  | [Advanced & Production](modules/07-advanced-production/)                   | Eval harness, tracing, caching, a served API                                                                       | LLM-as-judge, observability, cost control, deployment                              |
-| 08  | [Classification](modules/08-classification/)                               | A text classifier 3 ways + a softmax/GD one from scratch                                                           | LLM zero-shot vs embeddings+ML vs trained head, metrics (F1)                       |
-| 09  | [Computer Vision](modules/09-computer-vision/)                             | Image classification, CLIP zero-shot, multimodal-LLM vision, a convolution from scratch                            | pixels→features, CNN/ViT, CLIP, vision LLMs                                        |
-| 10  | [Image Generation](modules/10-image-generation/)                           | Text-to-image (hosted Stable Diffusion), img2img/inpainting, a toy diffusion sampler                               | diffusion process, latent space, U-Net, guidance                                   |
-| 11  | [Document Ingestion](modules/11-document-ingestion/)                       | A real RAG ingestion pipeline (PDF/HTML, cleaning, structure-aware chunking, incremental indexing, multimodal PDF) | the messy-data front-end RAG actually needs                                        |
-| 12  | [Text-to-SQL](modules/12-text-to-sql/)                                     | NL→SQL over a real DB, with safety + hybrid routing                                                                | querying structured data, schema grounding, SQL guardrails                         |
-| 13  | [Fine-tuning](modules/13-fine-tuning/)                                     | Prompt vs RAG vs fine-tune; hosted SFT; LoRA from scratch; distillation                                            | SFT, LoRA/QLoRA, dataset prep, when to fine-tune                                   |
-| 14  | [Local Inference & Optimization](modules/14-local-inference-optimization/) | Quantization & throughput benchmarks, a KV cache from scratch, model routing/fallbacks                             | quantization, KV cache, serving engines, load testing                              |
-| 15  | [Reasoning & Test-time Compute](modules/15-reasoning-test-time-compute/)   | Reasoning vs standard models, self-consistency, best-of-N, self-refine                                             | extended thinking, spending compute at inference                                   |
-| 16  | [Context Engineering](modules/16-context-engineering/)                     | Token budgeting, prompt caching, memory compaction, map-reduce, batch API                                          | using the context window as a scarce budget                                        |
-| 17  | [MCP & Modern Agent APIs](modules/17-mcp/)                                 | A course MCP server + an agent that uses it; Responses API                                                         | Model Context Protocol, hosted tools, remote MCP                                   |
-| 18  | [Computer Use](modules/18-computer-use/)                                   | A browser agent (vision + DOM grounded) with safety gates                                                          | computer-use models, automation, action allowlists                                 |
-| 19  | [Audio & Speech](modules/19-audio-speech/)                                 | STT, TTS, a voice tutor; VAD/denoise; realtime                                                                     | Whisper, TTS, voice agents, audio preprocessing                                    |
-| 20  | [AI Security](modules/20-ai-security/)                                     | Attack then harden your own RAG agent; a red-team harness                                                          | OWASP LLM Top 10, prompt injection, excessive agency                               |
-| 21  | [LLMOps & Eval](modules/21-llmops-eval/)                                   | Versioned eval sets, a CI regression gate, monitoring, feedback loop                                               | the eval lifecycle, regression gates, human review                                 |
-| 22  | [AI Product UX](modules/22-ai-product-ux/)                                 | A real mini app: streaming UI, citations drill-down, feedback, approval flow                                       | trust, failure states, "show sources", human-in-the-loop                           |
-| 23  | [Capstone](modules/23-capstone/)                                           | A RAG-powered agent app, end to end                                                                                | everything above, integrated                                                       |
+| #   | Module                                                                        | You'll build                                                                                                       | Core ideas                                                                         |
+| --- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| 00  | [Setup & Providers](modules/00-setup/)                                        | "Hello LLM" across 6 providers                                                                                     | API keys, the provider abstraction, OpenAI-compatible APIs                         |
+| 01  | [LLM Fundamentals](modules/01-fundamentals/)                                  | A BPE tokenizer, cosine similarity, a toy attention head, samplers                                                 | tokens, embeddings, attention, sampling, what a "model" even is                    |
+| 02  | [LLM Integration](modules/02-llm-integration/)                                | Streaming chat, JSON/structured output, tool calling, retries                                                      | the request/response loop, function calling, cost & tokens                         |
+| 03  | [Prompting & Patterns](modules/03-prompting/)                                 | A prompt library + evaluator                                                                                       | few-shot, chain-of-thought, self-consistency, prompt eval                          |
+| 04  | [Embeddings & Vectors](modules/04-embeddings-vectors/)                        | An in-memory vector index from scratch, then Chroma/Qdrant                                                         | embeddings, ANN search, chunking (incl. semantic), hybrid (BM25 + dense) search    |
+| 05  | [RAG](modules/05-rag/)                                                        | A full retrieval-augmented Q&A pipeline + eval                                                                     | chunk→embed→retrieve→rerank→generate, citations, faithfulness, HyDE + reverse HyDE |
+| 06  | [Agents](modules/06-agents/)                                                  | A ReAct agent from scratch, then with LangGraph                                                                    | tools, planning loops, memory, multi-agent                                         |
+| 07  | [Advanced & Production](modules/07-advanced-production/)                      | Eval harness, tracing, caching, a served API                                                                       | LLM-as-judge, observability, cost control, deployment                              |
+| 07b | [Delivery & AI Service Operations](modules/07b-delivery-operations/)          | A containerised, authenticated service with a safe release runbook                                                 | CI, secrets, identity, tenant isolation, queues, rollout, rollback                 |
+| 08  | [Classification](modules/08-classification/)                                  | A text classifier 3 ways + a softmax/GD one from scratch                                                           | LLM zero-shot vs embeddings+ML vs trained head, metrics (F1)                       |
+| 09  | [Computer Vision](modules/09-computer-vision/)                                | Image classification, CLIP zero-shot, multimodal-LLM vision, a convolution from scratch                            | pixels→features, CNN/ViT, CLIP, vision LLMs                                        |
+| 10  | [Image Generation](modules/10-image-generation/)                              | Text-to-image (hosted Stable Diffusion), img2img/inpainting, a toy diffusion sampler                               | diffusion process, latent space, U-Net, guidance                                   |
+| 11  | [Document Ingestion](modules/11-document-ingestion/)                          | A real RAG ingestion pipeline (PDF/HTML, cleaning, structure-aware chunking, incremental indexing, multimodal PDF) | the messy-data front-end RAG actually needs                                        |
+| 12  | [Text-to-SQL](modules/12-text-to-sql/)                                        | NL→SQL over a real DB, with safety + hybrid routing                                                                | querying structured data, schema grounding, SQL guardrails                         |
+| 13  | [Fine-tuning](modules/13-fine-tuning/)                                        | Prompt vs RAG vs fine-tune; hosted SFT; LoRA from scratch; distillation                                            | SFT, LoRA/QLoRA, dataset prep, when to fine-tune                                   |
+| 14  | [Local Inference & Optimization](modules/14-local-inference-optimization/)    | Quantization & throughput benchmarks, a KV cache from scratch, model routing/fallbacks                             | quantization, KV cache, serving engines, load testing                              |
+| 15  | [Reasoning & Test-time Compute](modules/15-reasoning-test-time-compute/)      | Reasoning vs standard models, self-consistency, best-of-N, self-refine                                             | extended thinking, spending compute at inference                                   |
+| 16  | [Context Engineering](modules/16-context-engineering/)                        | Token budgeting, prompt caching, memory compaction, map-reduce, batch API                                          | using the context window as a scarce budget                                        |
+| 17  | [MCP & Modern Agent APIs](modules/17-mcp/)                                    | A course MCP server + an agent that uses it; Responses API                                                         | Model Context Protocol, hosted tools, remote MCP                                   |
+| 18  | [Computer Use](modules/18-computer-use/)                                      | A browser agent (vision + DOM grounded) with safety gates                                                          | computer-use models, automation, action allowlists                                 |
+| 19  | [Audio & Speech](modules/19-audio-speech/)                                    | STT, TTS, a voice tutor; VAD/denoise; realtime                                                                     | Whisper, TTS, voice agents, audio preprocessing                                    |
+| 20  | [AI Security](modules/20-ai-security/)                                        | Attack then harden your own RAG agent; a red-team harness                                                          | OWASP LLM Top 10, prompt injection, excessive agency                               |
+| 20b | [Governance, Privacy & Responsible Practice](modules/20b-governance-privacy/) | A data map, rights workflow, model/data card, and accountable UX review                                            | privacy, retention, licences, accessibility, recourse                              |
+| 21  | [LLMOps & Eval](modules/21-llmops-eval/)                                      | Versioned eval sets, a CI regression gate, monitoring, feedback loop                                               | the eval lifecycle, regression gates, human review                                 |
+| 21b | [Evaluation Science & Agent Reliability](modules/21b-evaluation-reliability/) | Gold-evidence retrieval and deterministic agent-safety suites                                                      | MRR/NDCG, uncertainty, judge agreement, trajectory tests                           |
+| 22  | [AI Product UX](modules/22-ai-product-ux/)                                    | A real mini app: streaming UI, citations drill-down, feedback, approval flow                                       | trust, failure states, "show sources", human-in-the-loop                           |
+| 23  | [Capstone](modules/23-capstone/)                                              | A RAG-powered agent app, end to end                                                                                | everything above, integrated                                                       |
 
 > **Deep dive — [`modules/05b-advanced-rag/`](modules/05b-advanced-rag/):** extends
 > module 05 with the named **advanced RAG architectures** (TS + Py): Contextual
@@ -116,6 +124,15 @@ flowchart LR
 > just-in-time expansion, and a composed `MemoryManager` with TTL eviction that
 > keeps context under a token budget across turns. Offline via `--stub`, like 06c.
 
+> **Production deep dives — [`modules/07b-delivery-operations/`](modules/07b-delivery-operations/),
+> [`modules/20b-governance-privacy/`](modules/20b-governance-privacy/), and
+> [`modules/21b-evaluation-reliability/`](modules/21b-evaluation-reliability/):** close the
+> gap between a locally working AI feature and an accountable product: deployment
+> and rollback, identity and tenant isolation, data lifecycle and recourse,
+> gold-evidence retrieval metrics, uncertainty, and deterministic agent safety
+> tests. These are documentation-first specifications to apply to a capstone;
+> language-specific scaffolds are tracked in the [maintenance policy](docs/COURSE_MAINTENANCE.md).
+
 **Hosted-first** (default to APIs, optional local heavy path documented): modules **09, 10** (vision/diffusion), **13** (fine-tuning), **19** (audio). Nothing multi-GB downloads unless you opt in.
 
 **Lost in the acronyms?** Every abbreviation used in the course (BM25, RAG, HNSW, KV cache, LoRA, …) is expanded on first use in each lesson and collected in [`docs/GLOSSARY.md`](docs/GLOSSARY.md).
@@ -146,14 +163,14 @@ learn-ai/
 │   ├── ts/llm-core/        # provider-agnostic LLM client (TypeScript)
 │   └── py/llm_core/        # the same, in Python
 ├── modules/
-│   ├── 00-setup/ … 23-capstone/   # 24 modules + 10 deep-dive companions
+│   ├── 00-setup/ … 23-capstone/   # 24 numbered modules + 13 companions/deep dives
 │   │   ├── README.md       # the lesson + tasks + "done when" checklist
 │   │   ├── ts/             # TypeScript exercises
 │   │   └── py/             # Python exercises
 ├── projects/
 │   ├── news-agent/         # the Telegram daily-news agent
 │   └── tutor/              # Q&A + exam study CLI
-├── docs/                   # TOOLING, TUTOR_AND_EXAM, GLOSSARY, ADVANCED_RAG, LANGGRAPH
+├── docs/                   # tooling, learning references, and maintenance policy
 ├── data/                   # sample corpora for RAG exercises
 ├── scripts/                # helpers (smoke tests, etc.)
 └── .claude/commands/       # /tutor and /exam slash commands
@@ -163,7 +180,8 @@ The two `llm-core` packages are the spine of the course: you write exercises
 against one small interface and swap OpenAI ↔ Claude ↔ Ollama ↔ LM Studio ↔
 NVIDIA ↔ Gemini by changing a single env var. Understanding _why_ that abstraction is possible (and
 where it leaks) is module 00–02. For the full tooling reference (uv, pnpm,
-pytest, jest, formatters), see [docs/TOOLING.md](docs/TOOLING.md).
+pytest, jest, formatters), see [docs/TOOLING.md](docs/TOOLING.md). Maintainers
+should also follow the [course maintenance and language-parity policy](docs/COURSE_MAINTENANCE.md).
 
 Prefer reading in a browser? `uv run scripts/build_site.py` renders every
 module lesson and reference doc (with the diagrams) to a static HTML site —
@@ -226,8 +244,9 @@ pnpm tsx modules/00-setup/ts/hello.ts        # run any exercise file directly
 4. Don't skip module 01 even though it's the least "useful" — it's the load-bearing
    intuition for everything after.
 
-Suggested pace: ~1 module/week part-time. Modules 04→05→06 are the heart; budget
-extra time there.
+Use the [route and timing guidance](CURRICULUM.md#choose-a-route-before-you-start)
+instead of assuming every module fits into one week. Modules 04→05→06 are the
+heart; budget extra time there.
 
 ---
 

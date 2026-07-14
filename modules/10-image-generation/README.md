@@ -6,6 +6,13 @@ this module you will have generated images from text via a hosted API (Applicati
 explored every major generation knob, and built a minimal diffusion sampler
 from scratch in NumPy so the maths clicks.
 
+> **Language availability:** Task 1 has TypeScript and Python runnable paths.
+> Tasks 2–4 currently provide Python scaffolds only (parameter sweep,
+> img2img/inpainting, and toy diffusion). If you are following TypeScript, do
+> Task 1 in TS and use the Python implementations as readable pseudocode until
+> their TS counterparts are added. This is an explicit parity backlog, tracked
+> in [`docs/COURSE_MAINTENANCE.md`](../../docs/COURSE_MAINTENANCE.md).
+
 ---
 
 ## Concepts
