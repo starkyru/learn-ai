@@ -28,6 +28,9 @@ data/qdrant/
 .chroma-data/
 *.faiss
 
+# Claude Code agent scratch (per-agent memory notes; keep commands/skills tracked)
+.claude/agent-memory/
+
 # Editor / OS
 .DS_Store
 .idea/
