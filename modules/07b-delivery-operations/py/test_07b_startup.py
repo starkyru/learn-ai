@@ -19,6 +19,10 @@ _PY_DIR = Path(__file__).resolve().parent
 def test_entrypoint_fails_fast_without_provider_credential(tmp_path):
     env = {
         **os.environ,
+        # llm_core calls load_dotenv() at import time. Disable that for this
+        # subprocess so a learner's repository-root .env cannot restore the
+        # credential this test deliberately removes.
+        "PYTHON_DOTENV_DISABLED": "1",
         "SERVICE_ENV": "development",
         "LLM_PROVIDER": "openai",  # requires OPENAI_API_KEY
         "PORT": "8199",
@@ -49,6 +53,8 @@ def test_asgi_import_does_not_leak_original_startup_error(tmp_path):
     # startup_failed event (to stdout).
     env = {
         **os.environ,
+        # Keep the missing-credential scenario isolated from a local .env.
+        "PYTHON_DOTENV_DISABLED": "1",
         "SERVICE_ENV": "development",
         "LLM_PROVIDER": "openai",
         "DB_PATH": str(tmp_path / "db.sqlite"),
