@@ -1,0 +1,16 @@
+{
+  "rubric": "answer-eval-v1",
+  "note": "Synthetic blind human task-success labels for a sample (>= 10%) of variant_a answers.",
+  "labels": {
+    "variant_a": {
+      "hold-01": 1,
+      "hold-02": 1,
+      "hold-04": 0,
+      "hold-07": 1,
+      "hold-09": 0,
+      "hold-10": 0,
+      "hold-13": 1,
+      "hold-17": 1
+    }
+  }
+}

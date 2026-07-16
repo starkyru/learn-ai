@@ -244,9 +244,60 @@ pnpm tsx modules/00-setup/ts/hello.ts        # run any exercise file directly
 4. Don't skip module 01 even though it's the least "useful" — it's the load-bearing
    intuition for everything after.
 
-Use the [route and timing guidance](CURRICULUM.md#choose-a-route-before-you-start)
-instead of assuming every module fits into one week. Modules 04→05→06 are the
-heart; budget extra time there.
+Modules 04→05→06 are the heart; budget extra time there. Don't assume every
+module fits into one week — pick a route below.
+
+---
+
+## Choose a route
+
+There is no single "finish it" path. Pick **one of four independently usable
+routes** by the outcome you want. Every companion and deep dive is either
+**scheduled inside a route** or **explicitly excluded with a pointer to the route
+that owns it** — nothing is silently dropped. Full week-by-week schedules,
+prerequisite orders, and route decision guidance (goal, background,
+provider/hardware, portfolio artifact, next route) live in
+[`CURRICULUM.md`](CURRICULUM.md#choose-a-route).
+
+Time budgets are split into four buckets that are summed **separately** —
+**exercise-only** (writing the tasks), **setup/debug** (reading + installing +
+debugging), **provider/cloud** (hosted keys, deploy setup, heavy downloads beyond
+the free Ollama baseline), and **capstone** (module 23 only). Every number below
+is generated from and CI-verified against one source,
+[`scripts/curriculum/module_times.json`](scripts/curriculum/module_times.json), by
+[`scripts/curriculum/check_route_hours.py`](scripts/curriculum/check_route_hours.py),
+so you never reconcile conflicting totals. Ranges are honest planning estimates,
+not guarantees, and none of this is legal or financial advice.
+
+Totals in hours (min–max), each bucket summed separately:
+
+| Route                | Lessons | Exercise-only | Setup/debug | Provider/cloud | Capstone |
+| -------------------- | ------- | ------------- | ----------- | -------------- | -------- |
+| **Core app-builder** | 27      | 114–153       | 28–52.5     | 11–22          | 10–20    |
+| **ML foundations**   | 5       | 22–32         | 6–11        | 0              | 0        |
+| **Agent systems**    | 12      | 55–74         | 14.5–25.5   | 4.75–9.5       | 10–20    |
+| **Model training**   | 5       | 20–28         | 4.5–9       | 2.25–4.5       | 0        |
+
+- **Core app-builder** — the existing ~20-week main sequence, labelled: all 24
+  numbered modules (00–23) plus the production deep dives **07b / 20b / 21b**.
+  General programming assumed, no ML background; the free Ollama path completes
+  most of it. Ends with a deployed, evaluated RAG-agent app (module 23).
+  _Intentionally excludes_ 01b–01f (→ ML foundations), 05b/06b/06c/06d (→ Agent
+  systems), and 13b (→ Model training). **Next:** Agent systems or Model training.
+- **ML foundations** — the five from-scratch companions **01b–01f** (regression,
+  autograd/backprop, the transformer decoder, trees/ensembles, probability/PCA).
+  Pure offline NumPy + TypeScript, **no provider**. Order: 01b → 01e/01f → 01c →
+  01d. Ends with a from-scratch ML repo. **Next:** Model training or Agent systems.
+- **Agent systems** — **05b, 06, 06b, 06c, 06d, 16, 17, 18, 21, 21b, 07b, 23**:
+  from a hand-rolled ReAct loop to a deployed, memory-aware, multi-framework agent
+  service with an offline trajectory/safety gate. Assumes core modules 02–07;
+  Ollama runs most tasks, paid keys help for MCP (17) and computer use (18).
+  **Next:** Model training or Core app-builder.
+- **Model training** — **08, 13, 13b, 14, 15**: decide when to train, run a hosted
+  fine-tune, implement LoRA and DPO from scratch, and optimise local inference.
+  Assumes the ML foundations route + modules 00–04; needs a hosted SFT key
+  (optional GPU for local LoRA/serving). Ends with a fine-tuned, DPO-aligned model
+  plus training evidence. **Next:** Agent systems or Core app-builder.
 
 ---
 

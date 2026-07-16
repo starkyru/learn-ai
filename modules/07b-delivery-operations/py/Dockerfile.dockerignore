@@ -1,0 +1,18 @@
+# BuildKit honours this file (named after the Dockerfile) when the build uses a
+# repo-root context, which this service requires to reach packages/py/llm_core.
+# Mirror of .dockerignore in this directory. Keep secrets and local state out.
+.env
+.env.*
+*.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.sqlite
+*.sqlite3
+data/
+node_modules/
+.git/
+.DS_Store

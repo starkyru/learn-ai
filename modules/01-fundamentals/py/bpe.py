@@ -20,6 +20,8 @@ Key invariant (the thing that makes it a tokenizer and not a lossy hash):
 
 from __future__ import annotations
 
+import os
+
 # A "symbol sequence" during training is a list of token ids. Base ids 0..255
 # are the raw bytes; ids >= 256 are merged pairs we invent during training.
 Pair = tuple[int, int]
@@ -43,7 +45,7 @@ def get_stats(ids: list[int]) -> dict[Pair, int]:
     For [1, 2, 3, 2, 3] the pairs are (1,2),(2,3),(3,2),(2,3) so (2,3) -> 2.
     """
     counts: dict[Pair, int] = {}
-    for a, b in zip(ids, ids[1:]):
+    for a, b in zip(ids, ids[1:], strict=False):
         counts[(a, b)] = counts.get((a, b), 0) + 1
     return counts
 
@@ -147,6 +149,9 @@ def main() -> None:
     print(f"Encoded ({len(ids)} ids)   : {ids}")
     print(f"Decoded            : {back!r}")
     print(f"Round-trips losslessly: {back == sample}")
+    # Self-check: the defining invariant of a tokenizer. Assert (don't just print)
+    # so a regression fails loudly — including under the offline smoke runner.
+    assert back == sample, f"BPE round-trip mismatch: {back!r} != {sample!r}"
 
     # Show the compression effect: a learned tokenizer should need far fewer
     # tokens than raw bytes for text resembling its training corpus.
@@ -160,7 +165,14 @@ def main() -> None:
     assert tok.decode(tok.encode(tricky)) == tricky
     print(f"\nUnseen/Unicode round-trip OK: {tricky!r}")
 
-    _tiktoken_comparison(sample)
+    # The comparison downloads tiktoken's vocab on first use. In the offline
+    # smoke run (OFFLINE_SMOKE / CI set) skip it so this file stays network-free;
+    # the from-scratch BPE core above is what we actually verify. Normal learners
+    # (no env var) still see the full production-tokenizer comparison.
+    if os.environ.get("OFFLINE_SMOKE") or os.environ.get("CI"):
+        print("\n--- tiktoken comparison skipped (offline smoke mode) ---")
+    else:
+        _tiktoken_comparison(sample)
 
 
 def _tiktoken_comparison(text: str) -> None:

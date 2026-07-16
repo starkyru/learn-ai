@@ -179,14 +179,17 @@ async function generateStability(opts: GenerateOptions): Promise<GenerateResult>
   if (opts.seed !== undefined) formData.append("seed", String(opts.seed));
   formData.append("output_format", "png");
 
-  const res = await fetch("https://api.stability.ai/v2beta/stable-image/generate/core", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      Accept: "image/*",
+  const res = await fetch(
+    "https://api.stability.ai/v2beta/stable-image/generate/core",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: "image/*",
+      },
+      body: formData,
     },
-    body: formData,
-  });
+  );
 
   if (!res.ok) {
     const body = await res.text();

@@ -6,12 +6,17 @@ this module you will have generated images from text via a hosted API (Applicati
 explored every major generation knob, and built a minimal diffusion sampler
 from scratch in NumPy so the maths clicks.
 
-> **Language availability:** Task 1 has TypeScript and Python runnable paths.
-> Tasks 2–4 currently provide Python scaffolds only (parameter sweep,
-> img2img/inpainting, and toy diffusion). If you are following TypeScript, do
-> Task 1 in TS and use the Python implementations as readable pseudocode until
-> their TS counterparts are added. This is an explicit parity backlog, tracked
-> in [`docs/COURSE_MAINTENANCE.md`](../../docs/COURSE_MAINTENANCE.md).
+> **Language availability:** all four tasks now have TypeScript and Python
+> runnable paths. Tasks 1–3 are direct ports (text-to-image, parameter sweep,
+> img2img/inpainting). Task 4 differs by design: the **Python** Task 4 is the
+> from-scratch NumPy toy-diffusion sampler (`py/toy_diffusion.py`), while the
+> **TypeScript** Task 4 is its safety/evaluation counterpart
+> (`ts/safety_eval.ts`) — a prompt-safety filter, C2PA-style attribution
+> metadata, and a filter-evaluation harness (README Concept 11). The TS Tasks 2
+> and 3 ship a deterministic **offline stub** (set `IMAGE_STUB=1` or
+> `OFFLINE_SMOKE=1`) so they run in CI with no API key or network; the hosted
+> provider path stays opt-in. Parity policy is tracked in
+> [`docs/COURSE_MAINTENANCE.md`](../../docs/COURSE_MAINTENANCE.md).
 
 ---
 
@@ -228,21 +233,30 @@ Acceptance: at least two PNG files on disk, from two different seeds.
 ### Task 2 — Prompt craft & parameter sweep 🟡
 
 Sweep `guidance_scale` and `num_inference_steps`; save a small image grid;
-understand the effect of negative prompts.
+understand the effect of negative prompts. Every cell's full parameter set and
+seed are recorded in a reproducible sidecar JSON (`sweep_metadata.json`).
 
-**Python:** `py/param_sweep.py`
+**Python:** `py/param_sweep.py`  
+**TypeScript:** `ts/param_sweep.ts`
 
 Steps:
 
 1. Run the sweep (sends ~6 API calls — each takes a few seconds):
    ```bash
    uv run python modules/10-image-generation/py/param_sweep.py
+   pnpm tsx modules/10-image-generation/ts/param_sweep.ts
+   ```
+   Or run the deterministic offline stub — no key, no network (the CI path):
+   ```bash
+   IMAGE_STUB=1 pnpm tsx modules/10-image-generation/ts/param_sweep.ts
    ```
 2. Open `sweep_grid.png`. Notice how guidance_scale affects sharpness/adherence
-   and how steps affect detail.
+   and how steps affect detail. Inspect `sweep_metadata.json` — it reconstructs
+   any run exactly (every param + seed per cell).
 3. Modify `NEGATIVE_PROMPT` — try `"blurry, ugly, watermark"` vs. `""`.
 
-Acceptance: a `sweep_grid.png` with a visible difference across columns.
+Acceptance: a `sweep_grid.png` with a visible difference across columns, plus a
+`sweep_metadata.json` recording each cell's parameters and seed.
 
 What each knob does:
 
@@ -259,7 +273,8 @@ What each knob does:
 
 Transform an input image with img2img; edit a masked region with inpainting.
 
-**Python:** `py/img2img.py`
+**Python:** `py/img2img.py`  
+**TypeScript:** `ts/img2img.ts`
 
 Steps:
 
@@ -267,7 +282,15 @@ Steps:
 2. Run:
    ```bash
    uv run python modules/10-image-generation/py/img2img.py
+   pnpm tsx modules/10-image-generation/ts/img2img.ts
    ```
+   Or run the deterministic offline stub — no download, no key, no network:
+   ```bash
+   IMAGE_STUB=1 pnpm tsx modules/10-image-generation/ts/img2img.ts
+   ```
+   In stub mode the output tint blends the input's fingerprint toward the
+   prompt's by `strength`, and the inpaint stub keeps the unmasked band's colour
+   independent of the prompt — the same qualitative behaviour as the real knobs.
 3. Compare `img2img_output.png` with the original — similar composition, new
    style/details. Adjust `STRENGTH` (0.3–0.9) and observe.
 4. Look at `inpaint_output.png` — the unmasked region is unchanged; the white
@@ -287,7 +310,14 @@ is 5–15× slower than a CUDA GPU. SDXL-Turbo is recommended for local use
 A minimal DDPM implementation in NumPy — no Torch, no diffusers. Teaches
 the math before any framework hides it.
 
-**Python:** `py/toy_diffusion.py`
+**Python:** `py/toy_diffusion.py` — the from-scratch NumPy DDPM sampler below.  
+**TypeScript:** `ts/safety_eval.ts` — the safety/evaluation counterpart (see
+"TypeScript variant" at the end of this task).
+
+> Task 4 intentionally differs across languages. Python takes the 🔴 _maths_
+> path (build the sampler). TypeScript takes the 🔴 _responsibility_ path
+> (build the safety and attribution layer around generation, README Concept 11).
+> Do whichever matches your goal — or both.
 
 Steps:
 
@@ -319,6 +349,50 @@ Reverse:  x_{t-1} = 1/√αₜ · (x_t − βₜ/√(1−ᾱₜ) · ε_θ(x_t,t)
 Acceptance: after filling the TODOs, generated 2D points that form a spiral
 (or two-moon) shape rather than white noise.
 
+**TypeScript variant — safety, attribution & evaluation (`ts/safety_eval.ts`):**
+
+The TS Task 4 builds the responsibility layer from README Concept 11 instead of
+the sampler. Fully deterministic and offline (no model, no key, no network):
+
+```bash
+pnpm tsx modules/10-image-generation/ts/safety_eval.ts
+```
+
+It implements three pieces:
+
+- **Prompt-safety filter** (`classifyPrompt`) — a rule-based classifier that
+  blocks harmful requests _before_ inference. Co-occurrence rules matter: a
+  scary word alone ("bomb" in a movie poster) is allowed; unsafe intent
+  ("step by step how to make a pipe bomb") is blocked.
+- **Gating + C2PA-style attribution** (`gateGeneration`,
+  `buildContentCredentials`) — generation runs only for allowed prompts, and
+  every output is tagged with a content-credentials manifest. The `contentHash`
+  is a real **SHA-256** (collision-resistant) of the image bytes, and the
+  `signature` is a real **HMAC-SHA256** over the canonical whole-manifest
+  serialization (via `node:crypto`, no extra dependency). `verifyContentCredentials`
+  detects tampered pixels (hash changes) and any tampered/added/removed manifest
+  field (HMAC mismatch), and — unlike a public hash — the signature cannot be
+  recomputed without the key. _Caveat: this uses a shared HMAC key, a teaching
+  simplification. Real C2PA uses **asymmetric** signing (an X.509 private key
+  signs; a public certificate verifies) so a verifier holds no signing power._
+- **Filter evaluation** (`evaluateFilter`) — scores the filter against a
+  labelled set, reporting the confusion matrix and accuracy/precision/recall/F1.
+
+> **A keyword filter is inherently bypassable and NON-EXHAUSTIVE.** It cannot
+> enumerate every unsafe category or every paraphrase — "how you make…" vs
+> "how to make…", "building a…" vs "build a…", "under 18" vs "12-year-old",
+> "firearm" vs "gun". We close obvious named gaps as they are found, but we do
+> **not** claim completeness, and over-broadening causes false positives. This
+> exercise teaches the _pattern_ (filter → gate → attribute → evaluate), not a
+> production guardrail. Real systems combine trained ML classifiers,
+> provider-side safety, and human review — and **measure** the filter (that is
+> what `evaluateFilter` is for) rather than trusting it.
+
+Acceptance: `safety_eval_report.json` (the eval metrics) and
+`content_credentials.json` (attribution manifests) are written, unsafe prompts
+are blocked without generating, and safe prompts generate with a verifiable
+manifest.
+
 ---
 
 ## Hosted provider options
@@ -342,8 +416,10 @@ To switch, edit `IMAGE_PROVIDER` at the top of any script or set the env var.
 - [ ] Generated at least two PNGs from different seeds (Task 1).
 - [ ] Ran the parameter sweep and can explain what guidance_scale does (Task 2).
 - [ ] Have `img2img_output.png` and `inpaint_output.png` saved (Task 3).
-- [ ] The toy diffusion script runs end-to-end and generates points that
-      look like the training distribution (Task 4, after filling TODOs).
+- [ ] Task 4 — either the Python toy diffusion runs end-to-end and generates
+      points that look like the training distribution (after filling TODOs), or
+      the TypeScript `safety_eval.ts` blocks unsafe prompts, attributes safe
+      outputs, and reports the filter's eval metrics.
 - [ ] Can explain in a sentence: what the U-Net predicts, and what
       classifier-free guidance actually does to the noise prediction.
 

@@ -377,6 +377,23 @@ module 09 Task 3. Your job is the retrieval flow around it.
 
 ---
 
+## Governance & data lifecycle
+
+Ingestion is where a document's data first lands and is copied — parsed text,
+chunks, embeddings, and any cache — and each copy is a store with an owner, a
+retention rule, and a deletion path. Each ingested source also has a **licence**.
+Before ingesting a real corpus, fill in the Module 20b governance templates at these
+points:
+
+- [`DATA_INVENTORY.md`](../20b-governance-privacy/templates/DATA_INVENTORY.md) —
+  record the parsed-text store, the vector store, and any cache.
+- [`RETENTION_SCHEDULE.md`](../20b-governance-privacy/templates/RETENTION_SCHEDULE.md)
+  — a deletion request must reach the embeddings and cache, not only the source.
+- [`LICENCE_AND_USE_DECISIONS.md`](../20b-governance-privacy/templates/LICENCE_AND_USE_DECISIONS.md)
+  — every ingested source needs an allowed-use decision, or is excluded.
+
+See **[module 20b](../20b-governance-privacy/README.md)** for the full workflow.
+
 ## Going deeper
 
 - **PDF OCR:** pypdf extracts digital text only. For scanned PDFs, try

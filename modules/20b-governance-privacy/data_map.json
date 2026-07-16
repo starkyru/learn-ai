@@ -1,0 +1,143 @@
+{
+  "app": "course-rag-support-assistant",
+  "description": "Retrieval-augmented support assistant (modules 05/11): a subject asks a question, the app retrieves from an internal knowledge base and answers via an LLM, with feedback and tracing. Every store below is described with synthetic governance metadata only; this is engineering practice, not legal advice.",
+  "version": "1.0.0",
+  "owner": "platform-team@example.invalid",
+  "review_date": "2026-07-14",
+  "not_legal_advice": true,
+  "data_classes": ["public", "internal", "confidential", "restricted"],
+  "stores": [
+    {
+      "id": "app_db_subjects",
+      "category": "app_db",
+      "hop": "collection -> primary storage",
+      "description": "Primary records: subject profile + support question.",
+      "data_class": "confidential",
+      "purpose": "Serve the support request and let the subject view their history.",
+      "owner": "platform-team@example.invalid",
+      "access_control": "RBAC; tenant-scoped rows; encrypted at rest.",
+      "retention": "24 months after last activity.",
+      "deletion_mechanism": "Hard delete by subject_id on erasure request; cascades to derived stores."
+    },
+    {
+      "id": "prompt_assembly",
+      "category": "prompt",
+      "hop": "app -> prompt construction",
+      "description": "The prompt assembled from retrieved chunks + the (redacted) subject fields.",
+      "data_class": "internal",
+      "purpose": "Instruct the model for this single request.",
+      "owner": "platform-team@example.invalid",
+      "access_control": "In-process only; never persisted raw; restricted fields redacted before assembly.",
+      "retention": "Transient (request lifetime).",
+      "deletion_mechanism": "Garbage-collected at end of request; nothing to delete."
+    },
+    {
+      "id": "provider_request",
+      "category": "provider",
+      "hop": "app -> third-party LLM provider",
+      "description": "Chat request sent to the hosted model provider.",
+      "data_class": "confidential",
+      "purpose": "Generate the answer.",
+      "owner": "vendor-management@example.invalid",
+      "access_control": "TLS in transit; redacted payload; provider bound by data-processing terms; no-training flag set.",
+      "retention": "Per provider abuse-monitoring window (documented in the vendor DPA).",
+      "deletion_mechanism": "Vendor deletion request / zero-retention endpoint where contracted."
+    },
+    {
+      "id": "embeddings_index",
+      "category": "embeddings",
+      "hop": "ingestion -> vector store",
+      "description": "Chunk embeddings + chunk text for retrieval (a derived copy of source docs).",
+      "data_class": "confidential",
+      "purpose": "Semantic retrieval over the knowledge base.",
+      "owner": "search-team@example.invalid",
+      "access_control": "RBAC; tenant-scoped collections; encrypted at rest.",
+      "retention": "Tied to source document lifecycle.",
+      "deletion_mechanism": "Delete vectors by source doc_id / subject_id; re-index on document removal."
+    },
+    {
+      "id": "prompt_cache",
+      "category": "cache",
+      "hop": "app -> cache",
+      "description": "Cache of prompt->response pairs and retrieval results.",
+      "data_class": "confidential",
+      "purpose": "Reduce latency and provider cost for repeated queries.",
+      "owner": "platform-team@example.invalid",
+      "access_control": "Internal service only; keyed by hash of redacted prompt; encrypted at rest.",
+      "retention": "TTL 7 days.",
+      "deletion_mechanism": "TTL expiry + explicit purge by cache key on subject deletion."
+    },
+    {
+      "id": "app_logs",
+      "category": "logs",
+      "hop": "app -> structured logs",
+      "description": "Structured request logs (field actions, redacted record, timings, correlation id).",
+      "data_class": "internal",
+      "purpose": "Debugging, audit of redaction decisions, and operations.",
+      "owner": "sre-team@example.invalid",
+      "access_control": "Restricted log platform; raw restricted/confidential values excluded by policy.",
+      "retention": "30 days.",
+      "deletion_mechanism": "Rolling retention window; logs keyed by pseudonymous subject_id for targeted purge."
+    },
+    {
+      "id": "tracing_vendor",
+      "category": "tracing",
+      "hop": "app -> external tracing vendor",
+      "description": "Spans/traces of the request pipeline sent to a hosted observability vendor.",
+      "data_class": "confidential",
+      "purpose": "Latency, cost, and quality observability.",
+      "owner": "sre-team@example.invalid",
+      "access_control": "Vendor SSO/RBAC; redacted attributes only; bound by vendor DPA.",
+      "retention": "14 days (vendor plan).",
+      "deletion_mechanism": "Vendor trace deletion API by trace/subject id; retention window auto-expiry."
+    },
+    {
+      "id": "feedback_store",
+      "category": "feedback",
+      "hop": "user -> feedback capture",
+      "description": "Thumbs up/down and free-text feedback tied to an answer.",
+      "data_class": "confidential",
+      "purpose": "Quality evaluation and model/prompt improvement.",
+      "owner": "quality-team@example.invalid",
+      "access_control": "RBAC; free-text scanned for PII before use in evals.",
+      "retention": "12 months.",
+      "deletion_mechanism": "Delete by subject_id / answer_id; excluded from eval sets on deletion."
+    },
+    {
+      "id": "tool_call_records",
+      "category": "tools",
+      "hop": "agent -> tool invocation",
+      "description": "Arguments and results of tool calls (e.g. account lookup) made while answering.",
+      "data_class": "confidential",
+      "purpose": "Task execution and post-hoc debugging of tool behaviour.",
+      "owner": "platform-team@example.invalid",
+      "access_control": "Internal only; args validated; secrets never persisted.",
+      "retention": "30 days.",
+      "deletion_mechanism": "Rolling window purge; delete by correlation/subject id on request."
+    },
+    {
+      "id": "derived_summaries",
+      "category": "derived",
+      "hop": "app -> derived artifacts",
+      "description": "Generated summaries, extracted entities, and eval-scored answers derived from subject data.",
+      "data_class": "confidential",
+      "purpose": "Faster future answers and aggregate quality metrics.",
+      "owner": "quality-team@example.invalid",
+      "access_control": "RBAC; treated as personal data because it is derived from it.",
+      "retention": "12 months.",
+      "deletion_mechanism": "Delete/tombstone by source subject_id; aggregates recomputed without the record."
+    },
+    {
+      "id": "backups",
+      "category": "backups",
+      "hop": "storage -> backups",
+      "description": "Encrypted point-in-time backups of the app db and vector index.",
+      "data_class": "confidential",
+      "purpose": "Disaster recovery.",
+      "owner": "sre-team@example.invalid",
+      "access_control": "Break-glass access only; encrypted at rest; access logged.",
+      "retention": "35 days (documented retention exception vs. live-store deletion).",
+      "deletion_mechanism": "Deletion propagates on restore + backup rotation; erasure log notes the exception window."
+    }
+  ]
+}

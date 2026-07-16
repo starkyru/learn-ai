@@ -1,0 +1,7 @@
+# Local runtime state for the reference service — never commit these.
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite3
+data/

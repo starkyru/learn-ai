@@ -344,6 +344,21 @@ read `[x]` and the file should say "All acceptance checks passed."
 
 ---
 
+## Governance & data lifecycle
+
+Agent memory is a durable store of user-derived data (episodic turns, semantic
+facts, entities), so it is in scope for the data map and for erasure. TTL eviction
+is a retention mechanism; a user's delete request must reach memory too, not only
+the primary record. Fill in the Module 20b governance templates:
+
+- [`DATA_INVENTORY.md`](../20b-governance-privacy/templates/DATA_INVENTORY.md) —
+  list each memory store with its owner and purpose.
+- [`RETENTION_SCHEDULE.md`](../20b-governance-privacy/templates/RETENTION_SCHEDULE.md)
+  — map TTL / eviction to a retention period and a deletion path.
+
+See **[module 20b](../20b-governance-privacy/README.md)** for rights (export/delete
+reaching every store) and the full workflow.
+
 ## Going deeper
 
 - **CoALA — Cognitive Architectures for Language Agents** (Sumers, Yao, Narasimhan,

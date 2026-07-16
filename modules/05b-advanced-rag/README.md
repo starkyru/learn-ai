@@ -321,6 +321,22 @@ graph here is a plain dict of adjacency lists. Building it is the lesson.
 
 ---
 
+## Governance & data lifecycle
+
+Advanced retrieval creates and moves data: it **embeds** your corpus, **caches**
+contextual chunks and generations, and **sends** retrieved context to a provider on
+every query — each is a governance point. Before running enterprise RAG on real
+data, fill in the Module 20b governance templates:
+
+- [`DATA_INVENTORY.md`](../20b-governance-privacy/templates/DATA_INVENTORY.md) — the
+  vector store, the contextual-chunk cache, and the provider hop.
+- [`LICENCE_AND_USE_DECISIONS.md`](../20b-governance-privacy/templates/LICENCE_AND_USE_DECISIONS.md)
+  — corpus source licences, plus provider terms for the context you send.
+- [`DPIA.md`](../20b-governance-privacy/templates/DPIA.md) — if the corpus holds
+  personal or sensitive data.
+
+See **[module 20b](../20b-governance-privacy/README.md)** for the full workflow.
+
 ## Going deeper
 
 - **Contextual Retrieval + reranking:** Anthropic's best result stacks contextual

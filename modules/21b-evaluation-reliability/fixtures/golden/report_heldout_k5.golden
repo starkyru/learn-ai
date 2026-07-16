@@ -1,0 +1,440 @@
+{
+  "benchmark": "aurora-retrieval-benchmark",
+  "failures": {
+    "bm25": [
+      {
+        "case_id": "hold-05",
+        "failure": "missing_gold",
+        "method": "bm25",
+        "missing_gold": [
+          "api-errors"
+        ],
+        "ndcg_at_k": 0.9173194127129571,
+        "query": "why am I getting a 403 on some endpoints",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-scopes",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-pagination",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-api-keys",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "hold-10",
+        "failure": "missing_gold",
+        "method": "bm25",
+        "missing_gold": [
+          "billing-usage-metering"
+        ],
+        "ndcg_at_k": 0,
+        "query": "which response codes are billable",
+        "recall_at_k": 0,
+        "reciprocal_rank": 0.1111111111111111,
+        "top_k": [
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      }
+    ],
+    "dense": [
+      {
+        "case_id": "hold-05",
+        "failure": "missing_gold",
+        "method": "dense",
+        "missing_gold": [
+          "api-errors",
+          "auth-scopes"
+        ],
+        "ndcg_at_k": 0,
+        "query": "why am I getting a 403 on some endpoints",
+        "recall_at_k": 0,
+        "reciprocal_rank": 0.0625,
+        "top_k": [
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-pagination",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "hold-10",
+        "failure": "misranked_gold",
+        "method": "dense",
+        "missing_gold": [],
+        "ndcg_at_k": 0.38685280723454163,
+        "query": "which response codes are billable",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.2,
+        "top_k": [
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sdk-languages",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 3,
+            "is_gold": true
+          }
+        ]
+      }
+    ],
+    "hybrid": [
+      {
+        "case_id": "hold-05",
+        "failure": "missing_gold",
+        "method": "hybrid",
+        "missing_gold": [
+          "api-errors",
+          "auth-scopes"
+        ],
+        "ndcg_at_k": 0,
+        "query": "why am I getting a 403 on some endpoints",
+        "recall_at_k": 0,
+        "reciprocal_rank": 0.14285714285714285,
+        "top_k": [
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-pagination",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "hold-10",
+        "failure": "misranked_gold",
+        "method": "hybrid",
+        "missing_gold": [],
+        "ndcg_at_k": 0.38685280723454163,
+        "query": "which response codes are billable",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.2,
+        "top_k": [
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 3,
+            "is_gold": true
+          }
+        ]
+      }
+    ],
+    "reranked": [
+      {
+        "case_id": "hold-03",
+        "failure": "misranked_gold",
+        "method": "reranked",
+        "missing_gold": [],
+        "ndcg_at_k": 0.9737576937588317,
+        "query": "exchange client id and secret for a token",
+        "recall_at_k": 1,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-oauth",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-burst",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-token-expiry",
+            "grade": 1,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "hold-05",
+        "failure": "missing_gold",
+        "method": "reranked",
+        "missing_gold": [
+          "api-errors"
+        ],
+        "ndcg_at_k": 0.9173194127129571,
+        "query": "why am I getting a 403 on some endpoints",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-scopes",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-pagination",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "hold-09",
+        "failure": "misranked_gold",
+        "method": "reranked",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "how is the enterprise plan priced",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "sla-uptime",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-overage",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-token-expiry",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "hold-10",
+        "failure": "misranked_gold",
+        "method": "reranked",
+        "missing_gold": [],
+        "ndcg_at_k": 0.38685280723454163,
+        "query": "which response codes are billable",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.2,
+        "top_k": [
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 3,
+            "is_gold": true
+          }
+        ]
+      }
+    ]
+  },
+  "k": 5,
+  "metrics": {
+    "bm25": {
+      "mrr": 0.9595959595959596,
+      "ndcg_at_k": 0.950787246032407,
+      "num_cases": 22,
+      "num_failures": 2,
+      "recall_at_k": 0.9318181818181818
+    },
+    "dense": {
+      "mrr": 0.9210227272727273,
+      "ndcg_at_k": 0.92667512760157,
+      "num_cases": 22,
+      "num_failures": 2,
+      "recall_at_k": 0.9545454545454546
+    },
+    "hybrid": {
+      "mrr": 0.9246753246753247,
+      "ndcg_at_k": 0.92667512760157,
+      "num_cases": 22,
+      "num_failures": 2,
+      "recall_at_k": 0.9545454545454546
+    },
+    "reranked": {
+      "mrr": 0.9409090909090909,
+      "ndcg_at_k": 0.9504027121489904,
+      "num_cases": 22,
+      "num_failures": 4,
+      "recall_at_k": 0.9772727272727273
+    }
+  },
+  "num_cases": 22,
+  "relevant_threshold": 1,
+  "split": "heldout",
+  "versions": {
+    "bm25_version": "1.0.0",
+    "chunker_version": "1.0.0",
+    "corpus_version": "aurora-docs-v1",
+    "embedder_version": "1.0.0",
+    "hybrid_version": "1.0.0",
+    "index_version": "1.0.0",
+    "manifest_version": "1.0.0",
+    "reranker_version": "1.0.0",
+    "rubric": "graded-relevance-v1"
+  }
+}

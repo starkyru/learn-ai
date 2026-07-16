@@ -1385,14 +1385,14 @@ any capstone that handles other people's data or is deployed beyond localhost.
 
 **Milestone plan (Option A)**
 
-| Milestone                           | Done when                                                                                                                                         |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M1 — Ingest                         | Top-3 passages for 5 hand-crafted questions are all on-topic. Draws on modules 04, 11.                                                            |
-| M2 — Hybrid retrieve + rerank       | Hybrid beats dense-only MRR@5. Draws on modules 04, 05.                                                                                           |
-| M3 — Generator with citations       | 5/5 answers include a valid citation; none contradict passages. Draws on module 05.                                                               |
-| M4 — Agent + tools                  | Agent answers a 2-hop question requiring two retrieval steps. Draws on modules 06, 17.                                                            |
-| M5 — Eval harness + served API + UX | Eval pass rate ≥ 70 %; API returns `{answer, citations, latency_ms}`; streaming UI live. Draws on modules 07, 20, 21, 22.                         |
-| M6 — Accountable release            | Staging deploy, tenant filtering, data map, model/data card, held-out retrieval evidence, and agent-policy suite. Draws on modules 07b, 20b, 21b. |
+| Milestone                           | Done when                                                                                                                                                                                                                                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M1 — Ingest                         | Top-3 passages for 5 hand-crafted questions are all on-topic. Draws on modules 04, 11.                                                                                                                                                                                                          |
+| M2 — Hybrid retrieve + rerank       | Hybrid beats dense-only MRR@5. Draws on modules 04, 05.                                                                                                                                                                                                                                         |
+| M3 — Generator with citations       | 5/5 answers include a valid citation; none contradict passages. Draws on module 05.                                                                                                                                                                                                             |
+| M4 — Agent + tools                  | Agent answers a 2-hop question requiring two retrieval steps. Draws on modules 06, 17.                                                                                                                                                                                                          |
+| M5 — Eval harness + served API + UX | Eval pass rate ≥ 70 %; API returns `{answer, citations, latency_ms}`; streaming UI live. Draws on modules 07, 20, 21, 22.                                                                                                                                                                       |
+| M6 — Accountable release            | Deployed staging revision (image digest + config revision) recorded; cross-tenant boundary test passes; migration-from-empty + rollback exercise evidenced per the 07b RUNBOOK; data map, model/data card, held-out retrieval evidence, and agent-policy suite. Draws on modules 07b, 20b, 21b. |
 
 **Estimated time:** 10–20 hours (open-ended)
 
@@ -1403,7 +1403,9 @@ any capstone that handles other people's data or is deployed beyond localhost.
 - [ ] App uses `get_provider()` / `getProvider()` — no hardcoded vendors.
 - [ ] Provider can be swapped by changing one env var.
 - [ ] Self-evaluation rubric filled in with honest scores (target ≥ 15/24).
-- [ ] If deployed or handling other people's data: M6 release evidence is complete.
+- [ ] If deployed or handling other people's data: M6 release evidence is
+      complete — a recorded staging revision, a cross-tenant boundary test,
+      migration-from-empty evidence, and a rollback exercise (per the 07b RUNBOOK).
 
 ---
 
@@ -1463,28 +1465,98 @@ uv run python -m tutor exam --module 04
 
 ---
 
-## Choose a route before you start
+## Choose a route
 
-The main numbered route (00–23 plus 07b/20b/21b) contains roughly **124–173
-hours** of estimated exercise time. The full course with all companions and deep
-dives contains roughly **167–236 hours**. These are exercise estimates, not a
-promise that reading, debugging, provider setup, and a real capstone will fit
-inside the same number of hours.
+There is no single "finish the course" path. Pick **one of four independently
+usable routes** by the outcome you want. Each route names its goal, the
+background it assumes, the provider/hardware it needs, the portfolio artifact you
+end with, and the route to take next. Every companion and deep dive is
+accounted for in exactly this way — it is either **scheduled inside a route** or
+**explicitly excluded with a pointer to the route that owns it**. Nothing is
+silently dropped.
 
-| Route                 | Scope                                                                         | Realistic budget                               | Outcome                                      |
-| --------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------- |
-| App builder           | 🟢 tasks on the main sequence; choose specialised modalities only when needed | 10–14 weeks intensive or 20–28 weeks part-time | A working, evaluated capstone                |
-| Core professional     | Main 00–23 sequence plus 07b, 20b, 21b                                        | 25–35 weeks at ~5 hours/week                   | An accountable service with release evidence |
-| Foundations + systems | Core professional route plus 01b–01f, 05b, 06b–06d, 13b                       | 34–48 weeks at ~5 hours/week                   | Stronger ML/agent-systems interview depth    |
+### How the time budget works
 
-Pick the route based on your goal, not guilt. The companion modules are valuable
-but not hidden prerequisites for a first RAG or agent application.
+The hours below are **not** one lump estimate. Each lesson's time splits into
+four buckets that are published and summed **separately**, because they are the
+things that surprise people:
 
-## Suggested core-professional sequence
+- **Exercise-only** — writing and running the tasks. (This equals each module's
+  "Estimated time" above.)
+- **Setup/debug** — reading the README, installing extras, and debugging.
+- **Provider/cloud** — provisioning hosted keys, cloud/deploy setup, waiting on
+  hosted jobs, or heavy local downloads _beyond_ the free Ollama baseline. On the
+  fully-local/offline path this bucket trends toward its minimum.
+- **Capstone** — open-ended integration work (module 23 only).
 
-This is a **23-week focused sequence**, not a 4–6-hour-per-week promise. It
-assumes about 6–8 hours most weeks and more time for the capstone. At a slower
-part-time pace, stretch it across the Core professional budget above.
+Every number here is generated from and CI-verified against a single source,
+[`scripts/curriculum/module_times.json`](scripts/curriculum/module_times.json),
+by [`scripts/curriculum/check_route_hours.py`](scripts/curriculum/check_route_hours.py)
+(run it with `--report` to regenerate). If a module estimate changes, the check
+fails until these totals are updated — so a learner never reconciles conflicting
+numbers. These are honest ranges for planning, not guarantees, and nothing here
+is legal or financial advice.
+
+### Route hours at a glance
+
+Totals in hours (min–max), each bucket summed separately across the route's lessons:
+
+| Route                | Lessons | Exercise-only | Setup/debug | Provider/cloud | Capstone |
+| -------------------- | ------- | ------------- | ----------- | -------------- | -------- |
+| **Core app-builder** | 27      | 114–153       | 28–52.5     | 11–22          | 10–20    |
+| **ML foundations**   | 5       | 22–32         | 6–11        | 0              | 0        |
+| **Agent systems**    | 12      | 55–74         | 14.5–25.5   | 4.75–9.5       | 10–20    |
+| **Model training**   | 5       | 20–28         | 4.5–9       | 2.25–4.5       | 0        |
+
+### Route decision guidance
+
+| Route            | Learner goal                                            | Assumed background                          | Provider / hardware                                      | Portfolio artifact                                         | Next route                          |
+| ---------------- | ------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------- |
+| Core app-builder | Ship a working, evaluated, deployable AI app end to end | Programming; no ML background needed        | One provider (free Ollama works); hosted keys optional   | A deployed RAG-agent app with eval and release evidence    | Agent systems, or Model training    |
+| ML foundations   | Build the classic-ML / DL / transformer math by hand    | Module 01; comfort with NumPy and calculus  | None — pure offline NumPy + TypeScript                   | A from-scratch ML repo (regression → autograd → GPT block) | Model training, or Agent systems    |
+| Agent systems    | Build and ship production, multi-framework agents       | Core modules 02–07 (RAG + agents + serving) | Chat provider (Ollama free path); paid keys for 17/18    | A deployed multi-agent service with an offline eval gate   | Model training, or Core app-builder |
+| Model training   | Fine-tune, align, and optimise your own models          | ML foundations route + core modules 00–04   | Hosted SFT key (13); optional GPU for local LoRA/serving | A fine-tuned + DPO-aligned model with training evidence    | Agent systems, or Core app-builder  |
+
+---
+
+## Route 1 — Core app-builder
+
+**Goal:** take one person from "I vaguely know how AI apps work" to shipping a
+working, evaluated, deployable RAG-and-agents application.
+
+**This is the existing ~20-week main sequence, labelled.** It covers all 24
+numbered modules (00–23) plus the three production deep dives already scheduled
+into it: **07b** (delivery), **20b** (governance), and **21b** (evaluation
+science) — 27 lessons in total.
+
+- **Assumed background:** general programming. No ML/maths background required.
+- **Weekly workload:** the week-by-week table below assumes ~6–8 hours most weeks
+  and more for the capstone (~20–23 calendar weeks at that pace). Its exercise
+  time alone is 114–153 h; budget the setup/debug, provider/cloud, and capstone
+  buckets on top (see the at-a-glance table). At a lighter ~5 h/week, stretch it
+  across ~30–35 weeks.
+- **Selected modalities:** the modality modules (**09** vision, **10** image
+  generation, **18** computer use, **19** audio) are pick-what-your-capstone-needs.
+  The hour budget assumes you touch all four; if you commit to one modality,
+  subtract the others' exercise-only hours (~4–6 h each).
+- **Required provider/hardware:** any one provider. The **free Ollama path**
+  completes the majority of modules; a few benefit from a hosted key (09/10
+  vision & image APIs, 13 hosted SFT, 15 reasoning models, 17/18 tool/vision).
+- **Portfolio artifact:** a deployed, tenant-aware RAG-agent app with an eval
+  harness, streaming UI, and a release runbook (module 23, Option A).
+- **Next route:** **Agent systems** to go deep on multi-agent production, or
+  **Model training** to own the model layer.
+
+**Companions this route intentionally excludes** (each is the spine of another
+route, so nothing is lost — just deferred):
+
+| Excluded companion(s)   | Why deferred here                                               | Route that owns it |
+| ----------------------- | --------------------------------------------------------------- | ------------------ |
+| 01b, 01c, 01d, 01e, 01f | Classic-ML / DL / transformer theory, not needed to ship an app | **ML foundations** |
+| 05b, 06b, 06c, 06d      | Advanced RAG + agent depth (LangGraph, frameworks, memory)      | **Agent systems**  |
+| 13b                     | Post-training & alignment (RLHF/DPO)                            | **Model training** |
+
+### Core app-builder — week-by-week
 
 | Week | Module(s)                                      | Notes                                                                          |
 | ---- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -1512,35 +1584,112 @@ part-time pace, stretch it across the Core professional budget above.
 | 22   | 21b Evaluation Science, 22 Product UX          | Add held-out evidence and trajectory tests; surface trustworthy UX.            |
 | 23   | 23 Capstone                                    | Build M1–M3 first, then M4–M6; the full week is a minimum.                     |
 
+**Pacing variants.** _Fast / app-only:_ do 🟢 tasks only (skip the 🔴 from-scratch
+tasks in 01, 04, 06, 08, 10, 13, 14, 20), treat 13's local LoRA and 19's mic mode
+as optional, and compress to ~10–14 intensive weeks — this trims exercise-only
+hours toward the low end. _Deep / from-scratch:_ do every 🔴 task, add the "Going
+deeper" references, write tests for every implementation, and take the exercise
+budget toward its high end over ~30+ weeks.
+
 ---
 
-## Learning-path variants
+## Route 2 — ML foundations
 
-### Fast / app-only path (10–14 weeks)
+**Goal:** build the classic-ML, deep-learning, and transformer machinery by hand
+— the theory AI/ML interviews probe and the course's LLM modules otherwise
+assume. Five pure-from-scratch companions (**01b, 01c, 01d, 01e, 01f**).
 
-Focus on 🟢 tasks only. Skip or skim 🔴 tasks.
+- **Assumed background:** Module 01 (the toy tokenizer/attention head), comfort
+  with NumPy, and first-year calculus/linear algebra.
+- **Required provider/hardware:** **none.** Every task is offline, seeded, and
+  deterministic — pure NumPy (Python) and plain TypeScript, no provider, no
+  network, no ML framework. This is why the provider/cloud and capstone buckets
+  are 0.
+- **Time budget:** 22–32 h exercise-only plus 6–11 h reading/debug (see the
+  at-a-glance table).
+- **Prerequisite order** (each companion states its own prereqs):
 
-| Week  | Modules                                        |
-| ----- | ---------------------------------------------- |
-| 1     | 00, 01 (🟢 only: BPE read-only, cosine worked) |
-| 2     | 02, 03                                         |
-| 3     | 04 (Task 2 Chroma; skip Task 1 scratch), 05    |
-| 4     | 06 (Tasks 2, 4; skip Task 1 scratch)           |
-| 5     | 07, 08 (🟢 only)                               |
-| 6     | 09, 10, 11                                     |
-| 7     | 12, 13 (Tasks 1–2 only), 14 (Tasks 1, 4)       |
-| 8     | 15–17 (🟢 tasks only), 18, 19 (🟢 tasks)       |
-| 9     | 20–22 (🟢 tasks only)                          |
-| 10–14 | 23 Capstone (Option A, M1–M3 only)             |
+  1. **01b** Classic ML Foundations — regression, bias–variance, ridge, CV,
+     ROC/AUC, k-means. _(needs 01)_
+  2. **01e** Trees & Ensembles — CART, random forests, gradient boosting.
+     _(needs 01b)_
+  3. **01f** Probability, Statistics & PCA — Bayes/naive Bayes, MLE↔cross-entropy,
+     A/B tests, PCA. _(needs 01; 01b helps)_
+  4. **01c** Deep Learning Essentials — autograd/backprop, optimizers, init,
+     regularisation, RNN+BPTT. _(needs 01; 01b helps)_
+  5. **01d** Transformer Architecture — multi-head attention + masking, positional
+     encoding, pre-LN blocks, KV cache, BERT-vs-GPT. _(needs 01; 01c helps)_
 
-Skip 🔴 tasks in modules 01, 08, 10, 13, 14, 20. Treat modules 13 (local LoRA) and 19 (mic mode) as optional.
+  01e and 01f are independent of the 01c→01d deep-learning line; do them right
+  after 01b or interleave. **Practice checkpoints:** each companion's "Done when"
+  checklist is the checkpoint — clear it (grad-checks, monotone losses,
+  bias²+variance reconciliation, cached==naive logits) before moving on.
 
-### Deep / from-scratch path (34–48 weeks)
+- **Portfolio artifact:** a from-scratch ML repository — linear/logistic
+  regression, an autograd engine training an MLP, trees + boosting, PCA, and a
+  GPT-style decoder block with a KV cache — each verified against a numerical
+  check.
+- **Next route:** **Model training** (which assumes this maths), or **Agent
+  systems** if you want to build rather than train.
 
-Do every 🔴 task. Add the "Going deeper" references after each module. Write
-tests for every implementation. Run the eval harnesses across two providers.
-Build the capstone to ≥ 20/24 on the rubric with a CI eval gate. Add 07b, 20b,
-and 21b before any public deployment or use of other people's data.
+---
+
+## Route 3 — Agent systems
+
+**Goal:** go from a from-scratch ReAct loop to a production, multi-framework,
+memory-aware agent service that ships behind a release gate. Twelve lessons:
+**05b** (advanced RAG), **06 / 06b / 06c / 06d** (agents, LangGraph, frameworks,
+memory), **16** (context engineering), **17** (MCP), **18** (computer use),
+**21 / 21b** (evaluation & agent reliability), **07b** (delivery), and **23**
+(capstone).
+
+- **Assumed background:** the Core app-builder route through module 07 — you need
+  **02–05** (integration + RAG) before 06, and **07** (eval harness,
+  observability, serving) before 07b/21. Those live in Core and are the assumed
+  prerequisites, not re-counted here.
+- **Dependencies within the route:** 05b needs 05; 06b/06c/06d each need 06;
+  17 needs 02+06; 18 needs 06+09; 21 needs 05–07; 21b needs 05+06+21; 07b needs
+  07; 23 needs everything. Suggested order: **06 → 06b → 06c → 06d → 05b → 16 →
+  17 → 18 → 21 → 21b → 07b → 23**.
+- **Required provider/hardware:** a chat provider — the **free Ollama path** runs
+  06's from-scratch loop and the `--stub` offline tasks in 06c/06d. Native tool
+  calling (06 Task 2), MCP (17), and computer-use vision (18) want an
+  OpenAI/Anthropic key; 07b/23 add a deploy target.
+- **Time budget:** 55–74 h exercise-only, 14.5–25.5 h setup/debug, 4.75–9.5 h
+  provider/cloud, plus the 10–20 h capstone.
+- **Portfolio artifact:** a deployed multi-agent service (supervisor + workers +
+  tools over MCP, bounded memory, human-in-the-loop approval) with a deterministic
+  offline trajectory/safety suite as its release gate.
+- **Next route:** **Model training** to own the model layer, or back to **Core
+  app-builder** to fill in any skipped modality/production modules.
+
+---
+
+## Route 4 — Model training
+
+**Goal:** own the model layer — decide when to train, run a hosted fine-tune,
+implement LoRA and DPO from scratch, and optimise local inference. Five lessons:
+**08** (classification), **13** (fine-tuning), **13b** (post-training &
+alignment), **14** (local inference), **15** (reasoning & test-time compute).
+
+- **Assumed background:** the **ML foundations** route (01b–01f) is the
+  prerequisite — 13b's reward model, RLHF, and DPO build directly on that maths —
+  plus core modules **00–04** for provider access and embeddings. These are cited
+  prerequisites, not re-counted in this route's hours.
+- **Required provider/hardware:**
+  - **Hosted:** an `OPENAI_API_KEY` for the hosted SFT job (13 Task 2) and o-series
+    reasoning (15); this is the reason the provider/cloud bucket is nonzero.
+  - **Local (optional, heavy):** a GPU for LoRA/QLoRA (13 Task 3, `--extra
+finetune`) and llama.cpp/quantised serving (14). The from-scratch tasks
+    (13 LoRA math, 13b RLHF/DPO, 14 KV cache) run offline on CPU with no GPU.
+- **Time budget:** 20–28 h exercise-only, 4.5–9 h setup/debug, 2.25–4.5 h
+  provider/cloud, no capstone.
+- **Portfolio artifact:** a fine-tuned model compared against its base with
+  train/val curves, a from-scratch LoRA equivalence check, a quantization
+  size/speed/quality benchmark, and a DPO-aligned toy policy with a reward-hacking
+  demo.
+- **Next route:** **Agent systems** to put a trained model to work, or **Core
+  app-builder** to ship it in a product.
 
 ---
 

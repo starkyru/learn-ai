@@ -1,0 +1,14 @@
+{
+  "23-capstone": {
+    "rationale": "Open-ended capstone — no shipped exercises. The learner builds the project in their chosen language; py/ and ts/ are theirs to fill. Language-agnostic by design.",
+    "owner": "curriculum-maintainer",
+    "target_milestone": "n/a — intentional; the capstone is language-neutral, not a parity gap",
+    "equivalent_path": "The M1–M6 milestone plan is language-neutral and draws on modules that ship both Python and TypeScript, so either language is a first-class path to the same outcomes."
+  },
+  "10-image-generation": {
+    "rationale": "Full Python+TypeScript parity at the module level; Task 4 intentionally diverges by design — Python takes the 🔴 maths path (toy diffusion sampler), TypeScript takes the 🔴 responsibility path (safety/attribution/evaluation). Documented in the module README.",
+    "owner": "curriculum-maintainer",
+    "target_milestone": "delivered — Tasks 1–3 reach parity (deterministic offline stub for CI); the Task 4 split is permanent, not a backlog item",
+    "equivalent_path": "Tasks 1–3 are equivalent in both languages via the IMAGE_STUB offline path; Task 4's two 🔴 variants are complementary depth paths that meet the same learning objective from different angles."
+  }
+}

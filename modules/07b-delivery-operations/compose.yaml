@@ -1,0 +1,73 @@
+# One-command local start for the Module 07b reference services.
+#
+#   docker compose -f modules/07b-delivery-operations/compose.yaml \
+#     --env-file modules/07b-delivery-operations/.env up --build
+#
+# Configuration comes ONLY from the environment / --env-file. Copy .env.example
+# to .env and edit it; .env is gitignored and is never copied into the images.
+# Both services build from the repository root context because each depends on a
+# shared workspace package (llm_core / @learn-ai/llm-core) that lives outside
+# this module. Each datastore lives on a named volume; `DB_PATH` is pinned to
+# that volume here so it wins over any value in .env, keeping /readyz green.
+# Each image applies the numbered SQL migrations at startup (readyz stays 503
+# until they succeed). The TS service uses Node's built-in node:sqlite, so its
+# image is pinned to Node 24 (see ts/Dockerfile).
+services:
+  service-py:
+    build:
+      context: ../..
+      dockerfile: modules/07b-delivery-operations/py/Dockerfile
+    env_file:
+      - .env
+    environment:
+      SERVICE_ENV: ${SERVICE_ENV:-development}
+      DB_PATH: /app/data/07b-service.sqlite
+    volumes:
+      - py-data:/app/data
+    ports:
+      - "8000:8000"
+    healthcheck:
+      # Readiness (not just liveness): proves the datastore volume is writable.
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/readyz').status==200 else 1)",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  service-ts:
+    build:
+      context: ../..
+      dockerfile: modules/07b-delivery-operations/ts/Dockerfile
+    env_file:
+      - .env
+    environment:
+      SERVICE_ENV: ${SERVICE_ENV:-development}
+      PORT: "8001"
+      DB_PATH: /repo/data/07b-service.sqlite
+    volumes:
+      - ts-data:/repo/data
+    ports:
+      - "8001:8001"
+    healthcheck:
+      # Readiness (not just liveness): proves the datastore volume is writable.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:8001/readyz',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  py-data:
+  ts-data:

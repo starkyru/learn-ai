@@ -60,60 +60,54 @@ def create_tables(conn: sqlite3.Connection) -> None:
 
 def insert_data(conn: sqlite3.Connection) -> None:
     customers = [
-        (1, "Alice Chen",    "alice@example.com",   "West",  "2023-01-15"),
-        (2, "Bob Martinez",  "bob@example.com",     "South", "2023-02-20"),
-        (3, "Carol Smith",   "carol@example.com",   "East",  "2023-03-05"),
-        (4, "David Kim",     "david@example.com",   "North", "2023-04-10"),
-        (5, "Eva Brown",     "eva@example.com",     "West",  "2023-05-22"),
-        (6, "Frank Torres",  "frank@example.com",   "South", "2023-06-18"),
-        (7, "Grace Lee",     "grace@example.com",   "East",  "2023-07-30"),
-        (8, "Henry Johnson", "henry@example.com",   "North", "2023-08-14"),
+        (1, "Alice Chen", "alice@example.com", "West", "2023-01-15"),
+        (2, "Bob Martinez", "bob@example.com", "South", "2023-02-20"),
+        (3, "Carol Smith", "carol@example.com", "East", "2023-03-05"),
+        (4, "David Kim", "david@example.com", "North", "2023-04-10"),
+        (5, "Eva Brown", "eva@example.com", "West", "2023-05-22"),
+        (6, "Frank Torres", "frank@example.com", "South", "2023-06-18"),
+        (7, "Grace Lee", "grace@example.com", "East", "2023-07-30"),
+        (8, "Henry Johnson", "henry@example.com", "North", "2023-08-14"),
     ]
-    conn.executemany(
-        "INSERT INTO customers VALUES (?,?,?,?,?)", customers
-    )
+    conn.executemany("INSERT INTO customers VALUES (?,?,?,?,?)", customers)
 
     products = [
-        (1,  "Laptop Pro 15",       "Electronics", 1299.00),
-        (2,  "Wireless Headphones", "Electronics",  199.00),
-        (3,  "USB-C Hub",           "Electronics",   49.00),
-        (4,  "Python Cookbook",     "Books",          39.00),
-        (5,  "Machine Learning 101","Books",          54.00),
-        (6,  "Running Shoes",       "Clothing",      119.00),
-        (7,  "Winter Jacket",       "Clothing",      189.00),
-        (8,  "Mechanical Keyboard", "Electronics",  149.00),
-        (9,  "Design Patterns",     "Books",          44.00),
-        (10, "Yoga Mat",            "Clothing",       35.00),
+        (1, "Laptop Pro 15", "Electronics", 1299.00),
+        (2, "Wireless Headphones", "Electronics", 199.00),
+        (3, "USB-C Hub", "Electronics", 49.00),
+        (4, "Python Cookbook", "Books", 39.00),
+        (5, "Machine Learning 101", "Books", 54.00),
+        (6, "Running Shoes", "Clothing", 119.00),
+        (7, "Winter Jacket", "Clothing", 189.00),
+        (8, "Mechanical Keyboard", "Electronics", 149.00),
+        (9, "Design Patterns", "Books", 44.00),
+        (10, "Yoga Mat", "Clothing", 35.00),
     ]
-    conn.executemany(
-        "INSERT INTO products VALUES (?,?,?,?)", products
-    )
+    conn.executemany("INSERT INTO products VALUES (?,?,?,?)", products)
 
     orders = [
-        (1,  1, 1,  1, "2024-01-05", "delivered"),
-        (2,  2, 3,  2, "2024-01-12", "delivered"),
-        (3,  3, 4,  1, "2024-01-18", "delivered"),
-        (4,  4, 2,  1, "2024-02-01", "delivered"),
-        (5,  1, 8,  1, "2024-02-14", "shipped"),
-        (6,  5, 6,  1, "2024-02-20", "delivered"),
-        (7,  6, 5,  1, "2024-03-03", "delivered"),
-        (8,  7, 7,  1, "2024-03-15", "shipped"),
-        (9,  3, 9,  2, "2024-03-22", "delivered"),
+        (1, 1, 1, 1, "2024-01-05", "delivered"),
+        (2, 2, 3, 2, "2024-01-12", "delivered"),
+        (3, 3, 4, 1, "2024-01-18", "delivered"),
+        (4, 4, 2, 1, "2024-02-01", "delivered"),
+        (5, 1, 8, 1, "2024-02-14", "shipped"),
+        (6, 5, 6, 1, "2024-02-20", "delivered"),
+        (7, 6, 5, 1, "2024-03-03", "delivered"),
+        (8, 7, 7, 1, "2024-03-15", "shipped"),
+        (9, 3, 9, 2, "2024-03-22", "delivered"),
         (10, 8, 10, 3, "2024-04-01", "pending"),
-        (11, 2, 1,  1, "2024-04-10", "shipped"),
-        (12, 4, 4,  1, "2024-04-20", "cancelled"),
-        (13, 5, 2,  2, "2024-05-05", "delivered"),
-        (14, 6, 8,  1, "2024-05-18", "delivered"),
-        (15, 1, 5,  1, "2024-06-01", "pending"),
-        (16, 7, 3,  4, "2024-06-10", "delivered"),
-        (17, 8, 6,  1, "2024-06-22", "shipped"),
-        (18, 3, 1,  1, "2024-07-04", "pending"),
-        (19, 2, 7,  1, "2024-07-15", "delivered"),
+        (11, 2, 1, 1, "2024-04-10", "shipped"),
+        (12, 4, 4, 1, "2024-04-20", "cancelled"),
+        (13, 5, 2, 2, "2024-05-05", "delivered"),
+        (14, 6, 8, 1, "2024-05-18", "delivered"),
+        (15, 1, 5, 1, "2024-06-01", "pending"),
+        (16, 7, 3, 4, "2024-06-10", "delivered"),
+        (17, 8, 6, 1, "2024-06-22", "shipped"),
+        (18, 3, 1, 1, "2024-07-04", "pending"),
+        (19, 2, 7, 1, "2024-07-15", "delivered"),
         (20, 1, 10, 2, "2024-07-25", "delivered"),
     ]
-    conn.executemany(
-        "INSERT INTO orders VALUES (?,?,?,?,?,?)", orders
-    )
+    conn.executemany("INSERT INTO orders VALUES (?,?,?,?,?,?)", orders)
 
 
 def main() -> None:
@@ -126,12 +120,15 @@ def main() -> None:
     finally:
         conn.close()
 
-    # Verify
+    # Verify — assert (don't just print) so a regression that fails to create the
+    # schema or rows fails loudly, including under the offline smoke runner.
+    assert DB_PATH.is_file(), f"database file was not created: {DB_PATH}"
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     for table in ("customers", "products", "orders"):
         (count,) = cur.execute(f"SELECT count(*) FROM {table}").fetchone()
         print(f"  {table}: {count} rows")
+        assert count > 0, f"table {table!r} was seeded with no rows"
     conn.close()
     print(f"\nDatabase written to: {DB_PATH}")
 

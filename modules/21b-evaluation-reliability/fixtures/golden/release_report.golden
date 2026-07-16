@@ -1,0 +1,76 @@
+{
+  "agreement": {
+    "cohens_kappa": 0.4666666666666667,
+    "disagreement_queue": [
+      {
+        "case_id": "hold-07",
+        "human": 1,
+        "judge": 0
+      },
+      {
+        "case_id": "hold-09",
+        "human": 0,
+        "judge": 1
+      }
+    ],
+    "judge": {
+      "model": "fake-judge-v1",
+      "prompt_version": "answer-judge-prompt-v1"
+    },
+    "num_labeled": 8,
+    "percent_agreement": 0.75,
+    "variant": "variant_a"
+  },
+  "answer_floors": {
+    "candidate": "variant_b",
+    "citation_validity": {
+      "floor": 0.9,
+      "observed": 1,
+      "passed": true
+    },
+    "completeness": {
+      "floor": 0.9,
+      "observed": 1,
+      "passed": true
+    },
+    "groundedness": {
+      "floor": 0.9,
+      "observed": 1,
+      "passed": true
+    },
+    "task_success": {
+      "floor": 0.9,
+      "observed": 1,
+      "passed": true
+    },
+    "variant": "variant_b"
+  },
+  "comparison": {
+    "alpha": 0.05,
+    "baseline": "variant_a",
+    "bootstrap_iterations": 2000,
+    "bootstrap_seed": 12345,
+    "candidate": "variant_b",
+    "ci_lower": 0,
+    "ci_upper": 0.2727272727272727,
+    "mean_difference": 0.125,
+    "num_cases": 22,
+    "practical_threshold": 0.1,
+    "require_improvement": false,
+    "verdict": "inconclusive",
+    "win_tie_loss": {
+      "losses": 0,
+      "ties": 19,
+      "wins": 3
+    }
+  },
+  "retrieval_floor": {
+    "floor": 0.9,
+    "k": 5,
+    "method": "reranked",
+    "metric": "ndcg_at_k",
+    "observed": 0.9504027121489904,
+    "passed": true,
+    "split": "heldout"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "benchmark": "aurora-retrieval-benchmark",
+  "manifest_version": "1.0.0",
+  "corpus_version": "aurora-docs-v1",
+  "chunker": {
+    "name": "manual",
+    "version": "1.0.0",
+    "note": "Chunks are hand-authored and fixed; there is no automatic chunker. This is honest for a versioned gold-evidence benchmark: the unit of evaluation is a whole documentation chunk."
+  },
+  "embedder": {
+    "name": "char-ngram-hash",
+    "version": "1.0.0",
+    "dim": 256,
+    "ngram": 3,
+    "note": "Deterministic, offline, seedless stand-in for a real embedding model: signed feature hashing over padded character trigrams, L2-normalized. Reproducible across languages (identical FNV-1a hashing over UTF-8 bytes). It is NOT a semantic model; it stands in so the benchmark can run as a release gate with no provider or network."
+  },
+  "index": {
+    "name": "in-memory-flat",
+    "version": "1.0.0",
+    "note": "Exhaustive cosine scan over every chunk (no approximate nearest neighbour), so ranking is exact and deterministic."
+  },
+  "bm25": {
+    "name": "okapi-bm25-nonneg-idf",
+    "version": "1.0.0",
+    "k1": 1.5,
+    "b": 0.75,
+    "note": "Okapi BM25 with the Lucene-style non-negative idf = ln(1 + (N - df + 0.5) / (df + 0.5)). Implemented from scratch identically in Python and TypeScript."
+  },
+  "hybrid": {
+    "name": "reciprocal-rank-fusion",
+    "version": "1.0.0",
+    "rrf_k": 60,
+    "note": "Fuses the dense and BM25 rankings with RRF score = sum over methods of 1 / (rrf_k + rank), rank 1-based. Rank-based fusion needs no score normalization."
+  },
+  "reranker": {
+    "name": "lexical-overlap",
+    "version": "1.0.0",
+    "candidates": 12,
+    "phrase_weight": 0.15,
+    "note": "Deterministic cross-encoder stand-in. Reorders the top candidates from the hybrid list by query-term coverage plus an adjacent-bigram phrase bonus; the remaining hybrid order is preserved below the candidate window."
+  },
+  "default_k": 5,
+  "rubric": "graded-relevance-v1"
+}

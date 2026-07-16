@@ -1,0 +1,143 @@
+# Staged-rollout DEPLOY template for the Module 07b reference service (Task 4).
+#
+# OPT-IN and MANUAL ONLY: the sole trigger is `workflow_dispatch`, so this never
+# runs on a push or PR — the default CI path (ci.yml) needs NO cloud account,
+# deploy target, or provider secret. The cloud-specific commands below are
+# documented PLACEHOLDERS (`echo "TODO ..."`): replace the deploy, smoke,
+# rollout, metrics, and rollback steps with your platform's real commands (Cloud
+# Run, Fly.io, Render, ECS, Kubernetes, …). The learning objective is the release
+# SEQUENCE and its gates, not a specific vendor.
+#
+# Secrets/URLs come from a PROTECTED GitHub Environment (`staging` / `production`)
+# that only the maintainer configures; the jobs that touch a target declare that
+# `environment:` so its protection rules (required reviewers, wait timer) apply,
+# and a fork/PR can never reach them. For real cloud auth prefer OIDC
+# (`permissions: id-token: write` on the deploy jobs) over long-lived secrets.
+#
+# Rollback triggers, canary thresholds, owners, and the exact recovery commands
+# live in modules/07b-delivery-operations/RUNBOOK.md — this workflow wires them up.
+
+name: Deploy (07b reference service) — staged rollout
+
+on:
+  # Manual only. No `push:` / `pull_request:` — a deploy is a deliberate action,
+  # and this keeps the default CI path free of cloud/secret requirements.
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [staging, production]
+        default: staging
+      image_tag:
+        description: Image tag / git SHA to deploy
+        type: string
+        required: true
+      canary_percent:
+        description: Initial canary traffic percentage (production only)
+        type: string
+        default: "10"
+
+permissions:
+  contents: read
+
+concurrency:
+  # One rollout per environment at a time; do NOT cancel an in-flight deploy.
+  group: deploy-${{ github.workflow }}-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  # 1) Pre-deploy gate — the SAME offline, deterministic checks CI enforces, run
+  #    again here so a release can never ship on a red gate. No provider secret.
+  gate:
+    name: Pre-deploy eval gate (offline)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+      - run: uv sync --extra production --extra vectors
+      - name: Service tests (auth, tenant isolation, migration, reliability, jobs)
+        run: uv run pytest modules/07b-delivery-operations/py
+      - name: Release eval gate (21b, offline — a failing eval blocks the deploy)
+        env:
+          OFFLINE_SMOKE: "1"
+          CI: "1"
+        run: uv run python modules/21b-evaluation-reliability/py/gate.py
+
+  # 2) Build + push the image, then deploy it to STAGING and prove it live with an
+  #    authenticated smoke query BEFORE any production traffic shifts.
+  deploy-staging:
+    name: Deploy to staging + authenticated smoke
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build & push image
+        run: |
+          echo "TODO docker build -t $REGISTRY/m07b:${{ inputs.image_tag }} modules/07b-delivery-operations/py"
+          echo "TODO docker push  $REGISTRY/m07b:${{ inputs.image_tag }}"
+      - name: Apply migrations against the staging database
+        # Migrations run at service startup too, but running them as a discrete,
+        # observable step keeps migration EVIDENCE for the release record.
+        run: |
+          echo "TODO run the migrate step (apply_pending) against the staging DB"
+      - name: Deploy revision to staging
+        run: |
+          echo "TODO deploy image ${{ inputs.image_tag }} to staging (Cloud Run/Fly/ECS/K8s)"
+      - name: Authenticated smoke test (readiness + one /ask)
+        # Prove the DEPLOYED revision + model config + auth path actually work.
+        env:
+          STAGING_URL: ${{ vars.STAGING_URL }}
+          SMOKE_TOKEN: ${{ secrets.SMOKE_TOKEN }}
+        run: |
+          echo "TODO curl -fsS \"$STAGING_URL/readyz\"   # expect status ready"
+          echo "TODO curl -fsS -XPOST \"$STAGING_URL/ask\" \
+            -H \"authorization: Bearer $SMOKE_TOKEN\" -H 'content-type: application/json' \
+            -d '{\"question\":\"release smoke check\"}'"
+
+  # 3) Release a SMALL % of production traffic to the new revision, then COMPARE
+  #    metrics against the RUNBOOK thresholds; a tripped threshold fails the job
+  #    (→ triggers rollback below). Skipped for a staging-only dispatch.
+  canary:
+    name: Canary rollout + metrics comparison
+    needs: deploy-staging
+    if: ${{ inputs.environment == 'production' }}
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shift ${{ inputs.canary_percent }}% traffic to the new revision
+        run: |
+          echo "TODO set traffic split canary=${{ inputs.canary_percent }}% -> ${{ inputs.image_tag }}"
+      - name: Compare canary metrics to RUNBOOK thresholds
+        # See RUNBOOK.md "Canary thresholds": error rate, p95 latency, 5xx, /readyz.
+        run: |
+          echo "TODO query metrics over the bake window; FAIL if any threshold trips"
+      - name: Promote to 100%
+        run: |
+          echo "TODO promote ${{ inputs.image_tag }} to 100% traffic"
+
+  # 4) Rollback path — runs automatically when the staging deploy OR the canary
+  #    fails. The EXACT command lives in RUNBOOK.md; wiring it here makes rollback
+  #    one click, not improvised under pressure.
+  rollback:
+    name: Rollback on failed rollout
+    needs: [deploy-staging, canary]
+    if: ${{ !cancelled() && (needs.deploy-staging.result == 'failure' || needs.canary.result == 'failure') }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Roll back to the last-good revision
+        # RUNBOOK.md "Rollback": revision rollback + (if a migration shipped) its
+        # paired down-migration via m07b_service.migrations.rollback / migrations.ts.
+        run: |
+          echo "TODO roll back traffic/revision to the previous good image"
+          echo "TODO if this release shipped a migration, run its .down.sql (rollback)"

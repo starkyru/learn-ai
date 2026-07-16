@@ -1,0 +1,15 @@
+# Keep secrets and local state out of the build context / image.
+# (Modern Docker/BuildKit reads this file next to the Dockerfile as
+#  Dockerfile.dockerignore when a repo-root build context is used.)
+.env
+.env.*
+*.env
+node_modules/
+dist/
+*.tsbuildinfo
+*.sqlite
+*.sqlite3
+data/
+.git/
+.DS_Store
+*.log

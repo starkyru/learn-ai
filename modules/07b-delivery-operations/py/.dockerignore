@@ -1,0 +1,18 @@
+# Keep secrets and local state out of the build context / image.
+# (Modern Docker/BuildKit reads this file next to the Dockerfile as
+#  Dockerfile.dockerignore when a repo-root build context is used.)
+.env
+.env.*
+*.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.sqlite
+*.sqlite3
+data/
+node_modules/
+.git/
+.DS_Store

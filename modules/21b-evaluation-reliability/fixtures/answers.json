@@ -1,0 +1,495 @@
+{
+  "corpus_version": "aurora-docs-v1",
+  "rubric": "answer-eval-v1",
+  "note": "Two synthetic answer variants over the same held-out cases. variant_b is clean; variant_a injects a fabricated (off-evidence) claim (hold-04), a wrong-passage citation (hold-07), and an off-topic non-gold citation (hold-10). Used for claim-level answer eval (Task 2) and the variant comparison (Task 3).",
+  "cases": [
+    "hold-01",
+    "hold-02",
+    "hold-03",
+    "hold-04",
+    "hold-05",
+    "hold-06",
+    "hold-07",
+    "hold-08",
+    "hold-09",
+    "hold-10",
+    "hold-11",
+    "hold-12",
+    "hold-13",
+    "hold-14",
+    "hold-15",
+    "hold-16",
+    "hold-17",
+    "hold-18",
+    "hold-19",
+    "hold-20",
+    "hold-21",
+    "hold-22"
+  ],
+  "variants": {
+    "variant_b": {
+      "hold-01": {
+        "answer_text": "Create an API key from the Aurora dashboard under Settings Keys.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Create an API key from the Aurora dashboard under Settings Keys",
+            "citation": "auth-api-keys"
+          }
+        ]
+      },
+      "hold-02": {
+        "answer_text": "Rotate a key by generating a new one and revoking the old key.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Rotate a key by generating a new one and revoking the old key",
+            "citation": "auth-key-rotation"
+          }
+        ]
+      },
+      "hold-03": {
+        "answer_text": "Exchange your client id and client secret at the token endpoint. OAuth access tokens expire 60 minutes after they are issued.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Exchange your client id and client secret at the token endpoint",
+            "citation": "auth-oauth"
+          },
+          {
+            "id": "c2",
+            "text": "OAuth access tokens expire 60 minutes after they are issued",
+            "citation": "auth-token-expiry"
+          }
+        ]
+      },
+      "hold-04": {
+        "answer_text": "OAuth access tokens expire 60 minutes after they are issued.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "OAuth access tokens expire 60 minutes after they are issued",
+            "citation": "auth-token-expiry"
+          }
+        ]
+      },
+      "hold-05": {
+        "answer_text": "A request that needs a scope the key lacks is rejected with a 403 error. Errors return a JSON body with a code and a request id.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "A request that needs a scope the key lacks is rejected with a 403 error",
+            "citation": "auth-scopes"
+          },
+          {
+            "id": "c2",
+            "text": "Errors return a JSON body with a code and a request id",
+            "citation": "api-errors"
+          }
+        ]
+      },
+      "hold-06": {
+        "answer_text": "The rate limiter uses a token bucket so short bursts above your steady rate are allowed.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "The rate limiter uses a token bucket so short bursts above your steady rate are allowed",
+            "citation": "ratelimit-burst"
+          }
+        ]
+      },
+      "hold-07": {
+        "answer_text": "The response includes a Retry-After header telling you how many seconds to wait before retrying.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "The response includes a Retry-After header telling you how many seconds to wait before retrying",
+            "citation": "ratelimit-429"
+          }
+        ]
+      },
+      "hold-08": {
+        "answer_text": "Responses carry X-RateLimit-Remaining so clients can throttle themselves.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Responses carry X-RateLimit-Remaining so clients can throttle themselves",
+            "citation": "ratelimit-headers"
+          }
+        ]
+      },
+      "hold-09": {
+        "answer_text": "Enterprise is custom priced.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Enterprise is custom priced",
+            "citation": "billing-plans"
+          }
+        ]
+      },
+      "hold-10": {
+        "answer_text": "4xx client errors are not billed but 2xx and 3xx responses count toward usage.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "4xx client errors are not billed but 2xx and 3xx responses count toward usage",
+            "citation": "billing-usage-metering"
+          }
+        ]
+      },
+      "hold-11": {
+        "answer_text": "You can set a spending cap to block requests once a limit is reached.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "You can set a spending cap to block requests once a limit is reached",
+            "citation": "billing-overage"
+          }
+        ]
+      },
+      "hold-12": {
+        "answer_text": "Download past invoices as PDF from the Billing section of the dashboard.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Download past invoices as PDF from the Billing section of the dashboard",
+            "citation": "billing-invoices"
+          }
+        ]
+      },
+      "hold-13": {
+        "answer_text": "Choose a data residency region such as eu-west when you create a project.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Choose a data residency region such as eu-west when you create a project",
+            "citation": "storage-regions"
+          }
+        ]
+      },
+      "hold-14": {
+        "answer_text": "Encryption keys are managed by Aurora and rotated automatically.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Encryption keys are managed by Aurora and rotated automatically",
+            "citation": "storage-encryption"
+          }
+        ]
+      },
+      "hold-15": {
+        "answer_text": "Aurora takes an automated backup of your data every 24 hours.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Aurora takes an automated backup of your data every 24 hours",
+            "citation": "storage-backups"
+          }
+        ]
+      },
+      "hold-16": {
+        "answer_text": "You can restore an object from the recoverable trash within 7 days.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "You can restore an object from the recoverable trash within 7 days",
+            "citation": "storage-retention"
+          }
+        ]
+      },
+      "hold-17": {
+        "answer_text": "Each webhook delivery is signed with an HMAC-SHA256 signature in the Aurora-Signature header.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Each webhook delivery is signed with an HMAC-SHA256 signature in the Aurora-Signature header",
+            "citation": "webhooks-signing"
+          }
+        ]
+      },
+      "hold-18": {
+        "answer_text": "Aurora retries the webhook with exponential backoff for up to 24 hours.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Aurora retries the webhook with exponential backoff for up to 24 hours",
+            "citation": "webhooks-retries"
+          }
+        ]
+      },
+      "hold-19": {
+        "answer_text": "If uptime falls below the SLA you receive service credits proportional to the downtime.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "If uptime falls below the SLA you receive service credits proportional to the downtime",
+            "citation": "sla-uptime"
+          }
+        ]
+      },
+      "hold-20": {
+        "answer_text": "Pro gets email support within one business day.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Pro gets email support within one business day",
+            "citation": "sla-support"
+          }
+        ]
+      },
+      "hold-21": {
+        "answer_text": "Follow the next_cursor field to fetch the following page until it is null.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Follow the next_cursor field to fetch the following page until it is null",
+            "citation": "api-pagination"
+          }
+        ]
+      },
+      "hold-22": {
+        "answer_text": "Aurora stores the first response for an Idempotency-Key for 24 hours.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Aurora stores the first response for an Idempotency-Key for 24 hours",
+            "citation": "api-idempotency"
+          }
+        ]
+      }
+    },
+    "variant_a": {
+      "hold-01": {
+        "answer_text": "Create an API key from the Aurora dashboard under Settings Keys.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Create an API key from the Aurora dashboard under Settings Keys",
+            "citation": "auth-api-keys"
+          }
+        ]
+      },
+      "hold-02": {
+        "answer_text": "Rotate a key by generating a new one and revoking the old key.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Rotate a key by generating a new one and revoking the old key",
+            "citation": "auth-key-rotation"
+          }
+        ]
+      },
+      "hold-03": {
+        "answer_text": "Exchange your client id and client secret at the token endpoint. OAuth access tokens expire 60 minutes after they are issued.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Exchange your client id and client secret at the token endpoint",
+            "citation": "auth-oauth"
+          },
+          {
+            "id": "c2",
+            "text": "OAuth access tokens expire 60 minutes after they are issued",
+            "citation": "auth-token-expiry"
+          }
+        ]
+      },
+      "hold-04": {
+        "answer_text": "Aurora stores your login token inside a browser cookie for single sign on.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Aurora stores your login token inside a browser cookie for single sign on",
+            "citation": "auth-token-expiry"
+          }
+        ]
+      },
+      "hold-05": {
+        "answer_text": "A request that needs a scope the key lacks is rejected with a 403 error. Errors return a JSON body with a code and a request id.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "A request that needs a scope the key lacks is rejected with a 403 error",
+            "citation": "auth-scopes"
+          },
+          {
+            "id": "c2",
+            "text": "Errors return a JSON body with a code and a request id",
+            "citation": "api-errors"
+          }
+        ]
+      },
+      "hold-06": {
+        "answer_text": "The rate limiter uses a token bucket so short bursts above your steady rate are allowed.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "The rate limiter uses a token bucket so short bursts above your steady rate are allowed",
+            "citation": "ratelimit-burst"
+          }
+        ]
+      },
+      "hold-07": {
+        "answer_text": "The response includes a Retry-After header telling you how many seconds to wait before retrying.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "The response includes a Retry-After header telling you how many seconds to wait before retrying",
+            "citation": "ratelimit-headers"
+          }
+        ]
+      },
+      "hold-08": {
+        "answer_text": "Responses carry X-RateLimit-Remaining so clients can throttle themselves.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Responses carry X-RateLimit-Remaining so clients can throttle themselves",
+            "citation": "ratelimit-headers"
+          }
+        ]
+      },
+      "hold-09": {
+        "answer_text": "Enterprise is custom priced.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Enterprise is custom priced",
+            "citation": "billing-plans"
+          }
+        ]
+      },
+      "hold-10": {
+        "answer_text": "Enterprise is custom priced.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Enterprise is custom priced",
+            "citation": "billing-plans"
+          }
+        ]
+      },
+      "hold-11": {
+        "answer_text": "You can set a spending cap to block requests once a limit is reached.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "You can set a spending cap to block requests once a limit is reached",
+            "citation": "billing-overage"
+          }
+        ]
+      },
+      "hold-12": {
+        "answer_text": "Download past invoices as PDF from the Billing section of the dashboard.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Download past invoices as PDF from the Billing section of the dashboard",
+            "citation": "billing-invoices"
+          }
+        ]
+      },
+      "hold-13": {
+        "answer_text": "Choose a data residency region such as eu-west when you create a project.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Choose a data residency region such as eu-west when you create a project",
+            "citation": "storage-regions"
+          }
+        ]
+      },
+      "hold-14": {
+        "answer_text": "Encryption keys are managed by Aurora and rotated automatically.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Encryption keys are managed by Aurora and rotated automatically",
+            "citation": "storage-encryption"
+          }
+        ]
+      },
+      "hold-15": {
+        "answer_text": "Aurora takes an automated backup of your data every 24 hours.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Aurora takes an automated backup of your data every 24 hours",
+            "citation": "storage-backups"
+          }
+        ]
+      },
+      "hold-16": {
+        "answer_text": "You can restore an object from the recoverable trash within 7 days.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "You can restore an object from the recoverable trash within 7 days",
+            "citation": "storage-retention"
+          }
+        ]
+      },
+      "hold-17": {
+        "answer_text": "Each webhook delivery is signed with an HMAC-SHA256 signature in the Aurora-Signature header.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Each webhook delivery is signed with an HMAC-SHA256 signature in the Aurora-Signature header",
+            "citation": "webhooks-signing"
+          }
+        ]
+      },
+      "hold-18": {
+        "answer_text": "Aurora retries the webhook with exponential backoff for up to 24 hours.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Aurora retries the webhook with exponential backoff for up to 24 hours",
+            "citation": "webhooks-retries"
+          }
+        ]
+      },
+      "hold-19": {
+        "answer_text": "If uptime falls below the SLA you receive service credits proportional to the downtime.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "If uptime falls below the SLA you receive service credits proportional to the downtime",
+            "citation": "sla-uptime"
+          }
+        ]
+      },
+      "hold-20": {
+        "answer_text": "Pro gets email support within one business day.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Pro gets email support within one business day",
+            "citation": "sla-support"
+          }
+        ]
+      },
+      "hold-21": {
+        "answer_text": "Follow the next_cursor field to fetch the following page until it is null.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Follow the next_cursor field to fetch the following page until it is null",
+            "citation": "api-pagination"
+          }
+        ]
+      },
+      "hold-22": {
+        "answer_text": "Aurora stores the first response for an Idempotency-Key for 24 hours.",
+        "claims": [
+          {
+            "id": "c1",
+            "text": "Aurora stores the first response for an Idempotency-Key for 24 hours",
+            "citation": "api-idempotency"
+          }
+        ]
+      }
+    }
+  }
+}

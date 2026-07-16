@@ -1,0 +1,150 @@
+{
+  "00-setup": {
+    "py": true,
+    "ts": true
+  },
+  "01-fundamentals": {
+    "py": true,
+    "ts": true
+  },
+  "01b-ml-foundations": {
+    "py": true,
+    "ts": true
+  },
+  "01c-deep-learning": {
+    "py": true,
+    "ts": true
+  },
+  "01d-transformer": {
+    "py": true,
+    "ts": true
+  },
+  "01e-trees-ensembles": {
+    "py": true,
+    "ts": true
+  },
+  "01f-stats-foundations": {
+    "py": true,
+    "ts": true
+  },
+  "02-llm-integration": {
+    "py": true,
+    "ts": true
+  },
+  "03-prompting": {
+    "py": true,
+    "ts": true
+  },
+  "04-embeddings-vectors": {
+    "py": true,
+    "ts": true
+  },
+  "05-rag": {
+    "py": true,
+    "ts": true
+  },
+  "05b-advanced-rag": {
+    "py": true,
+    "ts": true
+  },
+  "06-agents": {
+    "py": true,
+    "ts": true
+  },
+  "06b-langgraph": {
+    "py": true,
+    "ts": true
+  },
+  "06c-agent-frameworks": {
+    "py": true,
+    "ts": true
+  },
+  "06d-agent-memory": {
+    "py": true,
+    "ts": true
+  },
+  "07-advanced-production": {
+    "py": true,
+    "ts": true
+  },
+  "07b-delivery-operations": {
+    "py": true,
+    "ts": true
+  },
+  "08-classification": {
+    "py": true,
+    "ts": true
+  },
+  "09-computer-vision": {
+    "py": true,
+    "ts": true
+  },
+  "10-image-generation": {
+    "py": true,
+    "ts": true
+  },
+  "11-document-ingestion": {
+    "py": true,
+    "ts": true
+  },
+  "12-text-to-sql": {
+    "py": true,
+    "ts": true
+  },
+  "13-fine-tuning": {
+    "py": true,
+    "ts": true
+  },
+  "13b-alignment": {
+    "py": true,
+    "ts": true
+  },
+  "14-local-inference-optimization": {
+    "py": true,
+    "ts": true
+  },
+  "15-reasoning-test-time-compute": {
+    "py": true,
+    "ts": true
+  },
+  "16-context-engineering": {
+    "py": true,
+    "ts": true
+  },
+  "17-mcp": {
+    "py": true,
+    "ts": true
+  },
+  "18-computer-use": {
+    "py": true,
+    "ts": true
+  },
+  "19-audio-speech": {
+    "py": true,
+    "ts": true
+  },
+  "20-ai-security": {
+    "py": true,
+    "ts": true
+  },
+  "20b-governance-privacy": {
+    "py": true,
+    "ts": true
+  },
+  "21-llmops-eval": {
+    "py": true,
+    "ts": true
+  },
+  "21b-evaluation-reliability": {
+    "py": true,
+    "ts": true
+  },
+  "22-ai-product-ux": {
+    "py": true,
+    "ts": true
+  },
+  "23-capstone": {
+    "py": false,
+    "ts": false
+  }
+}

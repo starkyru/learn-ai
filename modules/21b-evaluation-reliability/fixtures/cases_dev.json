@@ -1,0 +1,250 @@
+{
+  "split": "dev",
+  "corpus_version": "aurora-docs-v1",
+  "rubric": "graded-relevance-v1",
+  "note": "Development cases. Disjoint from the held-out release split (cases_heldout.json). Use these while building and tuning retrieval; do NOT use them to make a release decision.",
+  "cases": [
+    {
+      "id": "dev-01",
+      "query": "How do I authenticate a request with an API key?",
+      "gold": [{ "chunk_id": "auth-api-keys", "grade": 3 }],
+      "why_sufficient": "auth-api-keys states the key goes in the Authorization Bearer header on every request.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-02",
+      "query": "What header do I put my API key in?",
+      "gold": [{ "chunk_id": "auth-api-keys", "grade": 3 }],
+      "why_sufficient": "auth-api-keys names the Authorization Bearer header directly.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-03",
+      "query": "How long does the old key keep working after I rotate it?",
+      "gold": [{ "chunk_id": "auth-key-rotation", "grade": 3 }],
+      "why_sufficient": "auth-key-rotation gives the 24 hour grace period for the previous key.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-04",
+      "query": "grace period when rotating credentials",
+      "gold": [{ "chunk_id": "auth-key-rotation", "grade": 3 }],
+      "why_sufficient": "auth-key-rotation is the only chunk describing a rotation grace period.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-05",
+      "query": "Which OAuth grant type does Aurora support for server to server access?",
+      "gold": [
+        { "chunk_id": "auth-oauth", "grade": 3 },
+        { "chunk_id": "auth-token-expiry", "grade": 1 }
+      ],
+      "why_sufficient": "auth-oauth names the client credentials grant; auth-token-expiry adds supporting token-lifetime context.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-06",
+      "query": "When does an access token expire?",
+      "gold": [{ "chunk_id": "auth-token-expiry", "grade": 3 }],
+      "why_sufficient": "auth-token-expiry states the 60 minute lifetime.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-07",
+      "query": "Is there a refresh token in the client credentials flow?",
+      "gold": [{ "chunk_id": "auth-token-expiry", "grade": 3 }],
+      "why_sufficient": "auth-token-expiry explicitly says there is no refresh token in that flow.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-08",
+      "query": "What happens if my key lacks the required scope?",
+      "gold": [
+        { "chunk_id": "auth-scopes", "grade": 3 },
+        { "chunk_id": "api-errors", "grade": 1 }
+      ],
+      "why_sufficient": "auth-scopes says a missing scope yields a 403; api-errors adds the general error-body context.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-09",
+      "query": "requests per minute on the free plan",
+      "gold": [{ "chunk_id": "ratelimit-tiers", "grade": 3 }],
+      "why_sufficient": "ratelimit-tiers lists 60 requests per minute for Free.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-10",
+      "query": "How many requests can the Pro plan make per minute?",
+      "gold": [{ "chunk_id": "ratelimit-tiers", "grade": 3 }],
+      "why_sufficient": "ratelimit-tiers lists 600 requests per minute for Pro.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-11",
+      "query": "Are short bursts above my steady rate allowed?",
+      "gold": [{ "chunk_id": "ratelimit-burst", "grade": 3 }],
+      "why_sufficient": "ratelimit-burst describes the token bucket allowing bursts.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-12",
+      "query": "What status code means rate limited and how long should I wait?",
+      "gold": [
+        { "chunk_id": "ratelimit-429", "grade": 3 },
+        { "chunk_id": "ratelimit-headers", "grade": 1 }
+      ],
+      "why_sufficient": "ratelimit-429 gives HTTP 429 and the Retry-After wait; ratelimit-headers is supporting throttle context.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-13",
+      "query": "Which headers tell me my remaining quota?",
+      "gold": [
+        { "chunk_id": "ratelimit-headers", "grade": 3 },
+        { "chunk_id": "ratelimit-429", "grade": 1 }
+      ],
+      "why_sufficient": "ratelimit-headers names the X-RateLimit-* headers; ratelimit-429 is the related limit response.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-14",
+      "query": "How much does the Pro plan cost per month?",
+      "gold": [{ "chunk_id": "billing-plans", "grade": 3 }],
+      "why_sufficient": "billing-plans states Pro is 49 dollars per month.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-15",
+      "query": "Do failed 4xx calls count toward my bill?",
+      "gold": [{ "chunk_id": "billing-usage-metering", "grade": 3 }],
+      "why_sufficient": "billing-usage-metering says 4xx calls are not billed.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-16",
+      "query": "What is the overage charge per extra call?",
+      "gold": [
+        { "chunk_id": "billing-overage", "grade": 3 },
+        { "chunk_id": "billing-usage-metering", "grade": 1 }
+      ],
+      "why_sufficient": "billing-overage gives 0.5 cents per extra call; metering explains what a billable call is.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-17",
+      "query": "Where do I download last month's invoice?",
+      "gold": [{ "chunk_id": "billing-invoices", "grade": 3 }],
+      "why_sufficient": "billing-invoices says invoices download as PDF from the Billing section.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-18",
+      "query": "Can I choose where my data is stored?",
+      "gold": [{ "chunk_id": "storage-regions", "grade": 3 }],
+      "why_sufficient": "storage-regions lists the residency regions and says data never leaves its region.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-19",
+      "query": "What encryption protects data at rest?",
+      "gold": [{ "chunk_id": "storage-encryption", "grade": 3 }],
+      "why_sufficient": "storage-encryption names AES-256 at rest.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-20",
+      "query": "How long are backups retained before deletion?",
+      "gold": [{ "chunk_id": "storage-backups", "grade": 3 }],
+      "why_sufficient": "storage-backups gives the 30 day retention.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-21",
+      "query": "Can I recover an object I deleted?",
+      "gold": [
+        { "chunk_id": "storage-retention", "grade": 3 },
+        { "chunk_id": "storage-backups", "grade": 1 }
+      ],
+      "why_sufficient": "storage-retention describes the 7 day recoverable trash; backups is related recovery context.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-22",
+      "query": "How do I verify a webhook actually came from Aurora?",
+      "gold": [{ "chunk_id": "webhooks-signing", "grade": 3 }],
+      "why_sufficient": "webhooks-signing describes verifying the HMAC-SHA256 signature.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-23",
+      "query": "What happens when my webhook endpoint is down?",
+      "gold": [{ "chunk_id": "webhooks-retries", "grade": 3 }],
+      "why_sufficient": "webhooks-retries describes exponential backoff retries for up to 24 hours.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-24",
+      "query": "Which webhook events can I subscribe to?",
+      "gold": [{ "chunk_id": "webhooks-events", "grade": 3 }],
+      "why_sufficient": "webhooks-events lists the event types.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-25",
+      "query": "What uptime does the SLA guarantee?",
+      "gold": [{ "chunk_id": "sla-uptime", "grade": 3 }],
+      "why_sufficient": "sla-uptime gives the 99.9 percent monthly SLA.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-26",
+      "query": "How fast is Enterprise support for critical issues?",
+      "gold": [{ "chunk_id": "sla-support", "grade": 3 }],
+      "why_sufficient": "sla-support gives the 1 hour Enterprise response for critical issues.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-27",
+      "query": "Where are incident updates posted?",
+      "gold": [{ "chunk_id": "sla-incidents", "grade": 3 }],
+      "why_sufficient": "sla-incidents names the public status page and owner emails.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-28",
+      "query": "Which programming languages have official SDKs?",
+      "gold": [{ "chunk_id": "sdk-languages", "grade": 3 }],
+      "why_sufficient": "sdk-languages lists Python, JavaScript/TypeScript, Go, and Ruby.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-29",
+      "query": "How long does a deprecated SDK method keep working?",
+      "gold": [{ "chunk_id": "sdk-versioning", "grade": 3 }],
+      "why_sufficient": "sdk-versioning gives the two minor releases deprecation window.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-30",
+      "query": "How does pagination work for list endpoints?",
+      "gold": [{ "chunk_id": "api-pagination", "grade": 3 }],
+      "why_sufficient": "api-pagination describes cursor-based pagination with next_cursor.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-31",
+      "query": "What fields are in an error response body?",
+      "gold": [{ "chunk_id": "api-errors", "grade": 3 }],
+      "why_sufficient": "api-errors lists code, message, and request_id.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "dev-32",
+      "query": "How do I make a POST safe to retry?",
+      "gold": [{ "chunk_id": "api-idempotency", "grade": 3 }],
+      "why_sufficient": "api-idempotency describes the Idempotency-Key header behaviour.",
+      "rubric": "graded-relevance-v1"
+    }
+  ]
+}

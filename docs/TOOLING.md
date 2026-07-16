@@ -130,6 +130,36 @@ tests, an offline/stub smoke path, then an opt-in bounded-cost eval gate.
 
 ---
 
+## Continuous Integration (CI)
+
+The active, maintainer-owned workflow
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) is the source of truth
+for CI. It runs on every push and pull request to `main`, is deterministic and
+OFFLINE, and references NO secrets (provider keys are unavailable to all jobs).
+Node is pinned to **24**, Python to **3.11**, pnpm comes from `packageManager`,
+and `uv` is version-pinned; the pnpm store and uv cache are cached.
+
+| Job                 | What it runs                                                                      |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `js`                | `pnpm build:core` · `typecheck` · `test`; Prettier on the clean/new paths only    |
+| `py`                | `uv run pytest` (modules + packages); Ruff on the clean/new paths only            |
+| `curriculum`        | `check_structure.py` + `pytest scripts/curriculum scripts/ci`                     |
+| `smoke`             | `scripts/curriculum/smoke_exercises.py` — every offline exercise, no secrets      |
+| `control-char-scan` | `scripts/ci/check_control_chars.py` — rejects C0 control chars / NUL              |
+| `eval-gate`         | OFFLINE 21b release gate; activates when Module 21b lands (never fails if absent) |
+
+Lint/format runs only on the clean/new paths (`packages`, `scripts/curriculum`,
+and the 07b/20b/21b runnable dirs once they land), **not** repo-wide — the module
+scaffolds intentionally carry unused imports and unformatted code, so a repo-wide
+`ruff check .` / `prettier --check` would be permanently red (see the "skip lint
+cleanup" note above). Any offline check that reaches for the network/provider
+fails: the `smoke` job runs the whole exercise process tree inside an OS-level
+network namespace with no interfaces up (`unshare --net`) — the enforcing
+no-egress boundary — with the in-process tripwire and a secret-free, allowlisted
+env as defense-in-depth.
+
+---
+
 ## Running individual files
 
 ### TypeScript

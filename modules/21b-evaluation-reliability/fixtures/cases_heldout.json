@@ -1,0 +1,168 @@
+{
+  "split": "heldout",
+  "corpus_version": "aurora-docs-v1",
+  "rubric": "graded-relevance-v1",
+  "note": "Held-out release cases. Disjoint queries from the development split (cases_dev.json). Reserve these for release decisions; do not tune against them.",
+  "cases": [
+    {
+      "id": "hold-01",
+      "query": "creating a new API key in the dashboard settings",
+      "gold": [{ "chunk_id": "auth-api-keys", "grade": 3 }],
+      "why_sufficient": "auth-api-keys describes creating a key under Settings, Keys.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-02",
+      "query": "revoke the previous key after generating a replacement",
+      "gold": [{ "chunk_id": "auth-key-rotation", "grade": 3 }],
+      "why_sufficient": "auth-key-rotation describes generating a new key and revoking the old one.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-03",
+      "query": "exchange client id and secret for a token",
+      "gold": [
+        { "chunk_id": "auth-oauth", "grade": 3 },
+        { "chunk_id": "auth-token-expiry", "grade": 1 }
+      ],
+      "why_sufficient": "auth-oauth describes exchanging client credentials at the token endpoint; token-expiry is supporting lifetime context.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-04",
+      "query": "minutes until the OAuth token is no longer valid",
+      "gold": [{ "chunk_id": "auth-token-expiry", "grade": 3 }],
+      "why_sufficient": "auth-token-expiry gives the 60 minute expiry.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-05",
+      "query": "why am I getting a 403 on some endpoints",
+      "gold": [
+        { "chunk_id": "auth-scopes", "grade": 3 },
+        { "chunk_id": "api-errors", "grade": 1 }
+      ],
+      "why_sufficient": "auth-scopes ties a 403 to a missing scope; api-errors is supporting error-body context.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-06",
+      "query": "steady rate versus burst allowance for the limiter",
+      "gold": [{ "chunk_id": "ratelimit-burst", "grade": 3 }],
+      "why_sufficient": "ratelimit-burst contrasts steady rate with the token-bucket burst.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-07",
+      "query": "what does the Retry-After header mean",
+      "gold": [{ "chunk_id": "ratelimit-429", "grade": 3 }],
+      "why_sufficient": "ratelimit-429 explains Retry-After tells you how long to wait.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-08",
+      "query": "reading X-RateLimit-Remaining to throttle myself",
+      "gold": [{ "chunk_id": "ratelimit-headers", "grade": 3 }],
+      "why_sufficient": "ratelimit-headers names the remaining-quota header used for self-throttling.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-09",
+      "query": "how is the enterprise plan priced",
+      "gold": [{ "chunk_id": "billing-plans", "grade": 3 }],
+      "why_sufficient": "billing-plans says Enterprise is custom priced.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-10",
+      "query": "which response codes are billable",
+      "gold": [{ "chunk_id": "billing-usage-metering", "grade": 3 }],
+      "why_sufficient": "billing-usage-metering says 2xx and 3xx count and 4xx do not.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-11",
+      "query": "set a cap to stop spending past a limit",
+      "gold": [{ "chunk_id": "billing-overage", "grade": 3 }],
+      "why_sufficient": "billing-overage describes the spending cap that blocks requests.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-12",
+      "query": "download the monthly invoice as a PDF",
+      "gold": [{ "chunk_id": "billing-invoices", "grade": 3 }],
+      "why_sufficient": "billing-invoices describes the monthly PDF invoice download.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-13",
+      "query": "store data only in the eu-west region",
+      "gold": [{ "chunk_id": "storage-regions", "grade": 3 }],
+      "why_sufficient": "storage-regions lists eu-west and the residency guarantee.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-14",
+      "query": "are encryption keys rotated automatically",
+      "gold": [{ "chunk_id": "storage-encryption", "grade": 3 }],
+      "why_sufficient": "storage-encryption says Aurora manages and rotates keys automatically.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-15",
+      "query": "how often are automated backups taken",
+      "gold": [{ "chunk_id": "storage-backups", "grade": 3 }],
+      "why_sufficient": "storage-backups states a backup every 24 hours.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-16",
+      "query": "restore an object from trash within seven days",
+      "gold": [{ "chunk_id": "storage-retention", "grade": 3 }],
+      "why_sufficient": "storage-retention describes the 7 day recoverable trash and restore.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-17",
+      "query": "HMAC signature header on webhook deliveries",
+      "gold": [{ "chunk_id": "webhooks-signing", "grade": 3 }],
+      "why_sufficient": "webhooks-signing names the HMAC-SHA256 Aurora-Signature header.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-18",
+      "query": "how long does webhook retry backoff continue",
+      "gold": [{ "chunk_id": "webhooks-retries", "grade": 3 }],
+      "why_sufficient": "webhooks-retries gives the up-to-24-hour backoff window.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-19",
+      "query": "service credits when uptime drops below the SLA",
+      "gold": [{ "chunk_id": "sla-uptime", "grade": 3 }],
+      "why_sufficient": "sla-uptime ties service credits to falling below the uptime SLA.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-20",
+      "query": "email support response time on the Pro plan",
+      "gold": [{ "chunk_id": "sla-support", "grade": 3 }],
+      "why_sufficient": "sla-support gives Pro email support within one business day.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-21",
+      "query": "follow the next_cursor to get the following page",
+      "gold": [{ "chunk_id": "api-pagination", "grade": 3 }],
+      "why_sufficient": "api-pagination describes following next_cursor until it is null.",
+      "rubric": "graded-relevance-v1"
+    },
+    {
+      "id": "hold-22",
+      "query": "how long is an Idempotency-Key response stored",
+      "gold": [{ "chunk_id": "api-idempotency", "grade": 3 }],
+      "why_sufficient": "api-idempotency says the first response is stored for 24 hours.",
+      "rubric": "graded-relevance-v1"
+    }
+  ]
+}

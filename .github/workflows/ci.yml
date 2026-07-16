@@ -1,0 +1,262 @@
+# Active CI for learn-ai — bounded-cost, OFFLINE, NO provider keys.
+#
+# This is the maintainer-owned source of truth for CI (Module 21's eval-gate.yml
+# is a learner example that points here). Every job is deterministic and offline:
+# NO job references `secrets.*`, so provider/API keys are UNAVAILABLE to all jobs
+# by default. Any offline check that attempts a network/provider call fails — the
+# `smoke` job runs each exercise under an in-process network tripwire with a
+# secret-free, allowlisted env (a network-restricted runner would be the ideal
+# OS-level boundary; GitHub cannot natively block egress).
+#
+# Lint/format is enforced only on the CLEAN/new paths (packages, scripts/curriculum,
+# and the 07b/20b/21b runnable dirs once they land) — NOT repo-wide: the module
+# scaffolds intentionally carry unused imports/vars and unformatted code
+# ("skip lint cleanup" decision), so a repo-wide gate would be permanently red.
+#
+# Actions are pinned to major tags (not commit SHAs); given `permissions:
+# contents: read` and no secrets, that is acceptable. Pinning each `uses:` to a
+# full commit SHA is the stricter supply-chain posture if this later handles
+# secrets or write permissions.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24" # Module 07b's node:sqlite needs Node >= 24
+  PYTHON_VERSION: "3.11"
+  UV_VERSION: "0.10.7"
+
+jobs:
+  js:
+    name: JS/TS — build · typecheck · test · format
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # pnpm version comes from package.json "packageManager"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+        # --ignore-scripts: don't run lifecycle scripts (root `prepare`/`postinstall`
+        # or dependency install hooks) during a CI install — a PR could otherwise
+        # edit the UNOWNED root package.json to rewrite a gate implementation during
+        # `pnpm install`. build:core/typecheck/test do not need them.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm build:core
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Prettier (clean/new paths only — baseline scaffolds are intentionally unformatted)
+        run: >
+          pnpm exec prettier --check --no-error-on-unmatched-pattern
+          "packages/**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml}"
+          "scripts/curriculum/**/*.{ts,cjs,json,md}"
+          "modules/07b-delivery-operations/ts/**/*.{ts,tsx,json,md}"
+          "modules/20b-governance-privacy/ts/**/*.{ts,tsx,json,md}"
+          "modules/21b-evaluation-reliability/ts/**/*.{ts,tsx,json,md}"
+
+  py:
+    name: Python — pytest · ruff
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+        # production: FastAPI service tests (07b). vectors: the retrieval/index
+        # tests (04/05). Without these extras, 07b's app tests are skipped (see
+        # its conftest collect_ignore_glob) and would not run in CI at all.
+      - run: uv sync --extra production --extra vectors
+      - name: Pytest (modules + packages, with production + vectors extras)
+        run: uv run pytest
+      - name: Ruff (clean/new paths only — 411 intentional scaffold artifacts elsewhere)
+        run: |
+          paths="packages/py scripts"
+          for d in \
+            modules/07b-delivery-operations/py \
+            modules/20b-governance-privacy/py \
+            modules/21b-evaluation-reliability/py; do
+            [ -d "$d" ] && paths="$paths $d"
+          done
+          echo "linting: $paths"
+          uv run ruff check $paths
+          uv run ruff format --check $paths
+
+  curriculum:
+    name: Curriculum QA — structure · manifest · tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync
+      - name: Structure + manifest checks (completeness · drift · override · links)
+        run: uv run python scripts/curriculum/check_structure.py
+      - name: Route-hours — published table matches module_times.json
+        run: uv run python scripts/curriculum/check_route_hours.py
+      - name: Curriculum + CI-helper unit tests
+        run: uv run pytest scripts/curriculum scripts/ci
+
+  smoke:
+    name: Offline exercise smoke — no egress, no secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # This job MUST NOT receive provider secrets: none are referenced anywhere in
+    # this workflow, so nothing is injected. Deps are installed WITH network, then
+    # the smoke process tree runs in an OS-level network namespace with no
+    # interfaces up (`unshare --net`) — the ENFORCING no-egress boundary that the
+    # in-process tripwire (kept as defense-in-depth) cannot give for spawned
+    # subprocesses (a `curl`/fresh-python could otherwise reach the network while
+    # smoke still exits 0).
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      # --ignore-scripts (see the js job): no install-time lifecycle scripts can
+      # mutate a gate implementation before the smoke run.
+      - run: pnpm install --frozen-lockfile --ignore-scripts # provides tsx for TS offline entries
+      - run: pnpm build:core
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync
+      - name: Run offline smoke (OS-level no-egress) and publish summary
+        # NOTE: this step does NOT set ALLOW_UNSANDBOXED_SMOKE — so on a runner
+        # that cannot create a network namespace, it FAILS CLOSED (below) instead
+        # of running the smoke without an egress boundary.
+        env:
+          UV_NO_SYNC: "1" # env already synced above; do not touch the network here
+          UV_OFFLINE: "1"
+        run: |
+          # REQUIRE an OS-level no-egress boundary: run the smoke process tree in a
+          # network namespace with no interfaces up. Prefer the rootless
+          # user-namespace form, then sudo. If NEITHER works, FAIL CLOSED (a bare
+          # run could let a spawned subprocess reach the network while smoke still
+          # exits 0). A local/dev run may opt out with ALLOW_UNSANDBOXED_SMOKE=1,
+          # which CI never sets.
+          if unshare --map-root-user --net -- true 2>/dev/null; then
+            netns=(unshare --map-root-user --net --)
+          elif sudo -n unshare --net -- true 2>/dev/null; then
+            netns=(sudo -n unshare --net --)
+          elif [ "${ALLOW_UNSANDBOXED_SMOKE:-}" = "1" ]; then
+            echo "::warning::running smoke WITHOUT an OS no-egress boundary (ALLOW_UNSANDBOXED_SMOKE=1) — dev only"
+            netns=()
+          else
+            echo "::error::no OS network isolation available (unshare) and ALLOW_UNSANDBOXED_SMOKE!=1 — failing closed"
+            exit 1
+          fi
+          echo "no-egress wrapper: ${netns[*]:-<none>}"
+
+          # Default shell is `bash -eo pipefail`. Disable -e around the pipeline so
+          # a FAILING run still reaches the summary write. Capture the WHOLE
+          # PIPESTATUS array in ONE assignment (any later command — even a plain
+          # `x=...` — resets PIPESTATUS, so reading [0] then [1] separately would
+          # lose [1]). Then require smoke, tee, AND the summary write to all
+          # succeed: a `tee` or `$GITHUB_STEP_SUMMARY` write failure with smoke
+          # exiting 0 must NOT show green. Do NOT append `|| true`.
+          set +e
+          "${netns[@]}" uv run python scripts/curriculum/smoke_exercises.py | tee smoke_summary.txt
+          status=("${PIPESTATUS[@]}")
+          {
+            echo '### Offline exercise smoke summary'
+            echo ''
+            echo '```'
+            cat smoke_summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          summary_rc=$?
+          set -e
+          smoke_rc=${status[0]}
+          tee_rc=${status[1]}
+          if [ "$smoke_rc" -ne 0 ] || [ "$tee_rc" -ne 0 ] || [ "$summary_rc" -ne 0 ]; then
+            echo "smoke_rc=$smoke_rc tee_rc=$tee_rc summary_rc=$summary_rc"
+            exit 1
+          fi
+
+  control-char-scan:
+    name: Control-char / NUL scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail on C0 control chars / NUL in tracked source text
+        run: python3 scripts/ci/check_control_chars.py
+
+  # Release eval gate — the 21b module's OFFLINE, deterministic release gate.
+  # Activation is governed by the committed marker scripts/curriculum/ci_gates.json
+  # (via scripts/ci/eval_gate_status.py): while the gate is marked inactive AND
+  # absent, the detect step skips (green); once the gate lands (path present) it
+  # runs; once active, a MISSING path FAILS the job; and the detect step compares
+  # against the PROTECTED BASE (the PR target branch, or HEAD~1 on push) so a PR
+  # can't downgrade active→false or delete a base-active gate to skip the required
+  # job. Offline, NO secrets.
+  eval-gate:
+    name: Release eval gate (21b, offline) — governed by ci_gates.json
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # HEAD~1 for push comparison; PR base fetched in detect
+      - name: Detect the 21b release gate (enforced marker + base-branch downgrade guard)
+        id: detect
+        run: |
+          base=""
+          require=""
+          if [ "${GITHUB_EVENT_NAME:-}" = "pull_request" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
+            # NO `|| true`: a failed base fetch fails the step (fail closed — we
+            # cannot verify the base). --require-base then also fails if the ref or
+            # its marker is unreadable, so a fetch/parse failure can never be
+            # treated as an inactive base and let a downgrade slip through.
+            git fetch --no-tags --depth=1 origin \
+              "+refs/heads/${GITHUB_BASE_REF}:refs/remotes/origin/${GITHUB_BASE_REF}"
+            base="origin/${GITHUB_BASE_REF}"
+            require="--require-base"
+          elif git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+            base="HEAD~1"
+          fi
+          if [ -n "$base" ]; then
+            echo "comparing against protected base: $base"
+            python3 scripts/ci/eval_gate_status.py 21b-release-gate --base-ref "$base" $require
+          else
+            echo "no base ref available — forward enforcement only"
+            python3 scripts/ci/eval_gate_status.py 21b-release-gate
+          fi
+      - uses: astral-sh/setup-uv@v5
+        if: steps.detect.outputs.present == 'true'
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - if: steps.detect.outputs.present == 'true'
+        run: uv sync
+      - name: Run 21b release gate (offline, no provider secrets)
+        if: steps.detect.outputs.present == 'true'
+        env:
+          OFFLINE_SMOKE: "1"
+          CI: "1"
+        run: uv run python modules/21b-evaluation-reliability/py/gate.py

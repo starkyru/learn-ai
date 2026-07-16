@@ -1,0 +1,37 @@
+{
+  "id": "graded-relevance-v1",
+  "title": "Aurora retrieval graded-relevance rubric",
+  "scale": "0-3 graded relevance, used directly as the gain grade for NDCG",
+  "unit_of_evaluation": "one documentation chunk from corpus aurora-docs-v1",
+  "grades": [
+    {
+      "grade": 3,
+      "label": "fully_sufficient",
+      "anchor": "The chunk on its own contains the complete, correct answer to the query. A reader needs nothing else."
+    },
+    {
+      "grade": 2,
+      "label": "mostly_sufficient",
+      "anchor": "The chunk answers the main question but omits a detail the query implies, or requires trivial inference."
+    },
+    {
+      "grade": 1,
+      "label": "related_supporting",
+      "anchor": "The chunk is on-topic and adds useful supporting context, but does not by itself answer the query."
+    },
+    {
+      "grade": 0,
+      "label": "irrelevant",
+      "anchor": "The chunk does not help answer the query. Not listed as gold; absence from the gold set implies grade 0."
+    }
+  ],
+  "annotator_instructions": [
+    "Read the query as an end user of the Aurora API would ask it.",
+    "Grade each candidate chunk independently against the anchors above; do not grade relative to what the retriever returned.",
+    "A query must have at least one grade-3 chunk (the primary evidence). Secondary chunks get grade 1 or 2.",
+    "Record why the top evidence is sufficient in the case's why_sufficient note so the label is auditable.",
+    "Development and held-out cases must use disjoint queries; never move a case between splits."
+  ],
+  "relevant_threshold": 1,
+  "relevant_threshold_note": "Recall@k and MRR treat any chunk with grade >= relevant_threshold (1) as relevant. NDCG uses the exact grade as the gain."
+}

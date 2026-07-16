@@ -1,0 +1,41 @@
+# CODEOWNERS — require an owner's review before any path that could turn a
+# REQUIRED CI check into a no-op is changed.
+#
+# A workflow cannot protect against edits to ITSELF (a PR runs the PR's own copy),
+# so the enforcing boundary is GitHub repo governance: branch protection + required
+# CODEOWNERS review on these paths (see docs/COURSE_MAINTENANCE.md → "CI integrity /
+# branch protection"). This covers each required check AND its implementation
+# closure — the workflow, the helper scripts, the activation marker, the code a
+# gate/check executes, AND the dependency/bootstrap config that controls how the
+# checks build and run (an install lifecycle script or build hook can rewrite a
+# gate impl during install) — so a PR cannot neutralise a check without an owner's
+# review. Replace @starkyru with the maintainer team if this moves to an org
+# (e.g. @org/course-maintainers).
+
+# The entire CI/automation surface (workflows, actions config).
+/.github/                             @starkyru
+
+# The CI helper scripts (control-char scan, smoke wiring, eval-gate status).
+/scripts/ci/                          @starkyru
+
+# The curriculum-QA + smoke-runner implementation (check_structure, manifest,
+# build_manifest, smoke_exercises, net_guard) that the `curriculum` and `smoke`
+# required checks execute — and the eval-gate activation marker.
+/scripts/curriculum/                  @starkyru
+
+# The 21b release-gate implementation closure (py/gate.py, ts/gate-cli.ts, and
+# everything the gate imports) that the required `eval-gate` job runs — so the
+# gate cannot be replaced with an exit-0 no-op while the marker stays active.
+/modules/21b-evaluation-reliability/  @starkyru
+
+# The dependency/bootstrap + build config: install lifecycle scripts, lockfiles,
+# and build backends decide what code runs during `pnpm install` / `uv sync` and
+# how the checks compile/run — a hook here could rewrite a gate impl unreviewed.
+/package.json                            @starkyru
+/pnpm-lock.yaml                          @starkyru
+/pnpm-workspace.yaml                     @starkyru
+/pyproject.toml                          @starkyru
+/uv.lock                                 @starkyru
+/tsconfig.json                           @starkyru
+/jest.config.mjs                         @starkyru
+/packages/py/llm_core/pyproject.toml     @starkyru

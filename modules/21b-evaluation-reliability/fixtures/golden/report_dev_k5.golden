@@ -1,0 +1,1420 @@
+{
+  "benchmark": "aurora-retrieval-benchmark",
+  "failures": {
+    "bm25": [
+      {
+        "case_id": "dev-01",
+        "failure": "misranked_gold",
+        "method": "bm25",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "How do I authenticate a request with an API key?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "auth-scopes",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-api-keys",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sdk-languages",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-05",
+        "failure": "misranked_gold",
+        "method": "bm25",
+        "missing_gold": [],
+        "ndcg_at_k": 0.9737576937588317,
+        "query": "Which OAuth grant type does Aurora support for server to server access?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-oauth",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-token-expiry",
+            "grade": 1,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-08",
+        "failure": "missing_gold",
+        "method": "bm25",
+        "missing_gold": [
+          "api-errors"
+        ],
+        "ndcg_at_k": 0.9173194127129571,
+        "query": "What happens if my key lacks the required scope?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-scopes",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-api-keys",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-uptime",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-12",
+        "failure": "missing_gold",
+        "method": "bm25",
+        "missing_gold": [
+          "ratelimit-headers"
+        ],
+        "ndcg_at_k": 0.5787641110093001,
+        "query": "What status code means rate limited and how long should I wait?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "ratelimit-burst",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-incidents",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-13",
+        "failure": "misranked_gold",
+        "method": "bm25",
+        "missing_gold": [],
+        "ndcg_at_k": 0.9828422279067397,
+        "query": "Which headers tell me my remaining quota?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 1,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-14",
+        "failure": "misranked_gold",
+        "method": "bm25",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "How much does the Pro plan cost per month?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "billing-invoices",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-21",
+        "failure": "misranked_gold",
+        "method": "bm25",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6442869262030828,
+        "query": "Can I recover an object I deleted?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-events",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-retention",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 1,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-23",
+        "failure": "misranked_gold",
+        "method": "bm25",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "What happens when my webhook endpoint is down?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-signing",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "webhooks-events",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-regions",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-31",
+        "failure": "misranked_gold",
+        "method": "bm25",
+        "missing_gold": [],
+        "ndcg_at_k": 0.5,
+        "query": "What fields are in an error response body?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.3333333333333333,
+        "top_k": [
+          {
+            "chunk_id": "storage-retention",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "storage-encryption",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      }
+    ],
+    "dense": [
+      {
+        "case_id": "dev-05",
+        "failure": "missing_gold",
+        "method": "dense",
+        "missing_gold": [
+          "auth-token-expiry"
+        ],
+        "ndcg_at_k": 0.9173194127129571,
+        "query": "Which OAuth grant type does Aurora support for server to server access?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-oauth",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-signing",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-10",
+        "failure": "misranked_gold",
+        "method": "dense",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "How many requests can the Pro plan make per minute?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-uptime",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-12",
+        "failure": "missing_gold",
+        "method": "dense",
+        "missing_gold": [
+          "ratelimit-429"
+        ],
+        "ndcg_at_k": 0.1310456303875653,
+        "query": "What status code means rate limited and how long should I wait?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 1,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "ratelimit-burst",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-pagination",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-invoices",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-14",
+        "failure": "misranked_gold",
+        "method": "dense",
+        "missing_gold": [],
+        "ndcg_at_k": 0.43067655807339306,
+        "query": "How much does the Pro plan cost per month?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.25,
+        "top_k": [
+          {
+            "chunk_id": "billing-invoices",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-pagination",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-uptime",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-16",
+        "failure": "misranked_gold",
+        "method": "dense",
+        "missing_gold": [],
+        "ndcg_at_k": 0.9828422279067397,
+        "query": "What is the overage charge per extra call?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "billing-overage",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "billing-invoices",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 1,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "sla-uptime",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-19",
+        "failure": "misranked_gold",
+        "method": "dense",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "What encryption protects data at rest?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "storage-regions",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-encryption",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-scopes",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-21",
+        "failure": "missing_gold",
+        "method": "dense",
+        "missing_gold": [
+          "storage-backups"
+        ],
+        "ndcg_at_k": 0.5787641110093001,
+        "query": "Can I recover an object I deleted?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-events",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-retention",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-overage",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-22",
+        "failure": "misranked_gold",
+        "method": "dense",
+        "missing_gold": [],
+        "ndcg_at_k": 0.5,
+        "query": "How do I verify a webhook actually came from Aurora?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.3333333333333333,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-signing",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-23",
+        "failure": "misranked_gold",
+        "method": "dense",
+        "missing_gold": [],
+        "ndcg_at_k": 0.38685280723454163,
+        "query": "What happens when my webhook endpoint is down?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.2,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-events",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-signing",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 3,
+            "is_gold": true
+          }
+        ]
+      },
+      {
+        "case_id": "dev-28",
+        "failure": "misranked_gold",
+        "method": "dense",
+        "missing_gold": [],
+        "ndcg_at_k": 0.5,
+        "query": "Which programming languages have official SDKs?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.3333333333333333,
+        "top_k": [
+          {
+            "chunk_id": "billing-plans",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-uptime",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sdk-languages",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-pagination",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-31",
+        "failure": "missing_gold",
+        "method": "dense",
+        "missing_gold": [
+          "api-errors"
+        ],
+        "ndcg_at_k": 0,
+        "query": "What fields are in an error response body?",
+        "recall_at_k": 0,
+        "reciprocal_rank": 0.07142857142857142,
+        "top_k": [
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-retention",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      }
+    ],
+    "hybrid": [
+      {
+        "case_id": "dev-05",
+        "failure": "missing_gold",
+        "method": "hybrid",
+        "missing_gold": [
+          "auth-token-expiry"
+        ],
+        "ndcg_at_k": 0.9173194127129571,
+        "query": "Which OAuth grant type does Aurora support for server to server access?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-oauth",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-08",
+        "failure": "missing_gold",
+        "method": "hybrid",
+        "missing_gold": [
+          "api-errors"
+        ],
+        "ndcg_at_k": 0.9173194127129571,
+        "query": "What happens if my key lacks the required scope?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-scopes",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "auth-api-keys",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sdk-languages",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-12",
+        "failure": "missing_gold",
+        "method": "hybrid",
+        "missing_gold": [
+          "ratelimit-429"
+        ],
+        "ndcg_at_k": 0.08268058728704288,
+        "query": "What status code means rate limited and how long should I wait?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "ratelimit-burst",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 1,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-invoices",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-14",
+        "failure": "misranked_gold",
+        "method": "hybrid",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "How much does the Pro plan cost per month?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "billing-invoices",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "api-pagination",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-uptime",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-21",
+        "failure": "missing_gold",
+        "method": "hybrid",
+        "missing_gold": [
+          "storage-backups"
+        ],
+        "ndcg_at_k": 0.5787641110093001,
+        "query": "Can I recover an object I deleted?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-events",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-retention",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-overage",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-headers",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-22",
+        "failure": "misranked_gold",
+        "method": "hybrid",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "How do I verify a webhook actually came from Aurora?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-signing",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "sdk-languages",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-23",
+        "failure": "misranked_gold",
+        "method": "hybrid",
+        "missing_gold": [],
+        "ndcg_at_k": 0.5,
+        "query": "What happens when my webhook endpoint is down?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.3333333333333333,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-events",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-signing",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-31",
+        "failure": "missing_gold",
+        "method": "hybrid",
+        "missing_gold": [
+          "api-errors"
+        ],
+        "ndcg_at_k": 0,
+        "query": "What fields are in an error response body?",
+        "recall_at_k": 0,
+        "reciprocal_rank": 0.14285714285714285,
+        "top_k": [
+          {
+            "chunk_id": "storage-retention",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      }
+    ],
+    "reranked": [
+      {
+        "case_id": "dev-01",
+        "failure": "misranked_gold",
+        "method": "reranked",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "How do I authenticate a request with an API key?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "auth-scopes",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-api-keys",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sdk-languages",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-05",
+        "failure": "missing_gold",
+        "method": "reranked",
+        "missing_gold": [
+          "auth-token-expiry"
+        ],
+        "ndcg_at_k": 0.9173194127129571,
+        "query": "Which OAuth grant type does Aurora support for server to server access?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-oauth",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-support",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-08",
+        "failure": "missing_gold",
+        "method": "reranked",
+        "missing_gold": [
+          "api-errors"
+        ],
+        "ndcg_at_k": 0.9173194127129571,
+        "query": "What happens if my key lacks the required scope?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "auth-scopes",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "auth-api-keys",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sdk-languages",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-12",
+        "failure": "missing_gold",
+        "method": "reranked",
+        "missing_gold": [
+          "ratelimit-headers"
+        ],
+        "ndcg_at_k": 0.3548675899387485,
+        "query": "What status code means rate limited and how long should I wait?",
+        "recall_at_k": 0.5,
+        "reciprocal_rank": 0.2,
+        "top_k": [
+          {
+            "chunk_id": "ratelimit-burst",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-errors",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sla-incidents",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 3,
+            "is_gold": true
+          }
+        ]
+      },
+      {
+        "case_id": "dev-21",
+        "failure": "misranked_gold",
+        "method": "reranked",
+        "missing_gold": [],
+        "ndcg_at_k": 0.9737576937588317,
+        "query": "Can I recover an object I deleted?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 1,
+        "top_k": [
+          {
+            "chunk_id": "storage-retention",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "webhooks-events",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "auth-key-rotation",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 1,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "billing-overage",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-22",
+        "failure": "misranked_gold",
+        "method": "reranked",
+        "missing_gold": [],
+        "ndcg_at_k": 0.6309297535714575,
+        "query": "How do I verify a webhook actually came from Aurora?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.5,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-signing",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "ratelimit-429",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "sdk-languages",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-23",
+        "failure": "misranked_gold",
+        "method": "reranked",
+        "missing_gold": [],
+        "ndcg_at_k": 0.5,
+        "query": "What happens when my webhook endpoint is down?",
+        "recall_at_k": 1,
+        "reciprocal_rank": 0.3333333333333333,
+        "top_k": [
+          {
+            "chunk_id": "webhooks-signing",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-events",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "webhooks-retries",
+            "grade": 3,
+            "is_gold": true
+          },
+          {
+            "chunk_id": "billing-plans",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "ratelimit-tiers",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      },
+      {
+        "case_id": "dev-31",
+        "failure": "missing_gold",
+        "method": "reranked",
+        "missing_gold": [
+          "api-errors"
+        ],
+        "ndcg_at_k": 0,
+        "query": "What fields are in an error response body?",
+        "recall_at_k": 0,
+        "reciprocal_rank": 0.1111111111111111,
+        "top_k": [
+          {
+            "chunk_id": "storage-retention",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-backups",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "billing-usage-metering",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "api-idempotency",
+            "grade": 0,
+            "is_gold": false
+          },
+          {
+            "chunk_id": "storage-encryption",
+            "grade": 0,
+            "is_gold": false
+          }
+        ]
+      }
+    ]
+  },
+  "k": 5,
+  "metrics": {
+    "bm25": {
+      "mrr": 0.9010416666666666,
+      "ndcg_at_k": 0.9215549885095402,
+      "num_cases": 32,
+      "num_failures": 9,
+      "recall_at_k": 0.96875
+    },
+    "dense": {
+      "mrr": 0.8340029761904761,
+      "ndcg_at_k": 0.8249740623707587,
+      "num_cases": 32,
+      "num_failures": 11,
+      "recall_at_k": 0.921875
+    },
+    "hybrid": {
+      "mrr": 0.8898809523809523,
+      "ndcg_at_k": 0.8830607197145366,
+      "num_cases": 32,
+      "num_failures": 8,
+      "recall_at_k": 0.90625
+    },
+    "reranked": {
+      "mrr": 0.8951388888888888,
+      "ndcg_at_k": 0.9039101130083252,
+      "num_cases": 32,
+      "num_failures": 8,
+      "recall_at_k": 0.921875
+    }
+  },
+  "num_cases": 32,
+  "relevant_threshold": 1,
+  "split": "dev",
+  "versions": {
+    "bm25_version": "1.0.0",
+    "chunker_version": "1.0.0",
+    "corpus_version": "aurora-docs-v1",
+    "embedder_version": "1.0.0",
+    "hybrid_version": "1.0.0",
+    "index_version": "1.0.0",
+    "manifest_version": "1.0.0",
+    "reranker_version": "1.0.0",
+    "rubric": "graded-relevance-v1"
+  }
+}

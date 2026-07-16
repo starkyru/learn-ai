@@ -1,0 +1,83 @@
+# Fully-pinned runtime CLOSURE for the Module 07b Python service image — the
+# service deps AND llm_core's own deps (openai/anthropic/httpx/...) + all
+# transitive deps, so NOTHING resolves fresh at build time. The Dockerfile then
+# installs llm_core itself with `--no-deps`, so its `>=` ranges are never
+# re-resolved outside this pinned set.
+#
+# Regenerate after a bump (include every llm_core dependency here):
+#   printf 'fastapi==<v>\nuvicorn==<v>\npydantic==<v>\npython-dotenv==<v>\nopenai==<v>\nanthropic==<v>\n' \
+#     | uv pip compile - -o modules/07b-delivery-operations/py/requirements.txt
+annotated-doc==0.0.4
+    # via fastapi
+annotated-types==0.7.0
+    # via pydantic
+anthropic==0.109.1
+anyio==4.14.2
+    # via
+    #   anthropic
+    #   httpx
+    #   openai
+    #   starlette
+certifi==2026.6.17
+    # via
+    #   httpcore
+    #   httpx
+click==8.4.2
+    # via uvicorn
+distro==1.9.0
+    # via
+    #   anthropic
+    #   openai
+docstring-parser==0.18.0
+    # via anthropic
+fastapi==0.136.3
+h11==0.16.0
+    # via
+    #   httpcore
+    #   uvicorn
+httpcore==1.0.9
+    # via httpx
+httpx==0.28.1
+    # via
+    #   anthropic
+    #   openai
+idna==3.18
+    # via
+    #   anyio
+    #   httpx
+jiter==0.16.0
+    # via
+    #   anthropic
+    #   openai
+openai==2.41.1
+pydantic==2.13.4
+    # via
+    #   anthropic
+    #   fastapi
+    #   openai
+pydantic-core==2.46.4
+    # via pydantic
+python-dotenv==1.2.2
+sniffio==1.3.1
+    # via
+    #   anthropic
+    #   openai
+starlette==1.3.1
+    # via fastapi
+tqdm==4.68.4
+    # via openai
+typing-extensions==4.16.0
+    # via
+    #   anthropic
+    #   anyio
+    #   fastapi
+    #   openai
+    #   pydantic
+    #   pydantic-core
+    #   starlette
+    #   typing-inspection
+typing-inspection==0.4.2
+    # via
+    #   fastapi
+    #   pydantic
+uvicorn==0.49.0

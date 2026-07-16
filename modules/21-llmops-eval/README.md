@@ -249,9 +249,17 @@ threshold, suitable for CI and pre-push hooks.
 1. Open `ts/03-regression-gate.ts`. Follow the same TODO structure.
 2. Run: `pnpm tsx modules/21-llmops-eval/ts/03-regression-gate.ts --run-fresh --threshold 0.1`
 
-**GitHub Actions:** Review `eval-gate.yml` in this module directory. Copy it
-to `.github/workflows/` and add your provider API (Application Programming Interface) key as a GitHub Actions
-secret to activate the gate in CI.
+**GitHub Actions:** The repository ships an active, maintainer-owned workflow at
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) — the source of
+truth for CI. It runs the deterministic, offline checks (build, type-check,
+tests, curriculum QA, and the offline exercise-smoke) on every push and pull
+request with NO provider keys, and it already includes a guarded (live, not
+disabled) offline `eval-gate` job that runs Module 21b's release gate the moment
+that gate lands on the branch.
+`eval-gate.yml` in this directory is the learner example of the **provider-backed**
+variant: rather than copying standalone YAML, add its provider-scored job to the
+active `.github/workflows/ci.yml` and store your provider key as a GitHub Actions
+secret.
 
 **Husky pre-push hook:** Add to `.husky/pre-push`:
 

@@ -1,0 +1,196 @@
+{
+  "invalid_citations": [],
+  "judge": {
+    "model": "fake-judge-v1",
+    "prompt_version": "answer-judge-prompt-v1"
+  },
+  "metrics": {
+    "citation_validity": 1,
+    "completeness": 1,
+    "groundedness": 1,
+    "task_success_rate": 1
+  },
+  "num_cases": 22,
+  "num_claims": 24,
+  "per_case": {
+    "hold-01": {
+      "answer_sha": "1645991423",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-02": {
+      "answer_sha": "894710323",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-03": {
+      "answer_sha": "1091851017",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-04": {
+      "answer_sha": "56154917",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-05": {
+      "answer_sha": "2696508738",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-06": {
+      "answer_sha": "1119554189",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-07": {
+      "answer_sha": "922007888",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-08": {
+      "answer_sha": "666605903",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-09": {
+      "answer_sha": "1460059934",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-10": {
+      "answer_sha": "760995538",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-11": {
+      "answer_sha": "2914142870",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-12": {
+      "answer_sha": "1970328756",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-13": {
+      "answer_sha": "3400042659",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-14": {
+      "answer_sha": "3838589725",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-15": {
+      "answer_sha": "3955708726",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-16": {
+      "answer_sha": "3103151764",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-17": {
+      "answer_sha": "655553933",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-18": {
+      "answer_sha": "2135864252",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-19": {
+      "answer_sha": "2010944377",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-20": {
+      "answer_sha": "1551135163",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-21": {
+      "answer_sha": "1739095265",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    },
+    "hold-22": {
+      "answer_sha": "3539202794",
+      "citation_validity": 1,
+      "completeness": 1,
+      "groundedness": 1,
+      "score": 1,
+      "task_success": 1
+    }
+  },
+  "rubric": "answer-eval-v1",
+  "unsupported_claims": [],
+  "variant": "variant_b"
+}

@@ -1,0 +1,118 @@
+{
+  "version": "aurora-docs-v1",
+  "description": "Hand-authored synthetic documentation corpus for the Aurora API platform. Fixed, stable chunk ids. Used as the gold-evidence retrieval benchmark corpus for Module 21b Task 1.",
+  "chunks": [
+    {
+      "id": "auth-api-keys",
+      "text": "Create an API key from the Aurora dashboard under Settings, Keys. Send it on every request in the Authorization Bearer header. Each key belongs to one project."
+    },
+    {
+      "id": "auth-key-rotation",
+      "text": "Rotate an API key by generating a new one and revoking the old key. During rotation the previous key stays valid for a 24 hour grace period so deployments can roll over without downtime."
+    },
+    {
+      "id": "auth-oauth",
+      "text": "For server-to-server access Aurora supports the OAuth2 client credentials grant. Exchange your client id and client secret at the token endpoint to receive a short-lived access token."
+    },
+    {
+      "id": "auth-token-expiry",
+      "text": "OAuth access tokens expire 60 minutes after they are issued. Request a new token with your client credentials before the old one expires; there is no refresh token in the client credentials flow."
+    },
+    {
+      "id": "auth-scopes",
+      "text": "Every API key is granted one or more scopes such as read, write, or admin. A request that needs a scope the key lacks is rejected with a 403 error."
+    },
+    {
+      "id": "ratelimit-tiers",
+      "text": "Request quotas depend on your plan: Free allows 60 requests per minute, Pro allows 600, and Enterprise is negotiated. Quotas are counted per project."
+    },
+    {
+      "id": "ratelimit-burst",
+      "text": "The rate limiter uses a token bucket that refills continuously, so short bursts above your steady rate are allowed as long as the bucket still has tokens."
+    },
+    {
+      "id": "ratelimit-429",
+      "text": "When you exceed your quota Aurora returns HTTP 429. The response includes a Retry-After header telling you how many seconds to wait before retrying."
+    },
+    {
+      "id": "ratelimit-headers",
+      "text": "Every response carries X-RateLimit-Limit, X-RateLimit-Remaining, and X-RateLimit-Reset headers so clients can throttle themselves before hitting a 429."
+    },
+    {
+      "id": "billing-plans",
+      "text": "Aurora has three plans. Free costs nothing, Pro is 49 dollars per month, and Enterprise is custom priced. Upgrading takes effect immediately and is prorated."
+    },
+    {
+      "id": "billing-usage-metering",
+      "text": "Usage is metered per successful API call. Calls that return a 4xx client error are not billed, but 2xx and 3xx responses count toward your monthly usage."
+    },
+    {
+      "id": "billing-overage",
+      "text": "If you pass your plan included call volume, extra calls are billed as overage at 0.5 cents each. You can set a spending cap to block requests once a limit is reached."
+    },
+    {
+      "id": "billing-invoices",
+      "text": "Invoices are generated on the first day of each month and cover the previous month. Download past invoices as PDF from the Billing section of the dashboard."
+    },
+    {
+      "id": "storage-regions",
+      "text": "Choose a data residency region when you create a project: us-east, eu-west, or ap-south. Data stored in a project never leaves its region."
+    },
+    {
+      "id": "storage-encryption",
+      "text": "All objects are encrypted at rest with AES-256 and in transit with TLS 1.2 or higher. Encryption keys are managed by Aurora and rotated automatically."
+    },
+    {
+      "id": "storage-backups",
+      "text": "Aurora takes an automated backup of your data every 24 hours. Backups are kept for 30 days, after which they are permanently deleted."
+    },
+    {
+      "id": "storage-retention",
+      "text": "Deleted objects are held in a recoverable trash for 7 days before permanent removal. You can restore an object from trash through the API or the dashboard."
+    },
+    {
+      "id": "webhooks-signing",
+      "text": "Each webhook delivery is signed with an HMAC-SHA256 signature in the Aurora-Signature header. Verify it against your endpoint signing secret to confirm the payload is authentic."
+    },
+    {
+      "id": "webhooks-retries",
+      "text": "If your endpoint does not return a 2xx status, Aurora retries the webhook with exponential backoff for up to 24 hours before giving up and marking the delivery failed."
+    },
+    {
+      "id": "webhooks-events",
+      "text": "Webhooks can notify you of events such as object.created, object.deleted, and invoice.paid. Subscribe to specific event types when you register an endpoint."
+    },
+    {
+      "id": "sla-uptime",
+      "text": "The Enterprise plan carries a 99.9 percent monthly uptime SLA. If uptime falls below that, you receive service credits proportional to the downtime."
+    },
+    {
+      "id": "sla-support",
+      "text": "Support response targets depend on plan: Free uses community forums, Pro gets email support within one business day, and Enterprise gets a 1 hour response for critical issues."
+    },
+    {
+      "id": "sla-incidents",
+      "text": "During an incident Aurora posts updates to the public status page and emails project owners. A post-incident review is published within five business days."
+    },
+    {
+      "id": "sdk-languages",
+      "text": "Official Aurora SDKs are available for Python, JavaScript/TypeScript, Go, and Ruby. All SDKs wrap the same REST API and read the API key from an environment variable."
+    },
+    {
+      "id": "sdk-versioning",
+      "text": "SDKs follow semantic versioning. A deprecated method keeps working for at least two minor releases and logs a warning before it is removed in a major release."
+    },
+    {
+      "id": "api-pagination",
+      "text": "List endpoints return at most 100 items per page and use cursor-based pagination. Follow the next_cursor field to fetch the following page until it is null."
+    },
+    {
+      "id": "api-errors",
+      "text": "Errors return a JSON body with a code, a human readable message, and a request_id. Include the request id when you contact support about a failed call."
+    },
+    {
+      "id": "api-idempotency",
+      "text": "Make a POST safe to retry by sending an Idempotency-Key header. Aurora stores the first response for that key for 24 hours and replays it instead of running the action twice."
+    }
+  ]
+}

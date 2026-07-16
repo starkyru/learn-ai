@@ -1,4 +1,11 @@
-# GitHub Actions workflow — LLMOps eval regression gate
+# GitHub Actions workflow — LLMOps eval regression gate (LEARNER EXAMPLE).
+#
+# NOTE: the repository's ACTIVE, source-of-truth CI lives at
+# ../../.github/workflows/ci.yml. Do NOT copy this file into .github/workflows/.
+# This standalone example shows the PROVIDER-BACKED gate (needs a provider key);
+# to run it, add its job(s) to the active ci.yml and store the key as a GitHub
+# Actions secret. The active workflow already carries a guarded (live, not
+# disabled) OFFLINE release-gate job for Module 21b that needs no secret.
 #
 # Runs on every push to main and on pull requests.
 # Fails the build if faithfulness drops below 0.70.

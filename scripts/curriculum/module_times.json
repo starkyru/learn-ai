@@ -1,0 +1,325 @@
+{
+  "unit": "hours",
+  "note": "Single machine-readable source for per-module time estimates. Each lesson splits its honest time range into four separately-published buckets: exercise_only (coding the tasks), setup_debug (reading the README, installing extras, debugging), provider_cloud (hosted keys, cloud/deploy setup, paid-job waits, or heavy local downloads beyond the free Ollama baseline), and capstone (open-ended integration work, only module 23). Ranges are [min, max] and are advisory, not a guarantee. check_route_hours.py sums these per route and verifies the totals published in CURRICULUM.md and README.md.",
+  "categories": ["exercise_only", "setup_debug", "provider_cloud", "capstone"],
+  "modules": {
+    "00": {
+      "title": "Setup & Providers",
+      "exercise_only": [1, 2],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "01": {
+      "title": "LLM Fundamentals",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "01b": {
+      "title": "Classic ML Foundations",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "01c": {
+      "title": "Deep Learning Essentials",
+      "exercise_only": [5, 7],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "01d": {
+      "title": "Transformer Architecture",
+      "exercise_only": [5, 7],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "01e": {
+      "title": "Trees & Ensembles",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "01f": {
+      "title": "Probability, Statistics & PCA",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "02": {
+      "title": "LLM Integration",
+      "exercise_only": [4, 5],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "03": {
+      "title": "Prompting & Patterns",
+      "exercise_only": [3, 4],
+      "setup_debug": [0.5, 1],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "04": {
+      "title": "Embeddings & Vectors",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "05": {
+      "title": "RAG",
+      "exercise_only": [5, 7],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "05b": {
+      "title": "Advanced RAG Architectures",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "06": {
+      "title": "Agents",
+      "exercise_only": [7, 9],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "06b": {
+      "title": "LangGraph deep dive",
+      "exercise_only": [5, 7],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "06c": {
+      "title": "Agent Frameworks",
+      "exercise_only": [5, 7],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "06d": {
+      "title": "Agent Memory",
+      "exercise_only": [3, 5],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "07": {
+      "title": "Advanced & Production",
+      "exercise_only": [5, 7],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "07b": {
+      "title": "Delivery & AI Service Operations",
+      "exercise_only": [5, 7],
+      "setup_debug": [2, 3],
+      "provider_cloud": [1, 2],
+      "capstone": [0, 0]
+    },
+    "08": {
+      "title": "Classification",
+      "exercise_only": [4, 5],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "09": {
+      "title": "Computer Vision",
+      "exercise_only": [4, 5],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "10": {
+      "title": "Image Generation",
+      "exercise_only": [4, 5],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "11": {
+      "title": "Document Ingestion",
+      "exercise_only": [5, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "12": {
+      "title": "Text-to-SQL",
+      "exercise_only": [4, 5],
+      "setup_debug": [0.5, 1],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "13": {
+      "title": "Fine-tuning",
+      "exercise_only": [5, 7],
+      "setup_debug": [1, 2],
+      "provider_cloud": [1, 2],
+      "capstone": [0, 0]
+    },
+    "13b": {
+      "title": "Post-training & Alignment (RLHF & DPO)",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "14": {
+      "title": "Local Inference & Optimization",
+      "exercise_only": [4, 5],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "15": {
+      "title": "Reasoning & Test-time Compute",
+      "exercise_only": [3, 5],
+      "setup_debug": [0.5, 1],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "16": {
+      "title": "Context Engineering",
+      "exercise_only": [5, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "17": {
+      "title": "MCP & Modern Agent APIs",
+      "exercise_only": [6, 8],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "18": {
+      "title": "Computer Use",
+      "exercise_only": [5, 6],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "19": {
+      "title": "Audio & Speech",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.5, 1],
+      "capstone": [0, 0]
+    },
+    "20": {
+      "title": "AI Security",
+      "exercise_only": [5, 7],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "20b": {
+      "title": "Governance, Privacy & Responsible Practice",
+      "exercise_only": [4, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0, 0],
+      "capstone": [0, 0]
+    },
+    "21": {
+      "title": "LLMOps & Eval",
+      "exercise_only": [5, 6],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "21b": {
+      "title": "Evaluation Science & Agent Reliability",
+      "exercise_only": [5, 7],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "22": {
+      "title": "AI Product UX",
+      "exercise_only": [4, 5],
+      "setup_debug": [1, 2],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
+    "23": {
+      "title": "Capstone",
+      "exercise_only": [0, 0],
+      "setup_debug": [0, 0],
+      "provider_cloud": [1, 2],
+      "capstone": [10, 20]
+    }
+  },
+  "routes": {
+    "core-app-builder": {
+      "label": "Core app-builder",
+      "modules": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "07b",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "20b",
+        "21",
+        "21b",
+        "22",
+        "23"
+      ]
+    },
+    "ml-foundations": {
+      "label": "ML foundations",
+      "modules": ["01b", "01c", "01d", "01e", "01f"]
+    },
+    "agent-systems": {
+      "label": "Agent systems",
+      "modules": [
+        "05b",
+        "06",
+        "06b",
+        "06c",
+        "06d",
+        "07b",
+        "16",
+        "17",
+        "18",
+        "21",
+        "21b",
+        "23"
+      ]
+    },
+    "model-training": {
+      "label": "Model training",
+      "modules": ["08", "13", "13b", "14", "15"]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "note": "Release policy the gate enforces. The gate exits nonzero if any floor is breached (retrieval OR any answer metric), if the candidate variant is misconfigured, if an improvement was required but the comparison is inconclusive, or if any committed report/golden drifts at runtime. Golden-drift enforcement is MANDATORY and cannot be disabled by policy.",
+  "retrieval_floor": {
+    "split": "heldout",
+    "method": "reranked",
+    "metric": "ndcg_at_k",
+    "k": 5,
+    "floor": 0.9
+  },
+  "answer_floors": {
+    "variant": "variant_b",
+    "groundedness": 0.9,
+    "citation_validity": 0.9,
+    "completeness": 0.9,
+    "task_success": 0.9
+  },
+  "comparison": {
+    "baseline": "variant_a",
+    "candidate": "variant_b",
+    "practical_threshold": 0.1,
+    "require_improvement": false
+  },
+  "bootstrap": {
+    "iterations": 2000,
+    "seed": 12345,
+    "alpha": 0.05
+  }
+}

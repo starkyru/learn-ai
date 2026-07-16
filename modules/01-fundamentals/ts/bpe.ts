@@ -18,6 +18,8 @@
  *   decode(encode(s)) === s   for every string s.
  */
 
+import { strict as assert } from "node:assert";
+
 // A pair of token ids, keyed in a Map as the string "a,b" (Maps can't key on
 // arrays by value). Base ids 0..255 are raw bytes; ids >= 256 are merged pairs.
 type Pair = [number, number];
@@ -140,6 +142,9 @@ function main(): void {
   console.log(`Encoded (${ids.length} ids)    : [${ids.join(", ")}]`);
   console.log(`Decoded            : ${JSON.stringify(back)}`);
   console.log(`Round-trips losslessly: ${back === sample}`);
+  // Self-check: the defining invariant of a tokenizer. Assert (don't just print)
+  // so a regression fails loudly — including under the offline smoke runner.
+  assert.strictEqual(back, sample, "BPE round-trip mismatch");
 
   const rawBytes = utf8Encoder.encode(sample).length;
   console.log(`\nRaw UTF-8 bytes    : ${rawBytes}`);
@@ -149,6 +154,7 @@ function main(): void {
   const tricky = "café — 日本語 😀";
   const ok = tok.decode(tok.encode(tricky)) === tricky;
   console.log(`\nUnseen/Unicode round-trip OK: ${ok} (${JSON.stringify(tricky)})`);
+  assert.ok(ok, "BPE Unicode round-trip failed");
 }
 
 // Run only when invoked directly (so the test file can import without executing).

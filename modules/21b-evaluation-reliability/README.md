@@ -67,6 +67,23 @@ dense, hybrid, and reranked retrieval using identical cases.
 - Each result records corpus/index/chunker/embedder versions and `k`.
 - A failure report lists the query and missing or mis-ranked gold evidence.
 
+> **Runnable fixtures (this repo).** Task 1 ships as a deterministic, offline
+> benchmark — no provider, no network, so it can gate a release in CI:
+>
+> ```bash
+> uv run python modules/21b-evaluation-reliability/py/benchmark.py --split both
+> pnpm tsx modules/21b-evaluation-reliability/ts/run.ts --split both
+> ```
+>
+> The versioned corpus, development and held-out cases, rubric, and manifest
+> live in `modules/21b-evaluation-reliability/fixtures/`. `dense` (a seedless
+> character-n-gram hashing stand-in for an embedder), `bm25`, `hybrid` (RRF),
+> and `reranked` are compared with from-scratch `Recall@k` / `MRR` / `NDCG@k`;
+> the runner prints the comparison table plus a per-query failure report and
+> writes a deterministic JSON report. The Python and TypeScript ports produce
+> identical rankings. Verify with `uv run pytest modules/21b-evaluation-reliability`
+> and `pnpm test`.
+
 ### Task 2 — Claim-level answer and citation evaluation 🟡
 
 Break each answer into atomic claims. Grade whether every material claim is
@@ -94,6 +111,33 @@ sample; record agreement and queue disagreements.
 - A model is not promoted merely because it won on a handful of cases.
 - Judge disagreement becomes an annotation task and potential new eval case.
 
+> **Runnable answer eval, judge reliability & release gate (Tasks 2–3).**
+> These ship as deterministic, offline modules that reuse the Task 1 fixtures:
+>
+> - `answer_eval` / `answer-eval.ts` — decompose answers into atomic claims and
+>   check support + citation validity deterministically; the residual
+>   task-success judgement uses an LLM rubric via the shared `llm_core`
+>   client, faked by a canned, keyed-by-input `FakeJudge` (no network). Reports
+>   unsupported claims and invalid citations separately and versions the rubric +
+>   judge model/prompt. Fixtures: `answers.json`, `answer_rubric.json`,
+>   `judge.json`, `human_labels.json`.
+> - `agreement` — Cohen's kappa (from scratch) + percent agreement between the
+>   judge and a blind human sample, with a disagreement queue.
+> - `uncertainty` — paired bootstrap CI (from scratch, seeded/deterministic),
+>   win/tie/loss, and a verdict that is `inconclusive` when the interval crosses
+>   the practical threshold.
+> - The **enforceable release gate** exits nonzero on a policy violation (a
+>   held-out floor breached, an improvement required but inconclusive, or golden
+>   drift) and 0 otherwise — the CI hook for this module:
+>
+> ```bash
+> uv run python modules/21b-evaluation-reliability/py/gate.py   # exit 0/nonzero
+> pnpm tsx modules/21b-evaluation-reliability/ts/gate-cli.ts
+> ```
+>
+> The Python and TypeScript answer/release reports are byte-identical
+> (`fixtures/golden/*.golden`), and `fixtures/release_policy.json` is the policy.
+
 ### Task 4 — Agent trajectory and safety suite 🔴
 
 Build deterministic fake tools for a read-only lookup, a slow/failing tool, and
@@ -108,6 +152,30 @@ approval requirement, maximum steps, expected final state, and idempotency key.
 - Results report task success, policy compliance, tool-argument accuracy, step
   count, latency, and cost separately.
 
+> **Runnable agent-safety suite & gate (Task 4).** Deterministic and offline:
+>
+> - `agent_tools` / `agent-tools.ts` — a read-only lookup, a transient-failure
+>   tool, a timeout tool, and an idempotent side-effecting `send_email`, driven by
+>   an injectable integer clock. No LLM, no network.
+> - `agent_eval` / `agent-eval.ts` — replays each canned trajectory
+>   (`fixtures/agent_scenarios.json`) against a per-scenario policy (allowed
+>   tools, expected args, approval, max steps, expected final state, idempotency)
+>   and reports task success, policy compliance, tool-argument accuracy, step
+>   count, latency, and cost **separately**. The load-bearing rule: an
+>   unauthorised side effect fails **even if the final answer is correct**.
+> - The **agent-safety release gate** exits nonzero on any policy-violating
+>   trajectory (unauthorised tool, side effect without approval, exceeded steps,
+>   non-idempotent duplicate) or on agent-report drift, and 0 on a clean one:
+>
+> ```bash
+> uv run python modules/21b-evaluation-reliability/py/agent_gate.py
+> pnpm tsx modules/21b-evaluation-reliability/ts/agent-gate-cli.ts
+> ```
+>
+> The Python and TypeScript agent reports are byte-identical
+> (`fixtures/golden/agent_report.golden`); `fixtures/agent_gate_policy.json` is
+> the policy.
+
 ## Release-evidence checklist
 
 - [ ] Development and held-out benchmarks are separate and versioned.
@@ -116,3 +184,22 @@ approval requirement, maximum steps, expected final state, and idempotency key.
 - [ ] Variant comparisons include uncertainty and a practical threshold.
 - [ ] Human/LLM judge agreement and disagreements are tracked.
 - [ ] Side-effecting agent paths have deterministic policy and trajectory tests.
+
+## CI release gate (entrypoint contract)
+
+The release gate is exposed as an **offline, deterministic CLI** so CI can run it
+with no provider key:
+
+- Python: `py/gate.py` — the release-gate entrypoint the active workflow runs.
+- TypeScript: `ts/gate-cli.ts` — the equivalent CLI for the TS path.
+
+The repository's active workflow
+([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)) has a guarded
+`eval-gate` job that runs `uv run python modules/21b-evaluation-reliability/py/gate.py`
+the moment this module lands on the branch (until then the job's detect step
+reports "not present" and skips, so it never fails on a missing path). Keep
+`py/gate.py` as that entrypoint — renaming it silently disables the gate.
+
+**Done when** the gate exits non-zero on a failing release and zero on a passing
+one, runs fully offline (no network/provider), and is wired into the active CI
+workflow above.

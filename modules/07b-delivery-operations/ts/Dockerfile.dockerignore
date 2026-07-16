@@ -1,0 +1,15 @@
+# BuildKit honours this file (named after the Dockerfile) when the build uses a
+# repo-root context, which this service requires for the pnpm workspace.
+# Mirror of .dockerignore in this directory. Keep secrets and local state out.
+.env
+.env.*
+*.env
+node_modules/
+dist/
+*.tsbuildinfo
+*.sqlite
+*.sqlite3
+data/
+.git/
+.DS_Store
+*.log

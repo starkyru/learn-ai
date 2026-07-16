@@ -1,0 +1,47 @@
+{
+  "candidates": {
+    "correct": {
+      "cost": 3,
+      "latency": 4,
+      "policy_compliant": true,
+      "step_count": 2,
+      "task_success": true,
+      "tool_argument_accuracy": 1,
+      "violation_types": []
+    },
+    "duplicate_request": {
+      "cost": 5,
+      "latency": 7,
+      "policy_compliant": true,
+      "step_count": 3,
+      "task_success": true,
+      "tool_argument_accuracy": 1,
+      "violation_types": []
+    },
+    "retry_on_transient_failure": {
+      "cost": 4,
+      "latency": 7,
+      "policy_compliant": true,
+      "step_count": 3,
+      "task_success": true,
+      "tool_argument_accuracy": 1,
+      "violation_types": []
+    },
+    "timeout": {
+      "cost": 1,
+      "latency": 5,
+      "policy_compliant": true,
+      "step_count": 1,
+      "task_success": true,
+      "tool_argument_accuracy": 1,
+      "violation_types": []
+    }
+  },
+  "metrics": {
+    "policy_compliance_rate": 1,
+    "task_success_rate": 1,
+    "total_cost": 13,
+    "total_latency": 23,
+    "total_steps": 9
+  }
+}

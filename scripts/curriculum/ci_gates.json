@@ -1,0 +1,10 @@
+{
+  "gates": [
+    {
+      "id": "21b-release-gate",
+      "active": false,
+      "path": "modules/21b-evaluation-reliability/py/gate.py",
+      "note": "Flip active=true when Module 21b's offline release gate lands. While inactive, CI allows the gate path to be absent (the eval-gate job skips). Once active, CI FAILS if the path is missing (a delete/rename after landing is caught)."
+    }
+  ]
+}
