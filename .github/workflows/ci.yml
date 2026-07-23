@@ -103,6 +103,16 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      # tsx for the smoke runner's TypeScript offline entries + violation fixtures,
+      # which test_smoke_exercises.py drives directly — without it those tests fail
+      # with "node_modules/.bin/tsx: No such file or directory".
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm build:core
       - uses: astral-sh/setup-uv@v5
         with:
           version: ${{ env.UV_VERSION }}
@@ -161,7 +171,12 @@ jobs:
           if unshare --map-root-user --net -- true 2>/dev/null; then
             netns=(unshare --map-root-user --net --)
           elif sudo -n unshare --net -- true 2>/dev/null; then
-            netns=(sudo -n unshare --net --)
+            # sudo sanitizes PATH (secure_path) and strips the environment, so the
+            # sandboxed tree would lose `uv`/`node` from PATH and the UV_* offline
+            # flags — `unshare` then fails with "failed to execute uv". Re-inject
+            # the runner PATH/HOME and the no-sync/offline env through `env` so uv,
+            # node/tsx, and the offline guarantees all survive into the namespace.
+            netns=(sudo -n env "PATH=$PATH" "HOME=$HOME" "UV_NO_SYNC=$UV_NO_SYNC" "UV_OFFLINE=$UV_OFFLINE" unshare --net --)
           elif [ "${ALLOW_UNSANDBOXED_SMOKE:-}" = "1" ]; then
             echo "::warning::running smoke WITHOUT an OS no-egress boundary (ALLOW_UNSANDBOXED_SMOKE=1) — dev only"
             netns=()
