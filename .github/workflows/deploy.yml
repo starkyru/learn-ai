@@ -54,8 +54,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
       - run: uv sync --extra production --extra vectors
@@ -76,7 +76,7 @@ jobs:
     environment: staging
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build & push image
         run: |
           echo "TODO docker build -t $REGISTRY/m07b:${{ inputs.image_tag }} modules/07b-delivery-operations/py"
@@ -111,7 +111,7 @@ jobs:
     environment: production
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Shift ${{ inputs.canary_percent }}% traffic to the new revision
         run: |
           echo "TODO set traffic split canary=${{ inputs.canary_percent }}% -> ${{ inputs.image_tag }}"
@@ -134,7 +134,7 @@ jobs:
     environment: ${{ inputs.environment }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Roll back to the last-good revision
         # RUNBOOK.md "Rollback": revision rollback + (if a migration shipped) its
         # paired down-migration via m07b_service.migrations.rollback / migrations.ts.
