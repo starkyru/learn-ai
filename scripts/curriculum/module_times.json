@@ -199,6 +199,13 @@
       "provider_cloud": [0.25, 0.5],
       "capstone": [0, 0]
     },
+    "16b": {
+      "title": "Knowledge Bundles & the Open Knowledge Format",
+      "exercise_only": [4, 6],
+      "setup_debug": [1.5, 2.5],
+      "provider_cloud": [0.25, 0.5],
+      "capstone": [0, 0]
+    },
     "17": {
       "title": "MCP & Modern Agent APIs",
       "exercise_only": [6, 8],
@@ -310,6 +317,7 @@
         "06d",
         "07b",
         "16",
+        "16b",
         "17",
         "18",
         "21",

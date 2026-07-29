@@ -59,7 +59,13 @@ no provider); **06c Agent Frameworks** (`modules/06c-agent-frameworks/` —
 LangChain/CrewAI/AutoGen, extends 06/06b) and **06d Agent Memory**
 (`modules/06d-agent-memory/` — memory taxonomy: episodic/semantic/procedural/
 entity/summary, read-write lifecycle, TTL eviction, MemoryManager; extends
-06/06b) are offline via a `--stub` model.
+06/06b) are offline via a `--stub` model. **16b Knowledge Bundles**
+(`modules/16b-knowledge-bundles/`, extends 16 — the **Open Knowledge Format**:
+hand-parsed markdown + YAML frontmatter (🔴, no YAML lib), progressive disclosure
+under a token budget, trust gating on provenance/`status`/`stale_after`, link-graph
+1-hop expansion (🔴), OKF production via `llm_core`, and MCP serving) runs offline
+against a checked-in `bundle/` apart from Task 5's live provider path and Task 6's
+server.
 **Each module's `README.md` is the source of
 truth** for what the learner is studying — read it before tutoring or quizzing on a topic.
 (Some module READMEs may not be written yet; if one is missing, fall back to the root

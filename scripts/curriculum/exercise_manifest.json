@@ -3032,6 +3032,138 @@
       "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
     },
     {
+      "path": "modules/16b-knowledge-bundles/py/01_parse_bundle.py",
+      "module": "16b-knowledge-bundles",
+      "language": "py",
+      "command": "uv run python modules/16b-knowledge-bundles/py/01_parse_bundle.py",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/py/02_progressive_disclosure.py",
+      "module": "16b-knowledge-bundles",
+      "language": "py",
+      "command": "uv run python modules/16b-knowledge-bundles/py/02_progressive_disclosure.py",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/py/03_trust_gating.py",
+      "module": "16b-knowledge-bundles",
+      "language": "py",
+      "command": "uv run python modules/16b-knowledge-bundles/py/03_trust_gating.py",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/py/04_link_graph.py",
+      "module": "16b-knowledge-bundles",
+      "language": "py",
+      "command": "uv run python modules/16b-knowledge-bundles/py/04_link_graph.py",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/py/05_produce_bundle.py",
+      "module": "16b-knowledge-bundles",
+      "language": "py",
+      "command": "uv run python modules/16b-knowledge-bundles/py/05_produce_bundle.py --stub",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/py/06_okf_mcp_server.py",
+      "module": "16b-knowledge-bundles",
+      "language": "py",
+      "command": "uv run python modules/16b-knowledge-bundles/py/06_okf_mcp_server.py",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/ts/01-parse-bundle.ts",
+      "module": "16b-knowledge-bundles",
+      "language": "ts",
+      "command": "pnpm tsx modules/16b-knowledge-bundles/ts/01-parse-bundle.ts",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/ts/02-progressive-disclosure.ts",
+      "module": "16b-knowledge-bundles",
+      "language": "ts",
+      "command": "pnpm tsx modules/16b-knowledge-bundles/ts/02-progressive-disclosure.ts",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/ts/03-trust-gating.ts",
+      "module": "16b-knowledge-bundles",
+      "language": "ts",
+      "command": "pnpm tsx modules/16b-knowledge-bundles/ts/03-trust-gating.ts",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/ts/04-link-graph.ts",
+      "module": "16b-knowledge-bundles",
+      "language": "ts",
+      "command": "pnpm tsx modules/16b-knowledge-bundles/ts/04-link-graph.ts",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/ts/05-produce-bundle.ts",
+      "module": "16b-knowledge-bundles",
+      "language": "ts",
+      "command": "pnpm tsx modules/16b-knowledge-bundles/ts/05-produce-bundle.ts --stub",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
+      "path": "modules/16b-knowledge-bundles/ts/06-okf-mcp-server.ts",
+      "module": "16b-knowledge-bundles",
+      "language": "ts",
+      "command": "pnpm tsx modules/16b-knowledge-bundles/ts/06-okf-mcp-server.ts",
+      "extras": [],
+      "offline": "stub",
+      "expected_artifacts": [],
+      "timeout_s": 30,
+      "exclude_reason": "Unsolved learner scaffold: raises NotImplementedError / throws a TODO error until the core is implemented. Runs offline once solved."
+    },
+    {
       "path": "modules/17-mcp/py/01_modern_agent_api.py",
       "module": "17-mcp",
       "language": "py",

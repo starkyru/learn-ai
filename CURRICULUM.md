@@ -1099,6 +1099,63 @@ hacking) → DPO.
 
 ---
 
+## Module 16b — Knowledge Bundles & the Open Knowledge Format (OKF)
+
+**Prerequisites:** Module 16 (Tasks 1 & 3 — token budgeting and compaction). No new
+deps for Tasks 1–5 (the frontmatter parser is hand-written and token counts use a
+whitespace approximation, so runs are deterministic and offline); Task 6 needs
+`uv sync --extra mcp`. Task 5's live path goes through `get_provider()` /
+`getProvider()`; its `--stub` path is offline.
+
+**Why:** module 16 spends a scarce context budget on text you are handed. This module
+is the step before — giving knowledge a shape that makes budgeting possible.
+**OKF** (Google Cloud's vendor-neutral format: markdown files + YAML frontmatter in a
+git directory, [spec v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md))
+splits every concept into queryable frontmatter (type, tags, status, provenance,
+freshness) and a prose body. That split is what makes an 80-token index stand in for a
+780-token bundle, lets you gate on trust before retrieval, and turns "follow one link"
+into a cheaper alternative to stuffing the corpus into the prompt.
+
+**Learning objectives**
+
+- Read a bundle the way the spec defines it: concept id = path, `index.md`/`log.md`
+  reserved, `type` the only required key — and hand-parse the frontmatter subset.
+- Apply progressive disclosure: generate the index, rank on index lines only, and
+  assemble an answer context under a hard token budget.
+- Gate retrieval on provenance, `status`, and `stale_after`, with a named reason for
+  every drop — and know why freshness cannot come from the filesystem.
+- Treat the bundle as a graph: resolve both link forms, report dangling links, and
+  reach by 1-hop expansion a fact that index search structurally cannot find.
+- Produce conformant OKF with a model writing prose and code writing provenance, then
+  round-trip and self-check the output.
+- Serve a bundle to any agent as three MCP tools, with the cheap/expensive split
+  documented in the tool descriptions.
+
+**Tasks**
+
+| #   | Task                                 | Depth | What you do                                                                                                                                                     |
+| --- | ------------------------------------ | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Parse + validate a bundle            | 🔴    | Hand-write the OKF-lite frontmatter parser (no YAML lib), derive concept ids from paths, skip reserved filenames, validate `type` + id uniqueness.              |
+| 2   | Progressive disclosure on a budget   | 🟡    | Generate the index; rank concepts on index lines only; assemble three answers inside 250 tokens vs 780 for the whole bundle.                                    |
+| 3   | Trust: provenance, status, staleness | 🟡    | Filter on `status: deprecated`, `stale_after` vs a passed-in `now`, and missing `verified`; every drop names its field; cite what survives.                     |
+| 4   | Link graph + 1-hop expansion         | 🔴    | Extract and resolve both link forms, build the adjacency by hand, report the dangling link, and reach the needle fact search misses.                            |
+| 5   | Produce a bundle with a model        | 🟢    | Model writes title/description/tags, code writes `type`/`resource`/`generated`; render frontmatter, round-trip it through Task 1, and conformance-check output. |
+| 6   | Serve the bundle over MCP            | 🟢    | `list_concepts` / `read_concept` / `search_concepts` (line-level hits), verified offline by `--selftest`, then wired into a stdio MCP server.                   |
+
+**Estimated time:** 4–6 hours
+
+**Done when**
+
+- [ ] Task 1: 6 concepts load with the expected ids, all four frontmatter shapes parse, reserved files skipped, three broken fixtures rejected.
+- [ ] Task 2: index 80 tokens vs 780 for the bundle; all three questions answered inside 250 tokens with the right concept disclosed.
+- [ ] Task 3: the trusted set at `2026-07-01` is exactly `customers` / `metrics/daily_revenue` / `orders`; each drop names its deciding field; an earlier "now" changes the outcome.
+- [ ] Task 4: adjacency and the dangling link match exactly; the needle is absent from the seed context and present after one hop.
+- [ ] Task 5: three concepts plus an index written; every document round-trips and self-checks; provenance stamped by code; both broken documents caught.
+- [ ] Task 6: the offline self-test passes and a real MCP client lists and calls the three tools.
+- [ ] You can explain why `type` is the only required key, why freshness lives in frontmatter rather than the filesystem, and why one hop over links beats a better ranker for Task 4's question.
+
+---
+
 ## Module 17 — MCP & Modern Agent APIs
 
 **Prerequisites:** Modules 02, 06. `uv sync --extra mcp`. `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY`.
@@ -1505,7 +1562,7 @@ Totals in hours (min–max), each bucket summed separately across the route's le
 | -------------------- | ------- | ------------- | ----------- | -------------- | -------- |
 | **Core app-builder** | 27      | 114–153       | 28–52.5     | 11–22          | 10–20    |
 | **ML foundations**   | 5       | 22–32         | 6–11        | 0              | 0        |
-| **Agent systems**    | 12      | 55–74         | 14.5–25.5   | 4.75–9.5       | 10–20    |
+| **Agent systems**    | 13      | 59–80         | 16–28       | 5–10           | 10–20    |
 | **Model training**   | 5       | 20–28         | 4.5–9       | 2.25–4.5       | 0        |
 
 ### Route decision guidance
@@ -1554,6 +1611,7 @@ route, so nothing is lost — just deferred):
 | ----------------------- | --------------------------------------------------------------- | ------------------ |
 | 01b, 01c, 01d, 01e, 01f | Classic-ML / DL / transformer theory, not needed to ship an app | **ML foundations** |
 | 05b, 06b, 06c, 06d      | Advanced RAG + agent depth (LangGraph, frameworks, memory)      | **Agent systems**  |
+| 16b                     | Knowledge bundles / OKF — a knowledge-format deep dive on 16    | **Agent systems**  |
 | 13b                     | Post-training & alignment (RLHF/DPO)                            | **Model training** |
 
 ### Core app-builder — week-by-week
@@ -1637,25 +1695,25 @@ assume. Five pure-from-scratch companions (**01b, 01c, 01d, 01e, 01f**).
 ## Route 3 — Agent systems
 
 **Goal:** go from a from-scratch ReAct loop to a production, multi-framework,
-memory-aware agent service that ships behind a release gate. Twelve lessons:
+memory-aware agent service that ships behind a release gate. Thirteen lessons:
 **05b** (advanced RAG), **06 / 06b / 06c / 06d** (agents, LangGraph, frameworks,
-memory), **16** (context engineering), **17** (MCP), **18** (computer use),
-**21 / 21b** (evaluation & agent reliability), **07b** (delivery), and **23**
-(capstone).
+memory), **16 / 16b** (context engineering, knowledge bundles/OKF), **17** (MCP),
+**18** (computer use), **21 / 21b** (evaluation & agent reliability), **07b**
+(delivery), and **23** (capstone).
 
 - **Assumed background:** the Core app-builder route through module 07 — you need
   **02–05** (integration + RAG) before 06, and **07** (eval harness,
   observability, serving) before 07b/21. Those live in Core and are the assumed
   prerequisites, not re-counted here.
 - **Dependencies within the route:** 05b needs 05; 06b/06c/06d each need 06;
-  17 needs 02+06; 18 needs 06+09; 21 needs 05–07; 21b needs 05+06+21; 07b needs
-  07; 23 needs everything. Suggested order: **06 → 06b → 06c → 06d → 05b → 16 →
-  17 → 18 → 21 → 21b → 07b → 23**.
+  16b needs 16; 17 needs 02+06; 18 needs 06+09; 21 needs 05–07; 21b needs
+  05+06+21; 07b needs 07; 23 needs everything. Suggested order: **06 → 06b →
+  06c → 06d → 05b → 16 → 16b → 17 → 18 → 21 → 21b → 07b → 23**.
 - **Required provider/hardware:** a chat provider — the **free Ollama path** runs
   06's from-scratch loop and the `--stub` offline tasks in 06c/06d. Native tool
   calling (06 Task 2), MCP (17), and computer-use vision (18) want an
   OpenAI/Anthropic key; 07b/23 add a deploy target.
-- **Time budget:** 55–74 h exercise-only, 14.5–25.5 h setup/debug, 4.75–9.5 h
+- **Time budget:** 59–80 h exercise-only, 16–28 h setup/debug, 5–10 h
   provider/cloud, plus the 10–20 h capstone.
 - **Portfolio artifact:** a deployed multi-agent service (supervisor + workers +
   tools over MCP, bounded memory, human-in-the-loop approval) with a deterministic

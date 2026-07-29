@@ -42,11 +42,26 @@ PUBLISHED_DOCS = (ROOT / "CURRICULUM.md", ROOT / "README.md")
 
 CATEGORIES = ("exercise_only", "setup_debug", "provider_cloud", "capstone")
 
-# Every lesson in the course map (24 numbered modules + 13 companions/deep
+# Every lesson in the course map (24 numbered modules + 14 companions/deep
 # dives). The source must cover all of them so no lesson is silently dropped.
 EXPECTED_MODULE_IDS = frozenset(
     [f"{n:02d}" for n in range(24)]
-    + ["01b", "01c", "01d", "01e", "01f", "05b", "06b", "06c", "06d", "07b", "13b", "20b", "21b"]
+    + [
+        "01b",
+        "01c",
+        "01d",
+        "01e",
+        "01f",
+        "05b",
+        "06b",
+        "06c",
+        "06d",
+        "07b",
+        "13b",
+        "16b",
+        "20b",
+        "21b",
+    ]
 )
 
 # Visible table header cell (lowercased) -> category key. The table is located by
