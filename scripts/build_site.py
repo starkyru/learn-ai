@@ -206,6 +206,7 @@ THEMES: list[tuple[str, list[str]]] = [
             "06c-agent-frameworks",
             "06d-agent-memory",
             "16-context-engineering",
+            "16b-knowledge-bundles",
             "17-mcp",
             "18-computer-use",
         ],

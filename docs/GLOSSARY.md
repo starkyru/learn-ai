@@ -92,6 +92,7 @@ substitute for the reading.
 | NSFW         | Not Safe For Work                                       | Post-generation classifier that blocks unsafe image outputs.                 |
 | OAuth        | Open Authorization                                      | Delegated-access authorization framework.                                    |
 | OCR          | Optical Character Recognition                           | Extracts text from images and scanned pages.                                 |
+| OKF          | Open Knowledge Format                                   | Vendor-neutral knowledge format: markdown + YAML frontmatter in git (16b).   |
 | OS           | Operating System                                        | Software managing hardware and processes.                                    |
 | OWASP        | Open Worldwide Application Security Project             | Body publishing the LLM Top 10 risk list.                                    |
 | PCA          | Principal Component Analysis                            | Projects data onto top variance directions (covariance eigenvectors).        |

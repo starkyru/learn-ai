@@ -124,6 +124,16 @@ flowchart LR
 > just-in-time expansion, and a composed `MemoryManager` with TTL eviction that
 > keeps context under a token budget across turns. Offline via `--stub`, like 06c.
 
+> **Deep dive — [`modules/16b-knowledge-bundles/`](modules/16b-knowledge-bundles/):** extends
+> module 16 with **knowledge bundles** in Google Cloud's vendor-neutral **Open Knowledge
+> Format (OKF)** — markdown + YAML frontmatter in git, where the queryable fields and the
+> expensive prose are separable. Parse and validate a bundle without a YAML library (🔴),
+> answer questions from a generated index inside a hard token budget, gate retrieval on
+> provenance / `status` / `stale_after`, walk the link graph to reach a fact no search can
+> find (🔴), produce a conformant bundle with a model, and serve the whole thing to an
+> agent over MCP. Offline and deterministic apart from the real-provider and live-server
+> paths.
+
 > **Production deep dives — [`modules/07b-delivery-operations/`](modules/07b-delivery-operations/),
 > [`modules/20b-governance-privacy/`](modules/20b-governance-privacy/), and
 > [`modules/21b-evaluation-reliability/`](modules/21b-evaluation-reliability/):** close the
@@ -163,7 +173,7 @@ learn-ai/
 │   ├── ts/llm-core/        # provider-agnostic LLM client (TypeScript)
 │   └── py/llm_core/        # the same, in Python
 ├── modules/
-│   ├── 00-setup/ … 23-capstone/   # 24 numbered modules + 13 companions/deep dives
+│   ├── 00-setup/ … 23-capstone/   # 24 numbered modules + 14 companions/deep dives
 │   │   ├── README.md       # the lesson + tasks + "done when" checklist
 │   │   ├── ts/             # TypeScript exercises
 │   │   └── py/             # Python exercises
@@ -275,20 +285,20 @@ Totals in hours (min–max), each bucket summed separately:
 | -------------------- | ------- | ------------- | ----------- | -------------- | -------- |
 | **Core app-builder** | 27      | 114–153       | 28–52.5     | 11–22          | 10–20    |
 | **ML foundations**   | 5       | 22–32         | 6–11        | 0              | 0        |
-| **Agent systems**    | 12      | 55–74         | 14.5–25.5   | 4.75–9.5       | 10–20    |
+| **Agent systems**    | 13      | 59–80         | 16–28       | 5–10           | 10–20    |
 | **Model training**   | 5       | 20–28         | 4.5–9       | 2.25–4.5       | 0        |
 
 - **Core app-builder** — the existing ~20-week main sequence, labelled: all 24
   numbered modules (00–23) plus the production deep dives **07b / 20b / 21b**.
   General programming assumed, no ML background; the free Ollama path completes
   most of it. Ends with a deployed, evaluated RAG-agent app (module 23).
-  _Intentionally excludes_ 01b–01f (→ ML foundations), 05b/06b/06c/06d (→ Agent
+  _Intentionally excludes_ 01b–01f (→ ML foundations), 05b/06b/06c/06d/16b (→ Agent
   systems), and 13b (→ Model training). **Next:** Agent systems or Model training.
 - **ML foundations** — the five from-scratch companions **01b–01f** (regression,
   autograd/backprop, the transformer decoder, trees/ensembles, probability/PCA).
   Pure offline NumPy + TypeScript, **no provider**. Order: 01b → 01e/01f → 01c →
   01d. Ends with a from-scratch ML repo. **Next:** Model training or Agent systems.
-- **Agent systems** — **05b, 06, 06b, 06c, 06d, 16, 17, 18, 21, 21b, 07b, 23**:
+- **Agent systems** — **05b, 06, 06b, 06c, 06d, 16, 16b, 17, 18, 21, 21b, 07b, 23**:
   from a hand-rolled ReAct loop to a deployed, memory-aware, multi-framework agent
   service with an offline trajectory/safety gate. Assumes core modules 02–07;
   Ollama runs most tasks, paid keys help for MCP (17) and computer use (18).
